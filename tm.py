@@ -115,57 +115,53 @@ class TimeSeries(object):
         return self.operation(other, lambda x, y: bool(x) ^ bool(y))
 
 
-if __name__ == '__main__':
+def example_sum():
 
-    # a = TimeSeries()
-    # a.add(datetime.datetime(2015, 3, 1), 1)
-    # a.add(datetime.datetime(2015, 3, 2), 0)
-    # a.add(datetime.datetime(2015, 3, 3), 1)
-    # a.add(datetime.datetime(2015, 3, 5), 0)
-    # a.add(datetime.datetime(2015, 3, 6), 0)
+    a = TimeSeries()
+    a.set(datetime.datetime(2015, 3, 1), 1)
+    a.set(datetime.datetime(2015, 3, 2), 0)
+    a.set(datetime.datetime(2015, 3, 3), 1)
+    a.set(datetime.datetime(2015, 3, 5), 0)
+    a.set(datetime.datetime(2015, 3, 6), 0)
 
-    # b = TimeSeries()
-    # b.add(datetime.datetime(2015, 3, 1), 0)
-    # b.add(datetime.datetime(2015, 3, 2, 12), 1)
-    # b.add(datetime.datetime(2015, 3, 3, 13, 13), 0)
-    # b.add(datetime.datetime(2015, 3, 4), 1)
-    # b.add(datetime.datetime(2015, 3, 5), 0)
-    # b.add(datetime.datetime(2015, 3, 5, 12), 1)
-    # b.add(datetime.datetime(2015, 3, 5, 19), 0)
+    b = TimeSeries()
+    b.set(datetime.datetime(2015, 3, 1), 0)
+    b.set(datetime.datetime(2015, 3, 2, 12), 1)
+    b.set(datetime.datetime(2015, 3, 3, 13, 13), 0)
+    b.set(datetime.datetime(2015, 3, 4), 1)
+    b.set(datetime.datetime(2015, 3, 5), 0)
+    b.set(datetime.datetime(2015, 3, 5, 12), 1)
+    b.set(datetime.datetime(2015, 3, 5, 19), 0)
 
-    # c = TimeSeries()
-    # c.add(datetime.datetime(2015, 3, 1, 17), 0)
-    # c.add(datetime.datetime(2015, 3, 1, 21), 1)
-    # c.add(datetime.datetime(2015, 3, 2, 13, 13), 0)
-    # c.add(datetime.datetime(2015, 3, 4, 18), 1)
-    # c.add(datetime.datetime(2015, 3, 5, 4), 0)
+    c = TimeSeries()
+    c.set(datetime.datetime(2015, 3, 1, 17), 0)
+    c.set(datetime.datetime(2015, 3, 1, 21), 1)
+    c.set(datetime.datetime(2015, 3, 2, 13, 13), 0)
+    c.set(datetime.datetime(2015, 3, 4, 18), 1)
+    c.set(datetime.datetime(2015, 3, 5, 4), 0)
 
+    # output the three time series
+    for i, ts in enumerate([a, b, c]):
 
-    # # for i in a.iterintervals(n=3):
-    # #     print i
-    # # raise 'STOP'
+        for (t0, v0), (t1, v1) in ts.iterintervals(1):
+            print t0.isoformat(), i
+            print t1.isoformat(), i
 
-    # for i, ts in enumerate([a, b, c]):
+        print ''
 
-    #     for (t0, v0), (t1, v1) in ts.iterintervals(1):
-    #         print t0.isoformat(), i
-    #         print t1.isoformat(), i
+        for (t0, v0), (t1, v1) in ts.iterintervals(0):
+            print t0.isoformat(), i
+            print t1.isoformat(), i
 
-    #     print ''
+        print ''
 
-    #     for (t0, v0), (t1, v1) in ts.iterintervals(0):
-    #         print t0.isoformat(), i
-    #         print t1.isoformat(), i
+    # output the sum
+    for dt, i in a.sum(b).sum(c):
+        print dt.isoformat(), i
 
-    #     print ''
+def example_dictlike():
 
-    # # for dt, i in a.multiply(b):
-    # # for dt, i in a.multiply(b).multiply(c):
-    # for dt, i in a.sum(b).sum(c):
-    # # for dt, i in a.logical_and(b).logical_and(c):
-    #     print dt.isoformat(), i
-
-    
+    # test overwriting keys
     l = TimeSeries()
     l[datetime.datetime(2010, 1, 1)] = 5
     l[datetime.datetime(2010, 1, 2)] = 4
@@ -179,20 +175,27 @@ if __name__ == '__main__':
     l[datetime.datetime(2010, 1, 8)] = 1.3
     l[datetime.datetime(2010, 1, 12)] = 1.3
 
-    # dt = datetime.datetime(2010, 1, 12)
-    # for i in range(1000):
-    #     dt += datetime.timedelta(hours=random.random())
-    #     l[dt] = math.sin(i/float(math.pi))
+    # do some wackiness with a bunch of points
+    dt = datetime.datetime(2010, 1, 12)
+    for i in range(1000):
+        dt += datetime.timedelta(hours=random.random())
+        l[dt] = math.sin(i/float(math.pi))
 
-    # dt -= datetime.timedelta(hours=500)
-    # dt -= datetime.timedelta(minutes=30)
-    # for i in range(1000):
-    #     dt += datetime.timedelta(hours=random.random())
-    #     l[dt] = math.cos(i/float(math.pi))
+    dt -= datetime.timedelta(hours=500)
+    dt -= datetime.timedelta(minutes=30)
+    for i in range(1000):
+        dt += datetime.timedelta(hours=random.random())
+        l[dt] = math.cos(i/float(math.pi))
 
+    # what does this get?
+    print >> sys.stderr, l[datetime.datetime(2010, 1, 3, 23, 59, 59)]
 
-    print >> sys.stderr, l
-    # print l[datetime.datetime(2010, 1, 3, 23, 59, 59)]
-
+    # output the time series
     for i, j in l:
         print i.isoformat(), j
+
+if __name__ == '__main__':
+
+    example_sum()
+    # example_dictlike()
+    
