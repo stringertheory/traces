@@ -77,6 +77,50 @@ class TimeSeries(object):
             for minute in minute_range(t0, t1):
                 yield minute, v0
 
+    def mean(self, start_time, end_time):
+        total_seconds = (end_time - start_time).total_seconds()
+
+        # get start index and value
+        start_index = self.d.bisect_right(start_time)
+        if start_index:
+            start_value = self.d[self.d.iloc[start_index - 1]]
+        else:
+            raise ValueError('%s before start of time series' % start_time)
+
+        # get end index
+        end_index = self.d.bisect_right(end_time)
+
+        # start weighted average at zero
+        mean = 0
+
+        # look over each interval of time series within the
+        # region. Use the region start time and value to begin
+        int_t0, int_value = start_time, start_value
+        for index in range(start_index, end_index):
+
+            # look up end time of interval
+            int_t1 = self.d.iloc[index]
+
+            # calculate contribution to weighted average for this
+            # interval
+            weight = (int_t1 - int_t0).total_seconds() / total_seconds
+            mean += (weight * int_value)
+
+            # set start point to the end of this interval for next
+            # iteration
+            int_t0 = int_t1
+            int_value = self.d[int_t0]
+
+        # use the region end time as the end of the final interval
+        int_t1 = end_time
+
+        # calculate contribution to weighted average
+        weight = (int_t1 - int_t0).total_seconds() / total_seconds
+        mean += (weight * int_value)
+
+        return mean
+
+
     def operation(self, other, function):
         """Calculate operation between two TimeSeries:
 
@@ -194,8 +238,46 @@ def example_dictlike():
     for i, j in l:
         print i.isoformat(), j
 
+def example_mean():
+
+    l = TimeSeries()
+    l[datetime.datetime(2010, 1, 1)] = 0
+    l[datetime.datetime(2010, 1, 3, 10)] = 1
+    l[datetime.datetime(2010, 1, 5)] = 0
+    l[datetime.datetime(2010, 1, 8)] = 1
+    l[datetime.datetime(2010, 1, 17)] = 0
+    l[datetime.datetime(2010, 1, 19)] = 1
+    l[datetime.datetime(2010, 1, 23)] = 0
+    l[datetime.datetime(2010, 1, 26)] = 1
+    l[datetime.datetime(2010, 1, 28)] = 0
+    l[datetime.datetime(2010, 1, 31)] = 1
+    l[datetime.datetime(2010, 2, 5)] = 0
+
+    for time, value in l:
+        print time.isoformat(), 0.1 * value + 1.1
+
+    print ''
+    
+    timestep = {'hours': 25}
+    start_time = datetime.datetime(2010, 1, 1)
+    while start_time <= datetime.datetime(2010, 2, 5):
+        end_time = start_time + datetime.timedelta(**timestep)
+        print start_time.isoformat(), l.mean(start_time, end_time)
+        start_time = end_time
+
+    print ''
+
+    start_time = datetime.datetime(2010, 1, 1)
+    while start_time <= datetime.datetime(2010, 2, 5):
+        end_time = start_time + datetime.timedelta(**timestep)
+        print start_time.isoformat(), -0.2
+        print start_time.isoformat(), 1.2
+        start_time = end_time
+        
+
 if __name__ == '__main__':
 
-    example_sum()
+    example_mean()
+    # example_sum()
     # example_dictlike()
     
