@@ -6,7 +6,15 @@ import random
 import itertools
 
 import sortedcontainers
+import arrow
 
+def span_range(start, end, frame):
+    t0 = start
+    while t0 <= end:
+        t1 = t0.replace(**frame)
+        yield t0, t1
+        t0 = t1
+        
 
 class TimeSeries(object):
 
@@ -71,7 +79,7 @@ class TimeSeries(object):
             if value_function(intervals):
                 yield intervals
             
-    def iterminutes(self, state=None):
+    def regularize(self, state=None):
         """Iterate over all minutes where the time series is on."""
         for (t0, v0), (t1, v1) in self.iterintervals(state):
             for minute in minute_range(t0, t1):
@@ -274,10 +282,43 @@ def example_mean():
         print start_time.isoformat(), 1.2
         start_time = end_time
         
+def example_arrow():
+
+    l = TimeSeries()
+    l[arrow.Arrow(2010, 1, 1)] = 0
+    l[arrow.Arrow(2010, 1, 3, 10)] = 1
+    l[arrow.Arrow(2010, 1, 5)] = 0
+    l[arrow.Arrow(2010, 1, 8)] = 1
+    l[arrow.Arrow(2010, 1, 17)] = 0
+    l[arrow.Arrow(2010, 1, 19)] = 1
+    l[arrow.Arrow(2010, 1, 23)] = 0
+    l[arrow.Arrow(2010, 1, 26)] = 1
+    l[arrow.Arrow(2010, 1, 28)] = 0
+    l[arrow.Arrow(2010, 1, 31)] = 1
+    l[arrow.Arrow(2010, 2, 5)] = 0
+
+    for time, value in l:
+        print time.naive.isoformat(), 0.1 * value + 1.1
+
+    print ''
+    
+    start = arrow.Arrow(2010, 1, 1)
+    end = arrow.Arrow(2010, 2, 5)
+    unit = {'hours': 25}
+    for start_time, end_time in span_range(start, end, unit):
+        print start_time.naive.isoformat(), l.mean(start_time, end_time)
+
+    print ''
+
+    for start_time, end_time in span_range(start, end, unit):
+        print start_time.naive.isoformat(), -0.2
+        print start_time.naive.isoformat(), 1.2
+
 
 if __name__ == '__main__':
 
-    example_mean()
+    example_arrow()
+    # example_mean()
     # example_sum()
     # example_dictlike()
     
