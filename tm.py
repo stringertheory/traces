@@ -1,9 +1,11 @@
-"""A class for manipulating time series based on measurements at
-irregular times
-(http://en.wikipedia.org/wiki/Unevenly_spaced_time_series).
+"""A class for manipulating [time series based on measurements at
+unevenly-spaced
+times](http://en.wikipedia.org/wiki/Unevenly_spaced_time_series).
 
-For an interesting discussion of visualizing this, see:
- http://hcil2.cs.umd.edu/trs/2005-01/2005-01.pdf
+For an discussion of visualizing this type of thing, see [Representing
+Unevenly-Spaced Time Series Data for Visualization and Interactive
+Exploration](http://hcil2.cs.umd.edu/trs/2005-01/2005-01.pdf#healthycakes)
+by Aleks Aris and others.
 
 """
 
