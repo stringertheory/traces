@@ -1,3 +1,13 @@
+"""A class for manipulating time series based on measurements at
+irregular times
+(http://en.wikipedia.org/wiki/Unevenly_spaced_time_series).
+
+For an interesting discussion of visualizing this, see:
+ http://hcil2.cs.umd.edu/trs/2005-01/2005-01.pdf
+
+"""
+
+# standard library
 import sys
 import datetime
 import pprint
@@ -5,47 +15,110 @@ import math
 import random
 import itertools
 
+# 3rd party
 import sortedcontainers
 import arrow
 
-def span_range(start, end, frame):
+
+def span_range(start, end, unit):
+    """Iterate through time periods starting with start and including end
+    by a given unit. Unit is given as a dictionary like {'hour': 1,
+    'minute': 15} for units of one hour and fifteen minutes.
+
+    """
     t0 = start
     while t0 <= end:
-        t1 = t0.replace(**frame)
+        t1 = t0.replace(**unit)
         yield t0, t1
         t0 = t1
-        
+
 
 class TimeSeries(object):
+    """A class to help manipulate and analyze time series that are the
+    result of taking measurements at irregular points in time. For
+    example, here would be a simple time series that starts at 8am and
+    goes to 9:59am:
+
+    ts = TimeSeries()
+    ts['8:00am'] = 0
+    ts['8:47am'] = 1
+    ts['8:51am'] = 0
+    ts['9:15am'] = 1
+    ts['9:59am'] = 0
+
+    The value of the time series is the last recorded measurement: for
+    example, at 8:05am the value is 0 and at 8:48am the value is 1. So:
+    
+    ts['8:05am']
+    >> 0
+
+    ts['8:48am']
+    >> 1
+
+    There are also a bunch of things for operating on another time
+    series: sums, difference, logical operators and such.
+
+    """
 
     def __init__(self):
         self.d = sortedcontainers.SortedDict()
 
     def __iter__(self):
+        """Iterate over sorted (time, value) pairs."""
         return self.d.iteritems()
 
-    def set(self, time, value):
-        self.d[time] = value
+    def get(self, time, default=0):
+        """This is probably the most important method. It allows the user to
+        get the value of the time series inbetween measured values.
 
-    def __setitem__(self, time, value):
-        return self.set(time, value)
+        THERE SHOULD BE THE OPTION TO INTERPOLATE!
 
-    def get(self, time):
+        """
         index = self.d.bisect_right(time)
         if index:
             closest_time = self.d.iloc[index - 1]
             return self.d[closest_time]
         else:
-            return 0
-            raise ValueError('No item found with time at or below: %r' % time)
+            return default
 
-    def __getitem__(self, time):
-        return self.get(time)
+    def set(self, time, value):
+        """Set a value for the time series."""
+        self.d[time] = value
+
+    def remove(self, time):
+        """Allow removal of measurements from the time series. This throws an
+        error if the given time is not actually a measurement point.
+
+        """
+        try:
+            del self.d[time]
+        except KeyError:
+            raise KeyError('no measurement at %s' % time)
+
+    def n_measurements(self):
+        """Return the number of measurements in the time series."""
+        return len(self.d)
+
+    def domain(self):
+        """Return a (min_time, max_time) tuple."""
+        if not self.d:
+            raise ValueError("can't get domain of empty TimeSeries")
+
+        # get minimum and maximum time with `iloc`
+        return (self.d.iloc[0], self.d.iloc[-1])
+
+    def __len__(self):
+        """Should this return the length of time in seconds that the time
+        series spans, or the number of measurements in the time
+        series? For now, it's the number of measurements.
+
+        """
+        return self.n_measurements()
 
     def __repr__(self):
         return '<TimeSeries>\n%s\n</TimeSeries>' % \
             pprint.pformat(self.d)
-            
+
     def iterintervals(self, value=None, n=2, pad=False, fillvalue=None):
         """Iterate over groups of `n` points in the time series, optionally
         only the groups where the starting value of the time series
@@ -60,7 +133,7 @@ class TimeSeries(object):
             value_function = value
         else:
             value_function = lambda x: x[0][1] == value
-            
+
         # tee the original iterator into n identical iterators
         streams = itertools.tee(iter(self), n)
 
@@ -78,14 +151,19 @@ class TimeSeries(object):
         for intervals in zipper:
             if value_function(intervals):
                 yield intervals
-            
-    def regularize(self, state=None):
-        """Iterate over all minutes where the time series is on."""
-        for (t0, v0), (t1, v1) in self.iterintervals(state):
-            for minute in minute_range(t0, t1):
-                yield minute, v0
+
+    def regularize(self):
+        """Should there be a different function for sampling at regular time
+        periods versus averaging over regular intervals?
+
+        """
+        pass
 
     def mean(self, start_time, end_time):
+        """This calculated the average value of the time series over the given
+        time range from `start_time` to `end_time`.
+
+        """
         total_seconds = (end_time - start_time).total_seconds()
 
         # get start index and value
@@ -128,6 +206,15 @@ class TimeSeries(object):
 
         return mean
 
+    def _check_type(self, other):
+        """Function used to check the type of the argument and raise an
+        informative error message if it's not a TimeSeries.
+
+        """
+        if not isinstance(other, TimeSeries):
+            msg = "unsupported operand types(s) for +: %s and %s" % \
+                (type(self), type(other))
+            raise TypeError(msg)
 
     def operation(self, other, function):
         """Calculate operation between two TimeSeries:
@@ -135,6 +222,7 @@ class TimeSeries(object):
         operation(t) = function(self(t), other(t))
 
         """
+        self._check_type(other)
         result = TimeSeries()
         for time, value in self:
             result[time] = function(value, other[time])
@@ -143,28 +231,76 @@ class TimeSeries(object):
         return result
 
     def sum(self, other):
-        """sum(t) = self(t) + other(t)."""
+        """sum(x, y) = x(t) + y(t)."""
         return self.operation(other, lambda x, y: x + y)
 
-    def multiply(self, other):
-        """sum(t) = self(t) * other(t)."""
-        return self.operation(other, lambda x, y: x * y)
-
     def difference(self, other):
-        """sum(t) = self(t) - other(t)."""
+        """difference(x, y) = x(t) - y(t)."""
         return self.operation(other, lambda x, y: x - y)
+
+    def multiply(self, other):
+        """mul(t) = self(t) * other(t)."""
+        return self.operation(other, lambda x, y: x * y)
 
     def logical_and(self, other):
         """logical_and(t) = self(t) and other(t)."""
-        return self.operation(other, lambda x, y: x and y)
+        return self.operation(other, lambda x, y: int(x and y))
 
     def logical_or(self, other):
         """logical_or(t) = self(t) or other(t)."""
-        return self.operation(other, lambda x, y: x or y)
+        return self.operation(other, lambda x, y: int(x or y))
 
     def logical_xor(self, other):
         """logical_xor(t) = self(t) ^ other(t)."""
-        return self.operation(other, lambda x, y: bool(x) ^ bool(y))
+        return self.operation(other, lambda x, y: int(bool(x) ^ bool(y)))
+
+    def __setitem__(self, time, value):
+        """Allow a[time] = value syntax."""
+        return self.set(time, value)
+
+    def __getitem__(self, time):
+        """Allow a[time] syntax."""
+        return self.get(time)
+
+    def __delitem__(self, time):
+        """Allow del[time] syntax."""
+        return self.remove(time)
+
+    def __add__(self, other):
+        """Allow a + b syntax"""
+        return self.sum(other)
+
+    def __radd__(self, other):
+        """Allow the operation 0 + TimeSeries() so that builtin sum function
+        works on an iterable of TimeSeries.
+
+        """
+        # skip type check if other is the integer 0
+        if not other == 0:
+            self._check_type(other)
+
+        # 0 + self = self
+        return self
+
+    def __sub__(self, other):
+        """Allow a - b syntax"""
+        return self.difference(other)
+
+    def __mul__(self, other):
+        """Allow a * b syntax"""
+        return self.multiply(other)
+
+    def __and__(self, other):
+        """Allow a & b syntax"""
+        return self.logical_and(other)
+
+    def __or__(self, other):
+        """Allow a | b syntax"""
+        return self.logical_or(other)
+
+    def __xor__(self, other):
+        """Allow a ^ b syntax"""
+        return self.logical_xor(other)
 
 
 def example_sum():
@@ -208,8 +344,10 @@ def example_sum():
         print ''
 
     # output the sum
-    for dt, i in a.sum(b).sum(c):
+
+    for dt, i in sum([a, b, c]):
         print dt.isoformat(), i
+
 
 def example_dictlike():
 
@@ -231,13 +369,13 @@ def example_dictlike():
     dt = datetime.datetime(2010, 1, 12)
     for i in range(1000):
         dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.sin(i/float(math.pi))
+        l[dt] = math.sin(i / float(math.pi))
 
     dt -= datetime.timedelta(hours=500)
     dt -= datetime.timedelta(minutes=30)
     for i in range(1000):
         dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.cos(i/float(math.pi))
+        l[dt] = math.cos(i / float(math.pi))
 
     # what does this get?
     print >> sys.stderr, l[datetime.datetime(2010, 1, 3, 23, 59, 59)]
@@ -245,6 +383,7 @@ def example_dictlike():
     # output the time series
     for i, j in l:
         print i.isoformat(), j
+
 
 def example_mean():
 
@@ -265,7 +404,7 @@ def example_mean():
         print time.isoformat(), 0.1 * value + 1.1
 
     print ''
-    
+
     timestep = {'hours': 25}
     start_time = datetime.datetime(2010, 1, 1)
     while start_time <= datetime.datetime(2010, 2, 5):
@@ -281,7 +420,8 @@ def example_mean():
         print start_time.isoformat(), -0.2
         print start_time.isoformat(), 1.2
         start_time = end_time
-        
+
+
 def example_arrow():
 
     l = TimeSeries()
@@ -301,7 +441,7 @@ def example_arrow():
         print time.naive.isoformat(), 0.1 * value + 1.1
 
     print ''
-    
+
     start = arrow.Arrow(2010, 1, 1)
     end = arrow.Arrow(2010, 2, 5)
     unit = {'hours': 25}
@@ -317,8 +457,7 @@ def example_arrow():
 
 if __name__ == '__main__':
 
-    example_arrow()
+    # example_arrow()
     # example_mean()
-    # example_sum()
+    example_sum()
     # example_dictlike()
-    
