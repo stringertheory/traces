@@ -16,6 +16,7 @@ import pprint
 import math
 import random
 import itertools
+import Queue
 
 # 3rd party
 import sortedcontainers
@@ -232,9 +233,44 @@ class TimeSeries(object):
             result[time] = function(self[time], value)
         return result
 
+    @classmethod
+    def from_many(cls, timeseries_list):
+        """Efficiently create a new time series that is the sum of many
+        TimeSeries.
+
+        """
+        result = cls()
+
+        # create a list of the timeseries iterators
+        q = Queue.PriorityQueue()
+        for timeseries in timeseries_list:
+            iterator = iter(timeseries)
+            q.put((iterator.next(), 0, iterator))
+
+        # start with a state of 0
+        state = 0
+        while not q.empty():
+
+            # get the next time with a measurement from queue
+            (t, next_state), previous_state, iterator = q.get()
+
+            # compute updated state
+            state += (next_state - previous_state)
+            result[t] = state
+
+            # add the next measurement from the time series to the
+            # queue (if there is one)
+            try:
+                q.put((iterator.next(), next_state, iterator))
+            except StopIteration:
+                pass
+                
+        # return the time series
+        return result
+
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
-        return self.operation(other, lambda x, y: x + y)
+        return TimeSeries.from_many([self, other])
 
     def difference(self, other):
         """difference(x, y) = x(t) - y(t)."""
@@ -346,8 +382,10 @@ def example_sum():
         print ''
 
     # output the sum
-
-    for dt, i in sum([a, b, c]):
+    # for dt, i in sum([a, b, c]):
+    #     print dt.isoformat(), i
+    # print ''
+    for dt, i in TimeSeries.from_many([a, b, c]):
         print dt.isoformat(), i
 
 
