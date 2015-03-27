@@ -155,6 +155,56 @@ class TimeSeries(object):
             if value_function(intervals):
                 yield intervals
 
+    def iterperiods(self, start_time=None, end_time=None, fillvalue=None):
+        """This iterates over the periods (optionally, within a given time
+        span) and yields (time, duration, value) tuples.
+
+        """
+        # use first/last measurement as start/end time if not given
+        if start_time is None:
+            start_time = self.i.iloc[0]
+        if end_time is None:
+            end_time = self.i.iloc[-1]
+            
+        # calculate number of seconds in total span
+        total_seconds = (end_time - start_time).total_seconds()
+
+        # get start index and value
+        start_index = self.d.bisect_right(start_time)
+        if start_index:
+            start_value = self.d[self.d.iloc[start_index - 1]]
+        else:
+            if fillvalue is None:
+                raise ValueError('%s before start of time series' % start_time)
+            else:
+                start_value = fillvalue
+
+        # get last measurement before end of time span
+        end_index = self.d.bisect_right(end_time)
+
+        # start weighted average at zero
+        mean = 0
+
+        # look over each interval of time series within the
+        # region. Use the region start time and value to begin
+        int_t0, int_value = start_time, start_value
+        for index in range(start_index, end_index):
+
+            # look up end time of interval
+            int_t1 = self.d.iloc[index]
+
+            # yeild the time, duration, and value of the period
+            yield int_t0, (int_t1 - int_t0), int_value
+
+            # set start point to the end of this interval for next
+            # iteration
+            int_t0 = int_t1
+            int_value = self.d[int_t0]
+
+        # yield the time, duration, and value of the final period
+        if int_t0 < end_time:
+            yield int_t0, (end_time - int_t0), int_value
+
     def regularize(self):
         """Should there be a different function for sampling at regular time
         periods versus averaging over regular intervals?
@@ -169,45 +219,15 @@ class TimeSeries(object):
         """
         total_seconds = (end_time - start_time).total_seconds()
 
-        # get start index and value
-        start_index = self.d.bisect_right(start_time)
-        if start_index:
-            start_value = self.d[self.d.iloc[start_index - 1]]
-        else:
-            raise ValueError('%s before start of time series' % start_time)
-
-        # get end index
-        end_index = self.d.bisect_right(end_time)
-
-        # start weighted average at zero
-        mean = 0
-
-        # look over each interval of time series within the
-        # region. Use the region start time and value to begin
-        int_t0, int_value = start_time, start_value
-        for index in range(start_index, end_index):
-
-            # look up end time of interval
-            int_t1 = self.d.iloc[index]
+        mean = 0.0
+        for (t0, duration, value) in self.iterperiods(start_time, end_time):
 
             # calculate contribution to weighted average for this
             # interval
-            weight = (int_t1 - int_t0).total_seconds() / total_seconds
-            mean += (weight * int_value)
+            mean += (duration.total_seconds() * value)
 
-            # set start point to the end of this interval for next
-            # iteration
-            int_t0 = int_t1
-            int_value = self.d[int_t0]
-
-        # use the region end time as the end of the final interval
-        int_t1 = end_time
-
-        # calculate contribution to weighted average
-        weight = (int_t1 - int_t0).total_seconds() / total_seconds
-        mean += (weight * int_value)
-
-        return mean
+        # return the mean value over the time period
+        return mean / float(total_seconds)
 
     def _check_type(self, other):
         """Function used to check the type of the argument and raise an
@@ -498,6 +518,6 @@ def example_arrow():
 if __name__ == '__main__':
 
     # example_arrow()
-    # example_mean()
-    example_sum()
+    example_mean()
+    # example_sum()
     # example_dictlike()
