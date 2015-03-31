@@ -1,6 +1,10 @@
+import os
 import setuptools
 
-import traces
+with open(os.path.join("traces", "__init__.py")) as stream:
+    for line in stream:
+        if "VERSION" in line:
+            version = line.split('=')[-1].strip().replace("'","")
 
 # read in the description from README
 with open("README.md") as stream:
@@ -17,8 +21,8 @@ with open('requirements.txt', 'r') as stream:
             dependencies.append(package)
 
 setuptools.setup(
-    name=traces.__name__,
-    version=traces.VERSION,
+    name='traces',
+    version=version,
     description="Tools for analysis of unevenly space time series.",
     long_description=long_description,
     url=github_url,
