@@ -70,7 +70,7 @@ class TimeSeries(object):
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return self.d.iteritems()
-
+        
     def get(self, time):
         """This is probably the most important method. It allows the user to
         get the value of the time series inbetween measured values.
@@ -85,9 +85,17 @@ class TimeSeries(object):
         else:
             return self.default_type()
 
-    def set(self, time, value):
-        """Set a value for the time series."""
-        self.d[time] = value
+    def set(self, time, value, compact=False):
+        """Set a value for the time series. If compact is True, only set the
+        value if it's different from what it would be anyway.
+
+        """
+        if compact:
+            current_value = self.get(time)
+            if not current_value == value:
+                self.d[time] = value
+        else:
+            self.d[time] = value
 
     def remove(self, time):
         """Allow removal of measurements from the time series. This throws an
@@ -156,35 +164,26 @@ class TimeSeries(object):
             if value_function(intervals):
                 yield intervals
 
-    def iterperiods(self, start_time=None, end_time=None, fillvalue=None):
+    def iterperiods(self, start_time=None, end_time=None):
         """This iterates over the periods (optionally, within a given time
         span) and yields (time, duration, value) tuples.
 
         """
         # use first/last measurement as start/end time if not given
         if start_time is None:
-            start_time = self.i.iloc[0]
+            start_time = self.d.iloc[0]
         if end_time is None:
-            end_time = self.i.iloc[-1]
-            
-        # calculate number of seconds in total span
-        total_seconds = (end_time - start_time).total_seconds()
+            end_time = self.d.iloc[-1]
 
         # get start index and value
         start_index = self.d.bisect_right(start_time)
         if start_index:
             start_value = self.d[self.d.iloc[start_index - 1]]
         else:
-            if fillvalue is None:
-                raise ValueError('%s before start of time series' % start_time)
-            else:
-                start_value = fillvalue
+            start_value = self.default_type()
 
         # get last measurement before end of time span
         end_index = self.d.bisect_right(end_time)
-
-        # start weighted average at zero
-        mean = 0
 
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
@@ -205,6 +204,12 @@ class TimeSeries(object):
         # yield the time, duration, and value of the final period
         if int_t0 < end_time:
             yield int_t0, (end_time - int_t0), int_value
+
+    def slice(self, start_time, end_time):
+        result = TimeSeries(self.default_type)
+        for dt, duration, value in self.iterperiods(start_time, end_time):
+            result[dt] = value
+        return result
 
     def regularize(self):
         """Should there be a different function for sampling at regular time
@@ -254,6 +259,24 @@ class TimeSeries(object):
             result[time] = function(self[time], value)
         return result
 
+    @staticmethod
+    def iter_many(timeseries_list):
+
+        q = Queue.PriorityQueue()
+        for index, timeseries in enumerate(timeseries_list):
+            iterator = iter(timeseries)
+            q.put(iterator.next())
+
+        while not q.empty():
+
+            yield q.get()
+
+            try:
+                q.put(iterator.next())
+            except StopIteration:
+                pass
+                        
+
     @classmethod
     def from_many(cls, timeseries_list, operation, default_type):
         """Efficiently create a new time series that combines several time
@@ -289,7 +312,8 @@ class TimeSeries(object):
             # add the next measurement from the time series to the
             # queue (if there is one)
             try:
-                q.put((iterator.next(), next_state, index, iterator))
+                item = (iterator.next(), next_state, index, iterator)
+                q.put(item)
             except StopIteration:
                 pass
                 
@@ -310,7 +334,7 @@ class TimeSeries(object):
     @classmethod
     def from_many_set(cls, timeseries_list):
         """Efficiently create a new time series that is the sum of many
-        TimeSeries.
+        Binary TimeSeries.
 
         """
         def set_update(state, next_state, previous_state, index):
