@@ -145,6 +145,11 @@ class TimeSeries(object):
             value_function = value
         else:
             value_function = lambda x: x[0][1] == value
+        
+        # if fillvalue is not given, then use max datetime and default
+        # value
+        if fillvalue is None:
+            fillvalue = (datetime.datetime.max, self.default_type())
 
         # tee the original iterator into n identical iterators
         streams = itertools.tee(iter(self), n)
