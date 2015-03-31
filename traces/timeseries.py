@@ -346,6 +346,19 @@ class TimeSeries(object):
 
         return TimeSeries.from_many(timeseries_list, set_update, set)
 
+    @classmethod
+    def from_many_union(cls, timeseries_list):
+        """Efficiently create a new time series that is the sum of many
+        TimeSeries.
+
+        """
+        def combine(state, next_state, previous_state, index):
+            enter_set = next_state.difference(previous_state)
+            exit_set = previous_state.difference(next_state)
+            return state.union(enter_set).difference(exit_set)
+
+        return TimeSeries.from_many(timeseries_list, combine, set)
+
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
         return TimeSeries.from_many_sum([self, other])
