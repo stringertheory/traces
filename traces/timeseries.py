@@ -63,14 +63,15 @@ class TimeSeries(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, default_type=int):
         self.d = sortedcontainers.SortedDict()
+        self.default_type = default_type
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return self.d.iteritems()
 
-    def get(self, time, default=0):
+    def get(self, time):
         """This is probably the most important method. It allows the user to
         get the value of the time series inbetween measured values.
 
@@ -82,7 +83,7 @@ class TimeSeries(object):
             closest_time = self.d.iloc[index - 1]
             return self.d[closest_time]
         else:
-            return default
+            return self.default_type()
 
     def set(self, time, value):
         """Set a value for the time series."""
@@ -254,43 +255,76 @@ class TimeSeries(object):
         return result
 
     @classmethod
-    def from_many(cls, timeseries_list):
-        """Efficiently create a new time series that is the sum of many
-        TimeSeries.
+    def from_many(cls, timeseries_list, operation, default_type):
+        """Efficiently create a new time series that combines several time
+        series with an operation.
 
         """
-        result = cls()
+        result = cls(default_type)
 
         # create a list of the timeseries iterators
         q = Queue.PriorityQueue()
-        for timeseries in timeseries_list:
+        for index, timeseries in enumerate(timeseries_list):
             iterator = iter(timeseries)
-            q.put((iterator.next(), 0, iterator))
+            item = (
+                iterator.next(),
+                timeseries.default_type(),
+                index,
+                iterator,
+            )
+            q.put(item)
 
-        # start with a state of 0
-        state = 0
+        # start with "empty" default state (0 if default type is int,
+        # set([]) if default type is set, etc)
+        state = default_type()
         while not q.empty():
 
             # get the next time with a measurement from queue
-            (t, next_state), previous_state, iterator = q.get()
+            (t, next_state), previous_state, index, iterator = q.get()
 
             # compute updated state
-            state += (next_state - previous_state)
+            state = operation(state, next_state, previous_state, index)
             result[t] = state
 
             # add the next measurement from the time series to the
             # queue (if there is one)
             try:
-                q.put((iterator.next(), next_state, iterator))
+                q.put((iterator.next(), next_state, index, iterator))
             except StopIteration:
                 pass
                 
         # return the time series
         return result
 
+    @classmethod
+    def from_many_sum(cls, timeseries_list):
+        """Efficiently create a new time series that is the sum of many
+        TimeSeries.
+
+        """
+        def increment_sum(state, next_state, previous_state, index):
+            return state + (next_state - previous_state)
+
+        return TimeSeries.from_many(timeseries_list, increment_sum, float)
+
+    @classmethod
+    def from_many_set(cls, timeseries_list):
+        """Efficiently create a new time series that is the sum of many
+        TimeSeries.
+
+        """
+        def set_update(state, next_state, previous_state, index):
+            if next_state:
+                result = state.union({index})
+            else:
+                result = state.difference({index})
+            return result
+
+        return TimeSeries.from_many(timeseries_list, set_update, set)
+
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
-        return TimeSeries.from_many([self, other])
+        return TimeSeries.from_many_sum([self, other])
 
     def difference(self, other):
         """difference(x, y) = x(t) - y(t)."""
@@ -405,7 +439,7 @@ def example_sum():
     # for dt, i in sum([a, b, c]):
     #     print dt.isoformat(), i
     # print ''
-    for dt, i in TimeSeries.from_many([a, b, c]):
+    for dt, i in TimeSeries.from_many_sum([a, b, c]):
         print dt.isoformat(), i
 
 
