@@ -294,13 +294,17 @@ class TimeSeries(object):
         q = Queue.PriorityQueue()
         for index, timeseries in enumerate(timeseries_list):
             iterator = iter(timeseries)
-            item = (
-                iterator.next(),
-                timeseries.default_type(),
-                index,
-                iterator,
-            )
-            q.put(item)
+            try:
+                item = (
+                    iterator.next(),
+                    timeseries.default_type(),
+                    index,
+                    iterator,
+                )
+            except StopIteration:
+                pass
+            else:
+                q.put(item)
 
         # start with "empty" default state (0 if default type is int,
         # set([]) if default type is set, etc)
