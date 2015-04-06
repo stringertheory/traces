@@ -216,12 +216,21 @@ class TimeSeries(object):
             result[dt] = value
         return result
 
-    def regularize(self):
+    def regularize(self, window_size, sampling_period, start_time, end_time):
         """Should there be a different function for sampling at regular time
         periods versus averaging over regular intervals?
 
         """
-        pass
+        result = []
+        half = float(window_size) / 2
+        current_time = start_time
+        while current_time <= end_time:
+            window_start = current_time - datetime.timedelta(seconds=half)
+            window_end = current_time + datetime.timedelta(seconds=half)
+            mean = self.mean(window_start, window_end)
+            result.append((current_time, mean))
+            current_time += datetime.timedelta(seconds=sampling_period)
+        return result
 
     def mean(self, start_time, end_time):
         """This calculated the average value of the time series over the given
