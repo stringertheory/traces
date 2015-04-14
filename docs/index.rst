@@ -6,6 +6,8 @@
 Welcome to traces's documentation!
 ==================================
 
+This is going to have some documentation at some point! Huzzah!
+
 Contents:
 
 .. toctree::
