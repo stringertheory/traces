@@ -51,7 +51,7 @@ class TimeSeries(object):
 
     The value of the time series is the last recorded measurement: for
     example, at 8:05am the value is 0 and at 8:48am the value is 1. So:
-    
+
     ts['8:05am']
     >> 0
 
@@ -70,7 +70,7 @@ class TimeSeries(object):
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return self.d.iteritems()
-        
+
     def get(self, time):
         """This is probably the most important method. It allows the user to
         get the value of the time series inbetween measured values.
@@ -140,12 +140,14 @@ class TimeSeries(object):
         # if value isn't a function, then make it one that returns
         # true if the the argument matches value
         if value is None:
-            value_function = lambda x: True
+            def value_function(x):
+                return True
         elif callable(value):
             value_function = value
         else:
-            value_function = lambda x: x[0][1] == value
-        
+            def value_function(x):
+                return x[0][1] == value
+
         # if fillvalue is not given, then use max datetime and default
         # value
         if fillvalue is None:
@@ -289,7 +291,6 @@ class TimeSeries(object):
                 q.put(iterator.next())
             except StopIteration:
                 pass
-                        
 
     @classmethod
     def from_many(cls, timeseries_list, operation, default_type):
@@ -334,7 +335,7 @@ class TimeSeries(object):
                 q.put(item)
             except StopIteration:
                 pass
-                
+
         # return the time series
         return result
 
@@ -344,6 +345,7 @@ class TimeSeries(object):
         TimeSeries.
 
         """
+
         def increment_sum(state, next_state, previous_state, index):
             return state + (next_state - previous_state)
 
@@ -355,6 +357,7 @@ class TimeSeries(object):
         Binary TimeSeries.
 
         """
+
         def set_update(state, next_state, previous_state, index):
             if next_state:
                 result = state.union({index})
@@ -370,6 +373,7 @@ class TimeSeries(object):
         TimeSeries.
 
         """
+
         def combine(state, next_state, previous_state, index):
             enter_set = next_state.difference(previous_state)
             exit_set = previous_state.difference(next_state)
