@@ -11,7 +11,7 @@ install:
 script:
   - nosetests --with-coverage --cover-package=traces
   - pep8 traces/
-  - cd docs && make html && cd -
+  - mkdocs build
 
 # commands to run after the tests successfully complete
 after_success:
