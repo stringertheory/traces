@@ -1,0 +1,11 @@
+# install everything in the python requirements, too.
+-r python.txt
+
+# needed to run the tests
+pep8
+coveralls
+nose
+
+# for documentation
+sphinx
+sphinx_rtd_theme
