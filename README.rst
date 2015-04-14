@@ -15,7 +15,7 @@ Tools for working with unevenly spaced time series.
    :target: https://warehouse.python.org/project/traces/
 .. |Downloads| image:: https://pypip.in/d/traces/badge.png
    :target: https://warehouse.python.org/project/traces/
-.. |Test Coverage| image:: https://coveralls.io/repos/datascopeanalytics/traces/badge.png
+.. |Test Coverage| image:: https://coveralls.io/repos/datascopeanalytics/traces/badge.svg
    :target: https://coveralls.io/r/datascopeanalytics/traces
 .. |Documentation Status| image:: https://readthedocs.org/projects/traces/badge/?version=latest
    :target: https://readthedocs.org/projects/traces/?badge=latest
