@@ -14,7 +14,7 @@ github_url='https://github.com/datascopeanalytics/traces'
 
 # read in the dependencies from the virtualenv requirements file
 dependencies = []
-with open('requirements.txt', 'r') as stream:
+with open('requirements/python.txt', 'r') as stream:
     for line in stream:
         package = line.strip().split('#')[0]
         if package:
