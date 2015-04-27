@@ -7,7 +7,7 @@ with open(os.path.join("traces", "__init__.py")) as stream:
             version = line.split('=')[-1].strip().replace("'","")
 
 # read in the description from README
-with open("README.md") as stream:
+with open("README.rst") as stream:
     long_description = stream.read()
 
 github_url='https://github.com/datascopeanalytics/traces'
