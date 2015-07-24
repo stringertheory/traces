@@ -6,16 +6,17 @@ traces
 Tools for working with unevenly spaced time series.
 
 `Documentation <http://traces.readthedocs.org>`__.
+.. image:: https://img.shields.io/pypi/dm/Django.svg   :target: 
 
 |Build Status| |Version| |Downloads| |Test Coverage| |Documentation Status|
 
-.. |Build Status| image:: https://travis-ci.org/datascopeanalytics/traces.svg?branch=master
+.. |Build Status| image:: https://img.shields.io/travis/datascopeanalytics/traces.svg?style=flat-square
    :target: https://travis-ci.org/datascopeanalytics/traces
-.. |Version| image:: https://pypip.in/v/traces/badge.png
+.. |Version| image:: https://img.shields.io/pypi/v/traces.svg?style=flat-square
    :target: https://warehouse.python.org/project/traces/
-.. |Downloads| image:: https://pypip.in/d/traces/badge.png
+.. |Downloads| image:: https://img.shields.io/pypi/dm/traces.svg?style=flat-square
    :target: https://warehouse.python.org/project/traces/
-.. |Test Coverage| image:: https://coveralls.io/repos/datascopeanalytics/traces/badge.svg
+.. |Test Coverage| image:: https://img.shields.io/coveralls/datascopeanalytics/traces/master.svg?style=flat-square
    :target: https://coveralls.io/r/datascopeanalytics/traces
-.. |Documentation Status| image:: https://readthedocs.org/projects/traces/badge/?version=latest
+.. |Documentation Status| image:: https://readthedocs.org/projects/traces/badge/?version=latest&style=flat-square
    :target: https://readthedocs.org/projects/traces/?badge=latest
