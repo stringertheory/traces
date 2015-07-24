@@ -6,7 +6,6 @@ traces
 Tools for working with unevenly spaced time series.
 
 `Documentation <http://traces.readthedocs.org>`__.
-.. image:: https://img.shields.io/pypi/dm/Django.svg   :target: 
 
 |Build Status| |Version| |Downloads| |Test Coverage| |Documentation Status|
 
