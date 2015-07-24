@@ -10,12 +10,7 @@ Tools for working with unevenly spaced time series.
 |Build Status| |Version| |Downloads| |Test Coverage| |Documentation Status|
 
 .. |Build Status| image:: https://img.shields.io/travis/datascopeanalytics/traces.svg?style=flat-square
-   :target: 
 .. |Version| image:: https://img.shields.io/pypi/v/traces.svg?style=flat-square
-   :target: 
 .. |Downloads| image:: https://img.shields.io/pypi/dm/traces.svg?style=flat-square
-   :target: 
 .. |Test Coverage| image:: https://img.shields.io/coveralls/datascopeanalytics/traces/master.svg?style=flat-square
-   :target: 
 .. |Documentation Status| image:: https://readthedocs.org/projects/traces/badge/?version=latest&style=flat-square
-   :target: 
