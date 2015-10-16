@@ -17,6 +17,7 @@ import math
 import random
 import itertools
 import Queue
+import collections
 
 # 3rd party
 import sortedcontainers
@@ -256,6 +257,24 @@ class TimeSeries(object):
         # return the mean value over the time period
         return mean / float(total_seconds)
 
+    def distribution(self, start_time, end_time, normalized=True):
+        """Calculate the distribution of values over the given time range from
+        `start_time` to `end_time`.
+
+        """
+        # increment counter with duration of each period
+        counter = collections.Counter()
+        for t0, duration, value in self.iterperiods(start_time, end_time):
+            counter[value] += duration.total_seconds()
+
+        # divide by total duration if result needs to be normalized
+        if normalized:
+            total_seconds = (end_time - start_time).total_seconds()
+            for value, duration in counter.iteritems():
+                counter[value] /= total_seconds
+
+        return counter
+    
     def _check_type(self, other):
         """Function used to check the type of the argument and raise an
         informative error message if it's not a TimeSeries.
