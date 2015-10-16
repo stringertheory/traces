@@ -213,6 +213,10 @@ class TimeSeries(object):
             yield int_t0, (end_time - int_t0), int_value
 
     def slice(self, start_time, end_time):
+        """Return a slice of the time series that has a first reading at
+        `start_time` and a last reading at `end_time`.
+
+        """
         result = TimeSeries(self.default_type)
         for dt, duration, value in self.iterperiods(start_time, end_time):
             result[dt] = value
