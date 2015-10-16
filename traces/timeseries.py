@@ -216,8 +216,9 @@ class TimeSeries(object):
         result = TimeSeries(self.default_type)
         for dt, duration, value in self.iterperiods(start_time, end_time):
             result[dt] = value
+        result[end_time] = value
         return result
-
+    
     def regularize(self, window_size, sampling_period, start_time, end_time):
         """Should there be a different function for sampling at regular time
         periods versus averaging over regular intervals?
