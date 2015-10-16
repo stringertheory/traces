@@ -223,7 +223,7 @@ class TimeSeries(object):
             result[dt] = value
         result[end_time] = value
         return result
-    
+
     def regularize(self, window_size, sampling_period, start_time, end_time):
         """Should there be a different function for sampling at regular time
         periods versus averaging over regular intervals?
@@ -274,7 +274,7 @@ class TimeSeries(object):
                 counter[value] /= total_seconds
 
         return counter
-    
+
     def _check_type(self, other):
         """Function used to check the type of the argument and raise an
         informative error message if it's not a TimeSeries.
