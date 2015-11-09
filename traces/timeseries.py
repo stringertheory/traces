@@ -218,10 +218,21 @@ class TimeSeries(object):
         `start_time` and a last reading at `end_time`.
 
         """
+        if end_time <= start_time:
+            message = (
+                "Can't slice a Timeseries when end_time <= start_time. "
+                "Received start_time=%s and end_time=%s"
+            ) % (start_time, end_time)
+            raise ValueError(message)
+
         result = TimeSeries(self.default_type)
+
+        # since start_time > end_time, this will always have at least
+        # one item, so `value` gets set for following line
         for dt, duration, value in self.iterperiods(start_time, end_time):
             result[dt] = value
         result[end_time] = value
+
         return result
 
     def regularize(self, window_size, sampling_period, start_time, end_time):
