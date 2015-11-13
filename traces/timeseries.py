@@ -231,7 +231,7 @@ class TimeSeries(object):
         # one item, so `value` gets set for following line
         for dt, duration, value in self.iterperiods(start_time, end_time):
             result[dt] = value
-        result[end_time] = value
+        result[end_time] = self[end_time]
 
         return result
 
