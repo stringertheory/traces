@@ -8,3 +8,6 @@ nose
 
 # for documentation
 mkdocs
+
+# for reference while running tests
+scipy
