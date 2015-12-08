@@ -10,4 +10,4 @@ nose
 mkdocs
 
 # for reference while running tests
-scipy
+# scipy
