@@ -2,6 +2,10 @@ language: python
 python:
   - "2.7"
 
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libblas-dev liblapack-dev libatlas-base-dev gfortran
+
 install:
   - pip install pip --upgrade
   - pip install -r requirements/python-dev.txt --upgrade
