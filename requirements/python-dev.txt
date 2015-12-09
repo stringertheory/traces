@@ -1,13 +1,10 @@
-# install everything in the python requirements, too.
 -r python.txt
+-r python-doc.txt
 
 # needed to run the tests
 pep8
 coveralls
 nose
-
-# for documentation
-mkdocs
 
 # for reference while running tests
 # scipy
