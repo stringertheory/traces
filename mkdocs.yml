@@ -11,3 +11,4 @@ markdown_extensions:
     - smarty
     - mdx_math
 pages:
+- Home: 'index.md'
