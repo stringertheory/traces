@@ -267,7 +267,8 @@ class TimeSeries(object):
         # return the mean value over the time period
         return mean / float(total_seconds)
 
-    def distribution(self, start_time=None, end_time=None, normalized=True, mask=None):
+    def distribution(self, start_time=None, end_time=None,
+                     normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
         `start_time` to `end_time`.
 
