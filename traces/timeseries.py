@@ -198,13 +198,9 @@ class TimeSeries(object):
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
         int_t0, int_value = start_time, start_value
-        # for int_t in self.d.islice(start_index, end_index):
-        for index in range(start_index, end_index):
+        for int_t1 in self.d.islice(start_index, end_index):
 
-            # look up end time of interval
-            int_t1 = self.d.iloc[index]
-
-            # yeild the time, duration, and value of the period
+            # yield the time, duration, and value of the period
             yield int_t0, (int_t1 - int_t0), int_value
 
             # set start point to the end of this interval for next
@@ -271,15 +267,25 @@ class TimeSeries(object):
         # return the mean value over the time period
         return mean / float(total_seconds)
 
-    def distribution(self, start_time, end_time, normalized=True):
+    def distribution(self, start_time=None, end_time=None, normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
         `start_time` to `end_time`.
 
         """
-        # increment counter with duration of each period
-        counter = histogram.Histogram()
-        for t0, duration, value in self.iterperiods(start_time, end_time):
-            counter[value] += duration.total_seconds()
+        if mask:
+            counter = histogram.Histogram()
+            mask_iterator = mask.iterperiods(start_time, end_time)
+            for mask_start, mask_duration, mask_value in mask_iterator:
+                mask_end = mask_start + mask_duration
+                if mask_value:
+                    self_iterator = self.iterperiods(mask_start, mask_end)
+                    for t0, duration, value in self_iterator:
+                        counter[value] += duration.total_seconds()
+        else:
+            # increment counter with duration of each period
+            counter = histogram.Histogram()
+            for t0, duration, value in self.iterperiods(start_time, end_time):
+                counter[value] += duration.total_seconds()
 
         # divide by total duration if result needs to be normalized
         if normalized:
