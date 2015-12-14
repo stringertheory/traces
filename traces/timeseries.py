@@ -342,9 +342,12 @@ class TimeSeries(object):
         return self._scalar_op(scalar, op, **kwargs)
 
     def to_bool(self, **kwargs):
-        """Return the truth value of each element"""
-        def op(x, y): return bool(x and y)
-        return self._scalar_op(scalar, op, **kwargs)
+        """Return the truth value of each element
+        TODO: implement invert argument, if needed"""
+        def op(x, invert): return bool(x)
+        # by default, do not invert
+        invert = kwargs.pop('invert', False)
+        return self._scalar_op(invert, op, **kwargs)
 
     @staticmethod
     def iter_many(timeseries_list):

@@ -13,7 +13,7 @@ def test_scalar_ops():
     a.set(datetime.datetime(2015, 3, 4), 2)
 
     ts_half = a.scale_by(0.5)
-    ts_bool = a.to_bool()
+    ts_bool = a.to_bool(invert=False)
 
     # test before domain, should give default value
     assert ts_half[datetime.datetime(2015, 2, 24)] == 0
