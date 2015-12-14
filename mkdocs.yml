@@ -1,1 +1,14 @@
 site_name: traces
+repo_url: https://github.com/datascopeanalytics/traces
+theme: readthedocs
+site_description: TODO
+site_author: Mike Stringer
+site_favicon: TODO
+copyright: TODO
+extra_javascript:
+    - http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+markdown_extensions:
+    - smarty
+    - mdx_math
+pages:
+- Home: 'index.md'

@@ -17,11 +17,13 @@ import math
 import random
 import itertools
 import Queue
-import collections
 
 # 3rd party
 import sortedcontainers
 import arrow
+
+# local
+from . import histogram
 
 
 def span_range(start, end, unit):
@@ -197,12 +199,9 @@ class TimeSeries(object):
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
         int_t0, int_value = start_time, start_value
-        for index in range(start_index, end_index):
+        for int_t1 in self.d.islice(start_index, end_index):
 
-            # look up end time of interval
-            int_t1 = self.d.iloc[index]
-
-            # yeild the time, duration, and value of the period
+            # yield the time, duration, and value of the period
             yield int_t0, (int_t1 - int_t0), int_value
 
             # set start point to the end of this interval for next
@@ -269,21 +268,30 @@ class TimeSeries(object):
         # return the mean value over the time period
         return mean / float(total_seconds)
 
-    def distribution(self, start_time, end_time, normalized=True):
+    def distribution(self, start_time=None, end_time=None,
+                     normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
         `start_time` to `end_time`.
 
         """
-        # increment counter with duration of each period
-        counter = collections.Counter()
-        for t0, duration, value in self.iterperiods(start_time, end_time):
-            counter[value] += duration.total_seconds()
+        if mask:
+            counter = histogram.Histogram()
+            mask_iterator = mask.iterperiods(start_time, end_time)
+            for mask_start, mask_duration, mask_value in mask_iterator:
+                mask_end = mask_start + mask_duration
+                if mask_value:
+                    self_iterator = self.iterperiods(mask_start, mask_end)
+                    for t0, duration, value in self_iterator:
+                        counter[value] += duration.total_seconds()
+        else:
+            # increment counter with duration of each period
+            counter = histogram.Histogram()
+            for t0, duration, value in self.iterperiods(start_time, end_time):
+                counter[value] += duration.total_seconds()
 
         # divide by total duration if result needs to be normalized
         if normalized:
-            total_seconds = (end_time - start_time).total_seconds()
-            for value, duration in counter.iteritems():
-                counter[value] /= total_seconds
+            return counter.normalized()
 
         return counter
 
@@ -493,165 +501,3 @@ class TimeSeries(object):
     def __xor__(self, other):
         """Allow a ^ b syntax"""
         return self.logical_xor(other)
-
-
-def example_sum():
-
-    a = TimeSeries()
-    a.set(datetime.datetime(2015, 3, 1), 1)
-    a.set(datetime.datetime(2015, 3, 2), 0)
-    a.set(datetime.datetime(2015, 3, 3), 1)
-    a.set(datetime.datetime(2015, 3, 5), 0)
-    a.set(datetime.datetime(2015, 3, 6), 0)
-
-    b = TimeSeries()
-    b.set(datetime.datetime(2015, 3, 1), 0)
-    b.set(datetime.datetime(2015, 3, 2, 12), 1)
-    b.set(datetime.datetime(2015, 3, 3, 13, 13), 0)
-    b.set(datetime.datetime(2015, 3, 4), 1)
-    b.set(datetime.datetime(2015, 3, 5), 0)
-    b.set(datetime.datetime(2015, 3, 5, 12), 1)
-    b.set(datetime.datetime(2015, 3, 5, 19), 0)
-
-    c = TimeSeries()
-    c.set(datetime.datetime(2015, 3, 1, 17), 0)
-    c.set(datetime.datetime(2015, 3, 1, 21), 1)
-    c.set(datetime.datetime(2015, 3, 2, 13, 13), 0)
-    c.set(datetime.datetime(2015, 3, 4, 18), 1)
-    c.set(datetime.datetime(2015, 3, 5, 4), 0)
-
-    # output the three time series
-    for i, ts in enumerate([a, b, c]):
-
-        for (t0, v0), (t1, v1) in ts.iterintervals(1):
-            print t0.isoformat(), i
-            print t1.isoformat(), i
-
-        print ''
-
-        for (t0, v0), (t1, v1) in ts.iterintervals(0):
-            print t0.isoformat(), i
-            print t1.isoformat(), i
-
-        print ''
-
-    # output the sum
-    # for dt, i in sum([a, b, c]):
-    #     print dt.isoformat(), i
-    # print ''
-    for dt, i in TimeSeries.from_many_sum([a, b, c]):
-        print dt.isoformat(), i
-
-
-def example_dictlike():
-
-    # test overwriting keys
-    l = TimeSeries()
-    l[datetime.datetime(2010, 1, 1)] = 5
-    l[datetime.datetime(2010, 1, 2)] = 4
-    l[datetime.datetime(2010, 1, 3)] = 3
-    l[datetime.datetime(2010, 1, 7)] = 2
-    l[datetime.datetime(2010, 1, 4)] = 1
-    l[datetime.datetime(2010, 1, 4)] = 10
-    l[datetime.datetime(2010, 1, 4)] = 5
-    l[datetime.datetime(2010, 1, 1)] = 1
-    l[datetime.datetime(2010, 1, 7)] = 1.2
-    l[datetime.datetime(2010, 1, 8)] = 1.3
-    l[datetime.datetime(2010, 1, 12)] = 1.3
-
-    # do some wackiness with a bunch of points
-    dt = datetime.datetime(2010, 1, 12)
-    for i in range(1000):
-        dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.sin(i / float(math.pi))
-
-    dt -= datetime.timedelta(hours=500)
-    dt -= datetime.timedelta(minutes=30)
-    for i in range(1000):
-        dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.cos(i / float(math.pi))
-
-    # what does this get?
-    print >> sys.stderr, l[datetime.datetime(2010, 1, 3, 23, 59, 59)]
-
-    # output the time series
-    for i, j in l:
-        print i.isoformat(), j
-
-
-def example_mean():
-
-    l = TimeSeries()
-    l[datetime.datetime(2010, 1, 1)] = 0
-    l[datetime.datetime(2010, 1, 3, 10)] = 1
-    l[datetime.datetime(2010, 1, 5)] = 0
-    l[datetime.datetime(2010, 1, 8)] = 1
-    l[datetime.datetime(2010, 1, 17)] = 0
-    l[datetime.datetime(2010, 1, 19)] = 1
-    l[datetime.datetime(2010, 1, 23)] = 0
-    l[datetime.datetime(2010, 1, 26)] = 1
-    l[datetime.datetime(2010, 1, 28)] = 0
-    l[datetime.datetime(2010, 1, 31)] = 1
-    l[datetime.datetime(2010, 2, 5)] = 0
-
-    for time, value in l:
-        print time.isoformat(), 0.1 * value + 1.1
-
-    print ''
-
-    timestep = {'hours': 25}
-    start_time = datetime.datetime(2010, 1, 1)
-    while start_time <= datetime.datetime(2010, 2, 5):
-        end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), l.mean(start_time, end_time)
-        start_time = end_time
-
-    print ''
-
-    start_time = datetime.datetime(2010, 1, 1)
-    while start_time <= datetime.datetime(2010, 2, 5):
-        end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), -0.2
-        print start_time.isoformat(), 1.2
-        start_time = end_time
-
-
-def example_arrow():
-
-    l = TimeSeries()
-    l[arrow.Arrow(2010, 1, 1)] = 0
-    l[arrow.Arrow(2010, 1, 3, 10)] = 1
-    l[arrow.Arrow(2010, 1, 5)] = 0
-    l[arrow.Arrow(2010, 1, 8)] = 1
-    l[arrow.Arrow(2010, 1, 17)] = 0
-    l[arrow.Arrow(2010, 1, 19)] = 1
-    l[arrow.Arrow(2010, 1, 23)] = 0
-    l[arrow.Arrow(2010, 1, 26)] = 1
-    l[arrow.Arrow(2010, 1, 28)] = 0
-    l[arrow.Arrow(2010, 1, 31)] = 1
-    l[arrow.Arrow(2010, 2, 5)] = 0
-
-    for time, value in l:
-        print time.naive.isoformat(), 0.1 * value + 1.1
-
-    print ''
-
-    start = arrow.Arrow(2010, 1, 1)
-    end = arrow.Arrow(2010, 2, 5)
-    unit = {'hours': 25}
-    for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), l.mean(start_time, end_time)
-
-    print ''
-
-    for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), -0.2
-        print start_time.naive.isoformat(), 1.2
-
-
-if __name__ == '__main__':
-
-    # example_arrow()
-    example_mean()
-    # example_sum()
-    # example_dictlike()
