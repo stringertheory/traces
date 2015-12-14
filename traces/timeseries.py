@@ -38,6 +38,7 @@ def span_range(start, end, unit):
 
 
 class TimeSeries(object):
+
     """A class to help manipulate and analyze time series that are the
     result of taking measurements at irregular points in time. For
     example, here would be a simple time series that starts at 8am and
@@ -286,7 +287,7 @@ class TimeSeries(object):
 
         return counter
 
-    def _check_type(self, other):
+    def _check_time_series(self, other):
         """Function used to check the type of the argument and raise an
         informative error message if it's not a TimeSeries.
 
@@ -302,12 +303,17 @@ class TimeSeries(object):
         operation(t) = function(self(t), other(t))
 
         """
-        self._check_type(other)
         result = TimeSeries()
-        for time, value in self:
-            result[time] = function(value, other[time])
-        for time, value in other:
-            result[time] = function(self[time], value)
+        try:
+            self._check_time_series(other)
+        except TypeError:
+            for time, value in self:
+                result[time] = function(value, other)
+        else:
+            for time, value in self:
+                result[time] = function(value, other[time])
+            for time, value in other:
+                result[time] = function(self[time], value)
         return result
 
     @staticmethod
@@ -463,7 +469,7 @@ class TimeSeries(object):
         """
         # skip type check if other is the integer 0
         if not other == 0:
-            self._check_type(other)
+            self._check_time_series(other)
 
         # 0 + self = self
         return self
