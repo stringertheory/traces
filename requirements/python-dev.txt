@@ -7,4 +7,6 @@ coveralls
 nose
 
 # for reference while running tests
-# scipy
+# tests fail without this
+numpy
+scipy
