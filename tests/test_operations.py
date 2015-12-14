@@ -5,6 +5,27 @@ import nose
 from traces import TimeSeries
 
 
+def test_scale_by():
+    a = TimeSeries()
+    a.set(datetime.datetime(2015, 3, 1), 1)
+    a.set(datetime.datetime(2015, 3, 2), 0)
+    a.set(datetime.datetime(2015, 3, 3), 3)
+    a.set(datetime.datetime(2015, 3, 4), 2)
+
+    ts_half = a.scale_by(0.5)
+
+    # test before domain, should give default value
+    assert ts_half[datetime.datetime(2015, 2, 24)] == 0
+
+    # test values throughout series
+    assert ts_half[datetime.datetime(2015, 3, 1, 6)] == 0.5
+    assert ts_half[datetime.datetime(2015, 3, 2, 6)] == 0
+    assert ts_half[datetime.datetime(2015, 3, 3, 6)] == 1.5
+
+    # test after domain, should give last value
+    assert ts_half[datetime.datetime(2015, 3, 4, 18)] == 1
+
+
 def test_sum():
 
     a = TimeSeries()

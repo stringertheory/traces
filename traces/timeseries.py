@@ -306,23 +306,40 @@ class TimeSeries(object):
             raise TypeError(msg)
 
     def operation(self, other, function):
-        """Calculate operation between two TimeSeries:
+        """Calculate elementwise operation between two
+        TimeSeries:
 
         operation(t) = function(self(t), other(t))
 
         """
+        self._check_time_series(other)
         result = TimeSeries()
-        try:
-            self._check_time_series(other)
-        except TypeError:
-            for time, value in self:
-                result[time] = function(value, other)
-        else:
-            for time, value in self:
-                result[time] = function(value, other[time])
-            for time, value in other:
-                result[time] = function(self[time], value)
+        for time, value in self:
+            result[time] = function(value, other[time])
+        for time, value in other:
+            result[time] = function(self[time], value)
         return result
+
+    def _scalar_op(self, scalar, function, **kwargs):
+        """Calculate operation between a TimeSeries and a
+        scalar:
+
+        operation(t) = function(self(t), scalar)
+
+        TODO: add option to do this in place
+
+        """
+        result = TimeSeries()
+        for time, value in self:
+            result[time] = function(value, scalar)
+        return result
+
+    def scale_by(self, scalar, **kwargs):
+        """Multiply every element by the given scalar
+        optional arguments: None
+        """
+        def mult(x, y): return x * y
+        return self._scalar_op(scalar, mult, **kwargs)
 
     @staticmethod
     def iter_many(timeseries_list):
