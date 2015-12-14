@@ -6,5 +6,7 @@ pep8
 coveralls
 nose
 
-# for reference while running tests
-# scipy
+# install these on a local machine, tests fail in Travis
+# if included in this file
+#numpy
+#scipy
