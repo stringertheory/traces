@@ -338,8 +338,13 @@ class TimeSeries(object):
         """Multiply every element by the given scalar
         optional arguments: None
         """
-        def mult(x, y): return x * y
-        return self._scalar_op(scalar, mult, **kwargs)
+        def op(x, y): return x * y
+        return self._scalar_op(scalar, op, **kwargs)
+
+    def to_bool(self, **kwargs):
+        """Return the truth value of each element"""
+        def op(x, y): return bool(x and y)
+        return self._scalar_op(scalar, op, **kwargs)
 
     @staticmethod
     def iter_many(timeseries_list):
