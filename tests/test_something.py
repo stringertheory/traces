@@ -64,3 +64,25 @@ def test_remove():
     # time series at a later time should be back at the original value
     assert ts.n_measurements() == 1
     assert ts[2] == 42
+
+
+def test_last():
+
+    # v. simple time series
+    ts = traces.TimeSeries()
+    ts[0] = 42
+    ts[1] = 43
+
+    assert ts.last() == 43
+
+    ts[1] = 44
+
+    assert ts.last() == 44
+
+    ts[5] = 1.3
+
+    assert ts.last() == 1.3
+
+    ts[4] = 5.4
+
+    assert ts.last() == 1.3

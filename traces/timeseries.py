@@ -526,3 +526,7 @@ class TimeSeries(object):
     def __xor__(self, other):
         """Allow a ^ b syntax"""
         return self.logical_xor(other)
+
+    def last(self):
+        """Returns the last value of the time series."""
+        return self[self.d.iloc[-1]]
