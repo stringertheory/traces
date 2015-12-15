@@ -3,15 +3,6 @@ import nose
 import traces
 
 
-def my_setup_function():
-    pass
-
-
-def my_teardown_function():
-    pass
-
-
-@nose.with_setup(my_setup_function, my_teardown_function)
 def test_default_types():
     T = 0  # can be any key that's not in the time series
     assert traces.TimeSeries(default_type=int)[T] == 0
@@ -20,6 +11,21 @@ def test_default_types():
     assert traces.TimeSeries(default_type=dict)[T] == {}
     assert traces.TimeSeries(default_type=set)[T] == set()
 
+    
+def test_default_values():
+    T = 0
+    assert traces.TimeSeries(default_type=int, default_value=1)[T] == 1
+    assert traces.TimeSeries(default_type=float, default_value=1.2)[T] == 1.2
+    assert traces.TimeSeries(default_type=list, default_value=[2])[T] == [2]
+    ts = traces.TimeSeries(default_type=dict, default_value={'a': 'b'})
+    assert ts[T] == {'a': 'b'}
+    assert traces.TimeSeries(default_type=set, default_value={1})[T] == set([1])
+
+    ts = traces.TimeSeries(default_type=int, default_value=8)
+    ts[5] = 15
+    ts[10] = 1
+    assert ts[-1] == 8
+    
 
 def test_compact():
 
@@ -73,16 +79,16 @@ def test_last():
     ts[0] = 42
     ts[1] = 43
 
-    assert ts.last() == 43
+    assert ts.last() == (1, 43)
 
     ts[1] = 44
 
-    assert ts.last() == 44
+    assert ts.last() == (1, 44)
 
     ts[5] = 1.3
 
-    assert ts.last() == 1.3
+    assert ts.last() == (5, 1.3)
 
     ts[4] = 5.4
 
-    assert ts.last() == 1.3
+    assert ts.last() == (5, 1.3)

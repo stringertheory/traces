@@ -67,14 +67,21 @@ class TimeSeries(object):
 
     """
 
-    def __init__(self, default_type=int):
+    def __init__(self, default_type=int, default_value=None):
         self.d = sortedcontainers.SortedDict()
         self.default_type = default_type
-
+        self.default_value = default_value
+        
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return self.d.iteritems()
 
+    def default(self):
+        if self.default_value is None:
+            return self.default_type()
+        else:
+            return self.default_type(self.default_value)
+    
     def get(self, time):
         """This is probably the most important method. It allows the user to
         get the value of the time series inbetween measured values.
@@ -87,7 +94,7 @@ class TimeSeries(object):
             closest_time = self.d.iloc[index - 1]
             return self.d[closest_time]
         else:
-            return self.default_type()
+            return self.default()
 
     def set(self, time, value, compact=False):
         """Set a value for the time series. If compact is True, only set the
@@ -155,7 +162,7 @@ class TimeSeries(object):
         # if fillvalue is not given, then use max datetime and default
         # value
         if fillvalue is None:
-            fillvalue = (datetime.datetime.max, self.default_type())
+            fillvalue = (datetime.datetime.max, self.default())
 
         # tee the original iterator into n identical iterators
         streams = itertools.tee(iter(self), n)
@@ -191,7 +198,7 @@ class TimeSeries(object):
         if start_index:
             start_value = self.d[self.d.iloc[start_index - 1]]
         else:
-            start_value = self.default_type()
+            start_value = self.default()
 
         # get last measurement before end of time span
         end_index = self.d.bisect_right(end_time)
@@ -225,7 +232,10 @@ class TimeSeries(object):
             ) % (start_time, end_time)
             raise ValueError(message)
 
-        result = TimeSeries(self.default_type)
+        result = TimeSeries(
+            default_type=self.default_type,
+            default_value=self.default_value,
+        )
 
         # since start_time > end_time, this will always have at least
         # one item, so `value` gets set for following line
@@ -367,12 +377,12 @@ class TimeSeries(object):
                 pass
 
     @classmethod
-    def from_many(cls, timeseries_list, operation, default_type):
+    def from_many(cls, timeseries_list, operation, default_type, default_value=None):
         """Efficiently create a new time series that combines several time
         series with an operation.
 
         """
-        result = cls(default_type)
+        result = cls(default_type=default_type, default_value=default_value)
 
         # create a list of the timeseries iterators
         q = Queue.PriorityQueue()
@@ -381,7 +391,7 @@ class TimeSeries(object):
             try:
                 item = (
                     iterator.next(),
-                    timeseries.default_type(),
+                    timeseries.default(),
                     index,
                     iterator,
                 )
@@ -392,7 +402,7 @@ class TimeSeries(object):
 
         # start with "empty" default state (0 if default type is int,
         # set([]) if default type is set, etc)
-        state = default_type()
+        state = result.default()
         while not q.empty():
 
             # get the next time with a measurement from queue
@@ -527,6 +537,11 @@ class TimeSeries(object):
         """Allow a ^ b syntax"""
         return self.logical_xor(other)
 
+    def get_by_index(self, index):
+        """Get the (t, value) pair of the time series by index."""
+        t = self.d.iloc[index]
+        return t, self.d[t]
+    
     def last(self):
         """Returns the last value of the time series."""
-        return self[self.d.iloc[-1]]
+        return self.get_by_index(-1)

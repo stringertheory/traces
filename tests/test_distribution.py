@@ -29,6 +29,23 @@ def test_distribution():
     assert distribution[0] == 0.5
     assert distribution[1] == 0.5
 
+
+def test_default_values():
+
+    # v. simple
+    a = TimeSeries()
+    a.set(datetime.datetime(2015, 3, 1), 1)
+    a.set(datetime.datetime(2015, 3, 2), 0)
+    a.set(datetime.datetime(2015, 3, 3), 1)
+    a.set(datetime.datetime(2015, 3, 4), 0)
+
+    # not normalized
+    distribution = a.distribution()
+
+    total = 24 * 60 * 60 * 3
+    assert distribution[0] == 24 * 60 * 60 * 1 / float(total)
+    assert distribution[1] == 24 * 60 * 60 * 2 / float(total)
+    
     
 def test_mask():
 
