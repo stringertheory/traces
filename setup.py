@@ -8,7 +8,7 @@ with open(os.path.join("traces", "__init__.py")) as stream:
         if "VERSION" in line:
             version = line.split('=')[-1].strip().replace("'","")
 
-# read in the description from README
+# read in the description from README and convert to RST for pypi
 with open("README.md") as stream:
     md = stream.read()
     long_description = pypandoc.convert(md, 'rst', format='markdown_github')
