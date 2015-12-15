@@ -71,7 +71,7 @@ class TimeSeries(object):
         self.d = sortedcontainers.SortedDict()
         self.default_type = default_type
         self.default_value = default_value
-        
+
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return self.d.iteritems()
@@ -81,7 +81,7 @@ class TimeSeries(object):
             return self.default_type()
         else:
             return self.default_type(self.default_value)
-    
+
     def get(self, time):
         """This is probably the most important method. It allows the user to
         get the value of the time series inbetween measured values.
@@ -377,7 +377,8 @@ class TimeSeries(object):
                 pass
 
     @classmethod
-    def from_many(cls, timeseries_list, operation, default_type, default_value=None):
+    def from_many(cls, timeseries_list, operation, default_type,
+                  default_value=None):
         """Efficiently create a new time series that combines several time
         series with an operation.
 
@@ -541,7 +542,7 @@ class TimeSeries(object):
         """Get the (t, value) pair of the time series by index."""
         t = self.d.iloc[index]
         return t, self.d[t]
-    
+
     def last(self):
         """Returns the last value of the time series."""
         return self.get_by_index(-1)
