@@ -362,7 +362,7 @@ class TimeSeries(object):
     def threshold(self, value=0, **kwargs):
         """Return true if above threshold and false if
         equal or below"""
-        def op(x, val): return True if x > val else return not bool(x)
+        def op(x, val): return True if x > val else False
         return self._scalar_op(value, op, **kwargs)
 
     @staticmethod
