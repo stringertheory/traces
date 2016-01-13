@@ -359,6 +359,12 @@ class TimeSeries(object):
         invert = kwargs.pop('invert', False)
         return self._scalar_op(invert, op, **kwargs)
 
+    def threshold(self, value=0, **kwargs):
+        """Return true if above threshold and false if
+        equal or below"""
+        def op(x, val): return True if x > val else return not bool(x)
+        return self._scalar_op(value, op, **kwargs)
+
     @staticmethod
     def iter_many(timeseries_list):
 
