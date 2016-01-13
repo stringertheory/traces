@@ -352,12 +352,8 @@ class TimeSeries(object):
         return self._scalar_op(scalar, op, **kwargs)
 
     def to_bool(self, **kwargs):
-        """Return the truth value of each element
-        TODO: implement invert argument, if needed"""
-        def op(x, invert): return bool(x)
-        # by default, do not invert
-        invert = kwargs.pop('invert', False)
-        return self._scalar_op(invert, op, **kwargs)
+        """Return the truth value of each element"""
+        return self.threshold(value=0, **kwargs)
 
     def threshold(self, value=0, **kwargs):
         """Return true if above threshold and false if
