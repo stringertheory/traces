@@ -108,6 +108,22 @@ class TimeSeries(object):
         else:
             self.d[time] = value
 
+    def compact(self):
+        """Convert this TimeSeries instance to a compact version. Only use
+        this is you don't mind throwing out the information about when
+        measurements occured.
+
+        """
+        previous_value = self.default()
+        for time, value in self.d.items():
+            if value == previous_value:
+                del self[time]
+            previous_value = value
+
+    def items(self):
+        """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
+        return self.d.items()
+
     def remove(self, time):
         """Allow removal of measurements from the time series. This throws an
         error if the given time is not actually a measurement point.
