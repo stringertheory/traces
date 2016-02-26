@@ -73,16 +73,16 @@ def test_sum():
     # test after domain, should give last value
     assert ts_sum[datetime.datetime(2015, 3, 6)] == 0
 
-    baseline = 0
-    for ts in [a, b, c]:
-        for i, j in ts:
-            print i.isoformat(), j + baseline
-        print ''
-        baseline += 1.2
+    # baseline = 0
+    # for ts in [a, b, c]:
+    #     for i, j in ts:
+    #         print i.isoformat(), j + baseline
+    #     print ''
+    #     baseline += 1.2
 
-    ts_sum = TimeSeries.from_many_sum([a, b, c])
-    for i, j in ts_sum:
-        print i.isoformat(), j + baseline
+    # ts_sum = TimeSeries.from_many_sum([a, b, c])
+    # for i, j in ts_sum:
+    #     print i.isoformat(), j + baseline
 
 
 def example_dictlike():

@@ -37,7 +37,7 @@ def test_mean():
     for type_, value_list in numeric_types.iteritems():
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
-        print type_, ts.mean(key_list[0], key_list[-1])
+        ts.mean(key_list[0], key_list[-1])
 
     # non-numeric hashable types should raise type error on mean, but
     # distribution should work
