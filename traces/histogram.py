@@ -18,6 +18,9 @@ class Histogram(sortedcontainers.SortedDict):
             result = super(Histogram, self).__getitem__(key)
         except KeyError:
             result = 0
+        except TypeError:
+            msg = "Can't make histogram of unhashable type (%s)" % type(key)
+            raise TypeError(msg)
         return result
 
     def total(self):
