@@ -24,7 +24,7 @@ import arrow
 
 # local
 from . import histogram
-
+from . import utils
 
 def span_range(start, end, unit):
     """Iterate through time periods starting with start and including end
@@ -77,41 +77,34 @@ class TimeSeries(object):
         return self.d.iteritems()
 
     def default(self):
+        """Return the default value of the time series."""
         if self.default_value is None:
             return self.default_type()
         else:
             return self.default_type(self.default_value)
 
     def get(self, time):
-        """This is probably the most important method. It allows the user to
-        get the value of the time series inbetween measured values.
-
-        THERE SHOULD BE THE OPTION TO INTERPOLATE!
+        """Get the value of the time series, even in-between measured values.
 
         """
         index = self.d.bisect_right(time)
         if index:
-            closest_time = self.d.iloc[index - 1]
-            return self.d[closest_time]
+            previous_measurement_time = self.d.iloc[index - 1]
+            return self.d[previous_measurement_time]
         else:
             return self.default()
 
     def set(self, time, value, compact=False):
-        """Set a value for the time series. If compact is True, only set the
+        """Set the value for the time series. If compact is True, only set the
         value if it's different from what it would be anyway.
 
         """
-        if compact:
-            current_value = self.get(time)
-            if not current_value == value:
-                self.d[time] = value
-        else:
+        if (not compact) or (compact and self.get(time) != value):
             self.d[time] = value
 
     def compact(self):
-        """Convert this TimeSeries instance to a compact version. Only use
-        this is you don't mind throwing out the information about when
-        measurements occured.
+        """Convert this instance to a compact version: the value will be the
+        same at all times, but repeated measurements are discarded.
 
         """
         previous_value = self.default()
@@ -282,44 +275,53 @@ class TimeSeries(object):
         time range from `start_time` to `end_time`.
 
         """
-        total_seconds = (end_time - start_time).total_seconds()
+        total_seconds = utils.duration_to_number(end_time - start_time)
 
         mean = 0.0
         for (t0, duration, value) in self.iterperiods(start_time, end_time):
-
             # calculate contribution to weighted average for this
             # interval
-            mean += (duration.total_seconds() * value)
+            try:
+                mean += (utils.duration_to_number(duration) * value)
+            except TypeError:
+                msg = "Can't take mean of non-numeric type (%s)" % type(value)
+                raise TypeError(msg)
 
         # return the mean value over the time period
         return mean / float(total_seconds)
-
+    
     def distribution(self, start_time=None, end_time=None,
                      normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
         `start_time` to `end_time`.
 
         """
+        counter = histogram.Histogram()
         if mask:
-            counter = histogram.Histogram()
             mask_iterator = mask.iterperiods(start_time, end_time)
             for mask_start, mask_duration, mask_value in mask_iterator:
                 mask_end = mask_start + mask_duration
                 if mask_value:
                     self_iterator = self.iterperiods(mask_start, mask_end)
                     for t0, duration, value in self_iterator:
-                        counter[value] += duration.total_seconds()
+                        counter[value] += utils.duration_to_number(
+                            duration,
+                            units='seconds',
+                        )
         else:
             # increment counter with duration of each period
             counter = histogram.Histogram()
             for t0, duration, value in self.iterperiods(start_time, end_time):
-                counter[value] += duration.total_seconds()
+                counter[value] += utils.duration_to_number(
+                    duration,
+                    units='seconds',
+                )
 
         # divide by total duration if result needs to be normalized
         if normalized:
             return counter.normalized()
-
-        return counter
+        else:
+            return counter
 
     def _check_time_series(self, other):
         """Function used to check the type of the argument and raise an
@@ -376,112 +378,78 @@ class TimeSeries(object):
         return self._scalar_op(invert, op, **kwargs)
 
     @staticmethod
-    def iter_many(timeseries_list):
-
-        q = Queue.PriorityQueue()
-        for index, timeseries in enumerate(timeseries_list):
-            iterator = iter(timeseries)
-            q.put(iterator.next())
-
-        while not q.empty():
-
-            yield q.get()
-
-            try:
-                q.put(iterator.next())
-            except StopIteration:
-                pass
-
-    @classmethod
-    def from_many(cls, timeseries_list, operation, default_type,
-                  default_value=None):
-        """Efficiently create a new time series that combines several time
-        series with an operation.
+    def iter_merge(timeseries_list):
+        """Iterate through several time series in order, yielding (time, list)
+        tuples where list is the values of each individual TimeSeries
+        in the list at time t.
 
         """
-        result = cls(default_type=default_type, default_value=default_value)
-
-        # create a list of the timeseries iterators
-        q = Queue.PriorityQueue()
+        # Create iterators for each timeseries and then add the first
+        # item from each iterator onto a priority queue. The first
+        # item to be popped will be the one with the lowest time
+        queue = Queue.PriorityQueue()
         for index, timeseries in enumerate(timeseries_list):
             iterator = iter(timeseries)
             try:
-                item = (
-                    iterator.next(),
-                    timeseries.default(),
-                    index,
-                    iterator,
-                )
+                item = (iterator.next(), index, iterator)
             except StopIteration:
                 pass
             else:
-                q.put(item)
+                queue.put(item)
 
-        # start with "empty" default state (0 if default type is int,
-        # set([]) if default type is set, etc)
-        state = result.default()
-        while not q.empty():
+        # `state` keeps track of the value of the merged
+        # TimeSeries. It starts with the default. It starts as a list
+        # of the default value for each individual TimeSeries.
+        state = [ts.default() for ts in timeseries_list]
+        while not queue.empty():
 
             # get the next time with a measurement from queue
-            (t, next_state), previous_state, index, iterator = q.get()
+            (t, next_value), index, iterator = queue.get()
 
-            # compute updated state
-            state = operation(state, next_state, previous_state, index)
-            result[t] = state
+            # make a copy of previous state, and modify only the value
+            # at the index of the TimeSeries that this item came from
+            state = list(state)
+            state[index] = next_value
+            yield (t, state)
 
             # add the next measurement from the time series to the
             # queue (if there is one)
             try:
-                item = (iterator.next(), next_state, index, iterator)
-                q.put(item)
+                queue.put((iterator.next(), index, iterator))
             except StopIteration:
                 pass
 
-        # return the time series
+    @classmethod
+    def merge(cls, ts_list, compact=False):
+        """"""
+        default_value = [ts.default() for ts in ts_list]
+        result = cls(default_type=list, default_value=default_value)
+        for t, merged in cls.iter_merge(ts_list):
+            result.set(t, merged, compact=compact)
+        return result
+        
+    @classmethod
+    def from_many_sum(cls, timeseries_list, compact=False):
+        """Efficiently create a new time series that is the sum of many
+        TimeSeries.
+
+        """
+        result = cls(default_type=float)
+        for t, merged in cls.iter_merge(timeseries_list):
+            result.set(t, sum(merged), compact=compact)
         return result
 
     @classmethod
-    def from_many_sum(cls, timeseries_list):
+    def from_many_union(cls, timeseries_list, compact=False):
         """Efficiently create a new time series that is the sum of many
         TimeSeries.
 
         """
-
-        def increment_sum(state, next_state, previous_state, index):
-            return state + (next_state - previous_state)
-
-        return TimeSeries.from_many(timeseries_list, increment_sum, float)
-
-    @classmethod
-    def from_many_set(cls, timeseries_list):
-        """Efficiently create a new time series that is the sum of many
-        Binary TimeSeries.
-
-        """
-
-        def set_update(state, next_state, previous_state, index):
-            if next_state:
-                result = state.union({index})
-            else:
-                result = state.difference({index})
-            return result
-
-        return TimeSeries.from_many(timeseries_list, set_update, set)
-
-    @classmethod
-    def from_many_union(cls, timeseries_list):
-        """Efficiently create a new time series that is the sum of many
-        TimeSeries.
-
-        """
-
-        def combine(state, next_state, previous_state, index):
-            enter_set = next_state.difference(previous_state)
-            exit_set = previous_state.difference(next_state)
-            return state.union(enter_set).difference(exit_set)
-
-        return TimeSeries.from_many(timeseries_list, combine, set)
-
+        result = cls(default_type=set)
+        for t, merged in cls.iter_merge(timeseries_list):
+            result.set(t, set.union(*merged), compact=compact)
+        return result
+    
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
         return TimeSeries.from_many_sum([self, other])
