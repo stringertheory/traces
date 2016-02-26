@@ -277,7 +277,7 @@ class TimeSeries(object):
 
         # return the mean value over the time period
         return mean / float(total_seconds)
-    
+
     def distribution(self, start_time=None, end_time=None,
                      normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
@@ -415,7 +415,7 @@ class TimeSeries(object):
         for t, merged in cls.iter_merge(ts_list):
             result.set(t, merged, compact=compact)
         return result
-        
+
     @classmethod
     def from_many_sum(cls, timeseries_list, compact=False):
         """Efficiently create a new time series that is the sum of many
@@ -437,7 +437,7 @@ class TimeSeries(object):
         for t, merged in cls.iter_merge(timeseries_list):
             result.set(t, set.union(*merged), compact=compact)
         return result
-    
+
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
         return TimeSeries.from_many_sum([self, other])
