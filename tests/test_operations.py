@@ -14,22 +14,30 @@ def test_scalar_ops():
 
     ts_half = a.scale_by(0.5)
     ts_bool = a.to_bool(invert=False)
+    ts_threshold = a.threshold(value=1.1)
 
     # test before domain, should give default value
     assert ts_half[datetime.datetime(2015, 2, 24)] == 0
     assert ts_bool[datetime.datetime(2015, 2, 24)] == False
+    assert ts_threshold[datetime.datetime(2015, 2, 24)] == False
 
     # test values throughout series
     assert ts_half[datetime.datetime(2015, 3, 1, 6)] == 0.5
     assert ts_bool[datetime.datetime(2015, 3, 1, 6)] == True
+    assert ts_threshold[datetime.datetime(2015, 3, 1, 6)] == False
+
     assert ts_half[datetime.datetime(2015, 3, 2, 6)] == 0
     assert ts_bool[datetime.datetime(2015, 3, 2, 6)] == False
+    assert ts_threshold[datetime.datetime(2015, 3, 2, 6)] == False
+
     assert ts_half[datetime.datetime(2015, 3, 3, 6)] == 1.5
     assert ts_bool[datetime.datetime(2015, 3, 3, 6)] == True
+    assert ts_threshold[datetime.datetime(2015, 3, 3, 6)] == True
 
     # test after domain, should give last value
     assert ts_half[datetime.datetime(2015, 3, 4, 18)] == True
     assert ts_bool[datetime.datetime(2015, 3, 4, 18)] == True
+    assert ts_threshold[datetime.datetime(2015, 3, 4, 18)] == True
 
 
 def test_sum():
