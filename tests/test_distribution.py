@@ -21,7 +21,7 @@ def test_distribution():
     distribution = a.distribution(
         start_time=start_time, end_time=end_time, normalized=False,
     )
-    assert distribution[0] == 24 * 60 * 60 * 2 # two days
+    assert distribution[0] == 24 * 60 * 60 * 2  # two days
     assert distribution[1] == 24 * 60 * 60 * 2
 
     # normalized
@@ -45,8 +45,8 @@ def test_default_values():
     total = 24 * 60 * 60 * 3
     assert distribution[0] == 24 * 60 * 60 * 1 / float(total)
     assert distribution[1] == 24 * 60 * 60 * 2 / float(total)
-    
-    
+
+
 def test_mask():
 
     start_time = datetime.datetime(2015, 3, 1)
@@ -62,12 +62,12 @@ def test_mask():
     mask = TimeSeries()
     mask.set(datetime.datetime(2015, 3, 1), 1)
     mask.set(datetime.datetime(2015, 3, 3), 0)
-    
+
     # not normalized
     distribution = a.distribution(
         start_time=start_time, end_time=end_time, normalized=False, mask=mask,
     )
-    assert distribution[0] == 24 * 60 * 60 # one day
+    assert distribution[0] == 24 * 60 * 60  # one day
     assert distribution[1] == 24 * 60 * 60
 
     # normalized
@@ -76,4 +76,18 @@ def test_mask():
     )
     assert distribution[0] == 0.5
     assert distribution[1] == 0.5
-    
+
+
+def test_integer_times():
+
+    # v. simple
+    a = TimeSeries()
+    a[0] = 1
+    a[1] = 0
+    a[3] = 1
+    a[4] = 0
+
+    distribution = a.distribution(start_time=0, end_time=6)
+
+    assert distribution[0] == 2.0 / 3
+    assert distribution[1] == 1.0 / 3
