@@ -322,50 +322,50 @@ class TimeSeries(object):
             raise TypeError(msg)
 
     def operation(self, other, function):
-        """Calculate elementwise operation between two
-        TimeSeries:
+        """Calculate "elementwise" operation either between this TimeSeries
+        and another one, i.e.
 
         operation(t) = function(self(t), other(t))
+        
+        or between this timeseries and a constant:
 
-        """
-        self._check_time_series(other)
-        result = TimeSeries()
-        for time, value in self:
-            result[time] = function(value, other[time])
-        for time, value in other:
-            result[time] = function(self[time], value)
-        return result
+        operation(t) = function(self(t), other)
 
-    def _scalar_op(self, scalar, function, **kwargs):
-        """Calculate operation between a TimeSeries and a
-        scalar:
-
-        operation(t) = function(self(t), scalar)
-
-        TODO: add option to do this in place
+        If it's another time series, the measurement times in the
+        resulting TimeSeries will be the union of the sets of
+        measurement times of the input time series. If it's a
+        constant, the measurement times will not change.
 
         """
         result = TimeSeries()
-        for time, value in self:
-            result[time] = function(value, scalar)
+        if isinstance(other, TimeSeries):
+            for time, value in self:
+                result[time] = function(value, other[time])
+            for time, value in other:
+                result[time] = function(self[time], value)
+        else:
+            for time, value in self:
+                result[time] = function(value, other)
         return result
 
-    def scale_by(self, scalar, **kwargs):
-        """Multiply every element by the given scalar
-        optional arguments: None
+    def to_bool(self, invert=False):
+        """Return the truth value of each element."""
+        if invert:
+            def function(x, y): return False if x else True
+        else:
+            def function(x, y): return True if x else False
+        return self.operation(None, function)
+
+    def threshold(self, value, inclusive=False):
+        """Return True if > than treshold value (or >= threshold value if
+        inclusive=True).
+
         """
-        def op(x, y): return x * y
-        return self._scalar_op(scalar, op, **kwargs)
-
-    def to_bool(self, **kwargs):
-        """Return the truth value of each element"""
-        return self.threshold(value=0, **kwargs)
-
-    def threshold(self, value=0, **kwargs):
-        """Return true if above threshold and false if
-        equal or below"""
-        def op(x, val): return True if x > val else False
-        return self._scalar_op(value, op, **kwargs)
+        if inclusive:
+            def function(x, y): return True if x >= y else False
+        else:
+            def function(x, y): return True if x > y else False
+        return self.operation(value, function)
 
     @staticmethod
     def iter_merge(timeseries_list):
