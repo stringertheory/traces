@@ -26,18 +26,6 @@ import arrow
 from . import histogram
 from . import utils
 
-def span_range(start, end, unit):
-    """Iterate through time periods starting with start and including end
-    by a given unit. Unit is given as a dictionary like {'hour': 1,
-    'minute': 15} for units of one hour and fifteen minutes.
-
-    """
-    t0 = start
-    while t0 <= end:
-        t1 = t0.replace(**unit)
-        yield t0, t1
-        t0 = t1
-
 
 class TimeSeries(object):
 
