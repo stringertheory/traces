@@ -20,6 +20,7 @@ def test_mean():
         int: [1, 2, 3],
         float: [1.0, 2.0, 3.0],
         long: [1L, 2L, 3L],
+        bool: [True, False, True],
         # complex: [complex(1, 0), complex(1, 1), complex(0, 1)],
     }
     non_numeric_hashable_types = {
@@ -36,7 +37,7 @@ def test_mean():
     for type_, value_list in numeric_types.iteritems():
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
-        ts.mean(key_list[0], key_list[-1])
+        print type_, ts.mean(key_list[0], key_list[-1])
 
     # non-numeric hashable types should raise type error on mean, but
     # distribution should work
