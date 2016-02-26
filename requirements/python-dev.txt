@@ -6,6 +6,9 @@ pep8
 coveralls
 nose
 
+# performance
+cprofilev
+
 # install these on a local machine, tests fail in Travis
 # if included in this file
 #numpy
