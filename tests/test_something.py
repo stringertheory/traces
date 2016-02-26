@@ -10,6 +10,7 @@ def test_default_types():
     assert traces.TimeSeries(default_type=list)[T] == []
     assert traces.TimeSeries(default_type=dict)[T] == {}
     assert traces.TimeSeries(default_type=set)[T] == set()
+    assert traces.TimeSeries(default_type=str)[T] == ''
 
     
 def test_default_values():
@@ -25,7 +26,12 @@ def test_default_values():
     ts[5] = 15
     ts[10] = 1
     assert ts[-1] == 8
-    
+
+    ts = traces.TimeSeries(default_type=str, default_value='a')
+    ts[5] = 'b'
+    ts[6] = 'c'
+    ts[10] = 'a'
+    assert ts[3] == 'a'
 
 def test_compact():
 
