@@ -12,7 +12,7 @@ def test_scalar_ops():
     a.set(datetime.datetime(2015, 3, 3), 3)
     a.set(datetime.datetime(2015, 3, 4), 2)
 
-    ts_half = a.scale_by(0.5)
+    ts_half = a.multiply(0.5)
     ts_bool = a.to_bool(invert=False)
     ts_threshold = a.threshold(value=1.1)
 
