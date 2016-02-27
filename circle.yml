@@ -8,4 +8,4 @@ test:
     - nosetests --with-coverage --cover-package=traces
     - pep8 traces/
     - mkdocs build
-    
+

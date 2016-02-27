@@ -7,4 +7,4 @@ Tools for working with unevenly spaced time series.
 
 [Documentation](http://traces.readthedocs.org).
 
-[![Version](https://img.shields.io/pypi/v/traces.svg?style=flat-square)](https://pypi.python.org/pypi/traces) [![Build Status](https://img.shields.io/travis/datascopeanalytics/traces.svg?style=flat-square)](https://travis-ci.org/datascopeanalytics/traces) [![Test Coverage](https://img.shields.io/coveralls/datascopeanalytics/traces/master.svg?style=flat-square)](https://coveralls.io/github/datascopeanalytics/traces)
+[![Version](https://img.shields.io/pypi/v/traces.svg?style=flat-square)](https://pypi.python.org/pypi/traces) [![Build Status](https://img.shields.io/circleci/project/datascopeanalytics/traces/master.svg?style=flat-square)](https://travis-ci.org/datascopeanalytics/traces) [![Test Coverage](https://img.shields.io/coveralls/datascopeanalytics/traces/master.svg?style=flat-square)](https://coveralls.io/github/datascopeanalytics/traces)
