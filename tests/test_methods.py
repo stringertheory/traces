@@ -2,6 +2,7 @@ import datetime
 import nose
 import traces
 
+
 def _make_ts(type_, key_list, value_list):
     ts = traces.TimeSeries(default_type=type_)
     for t, v in zip(key_list, value_list):
@@ -27,13 +28,15 @@ non_numeric_hashable_types = {
 }
 unhashable_types = {
     list: [[1, 1], [2, 2], [3, 3], []],
-    dict: [{'a':1}, {'b':2}, {'c':3}, {}],
+    dict: [{'a': 1}, {'b': 2}, {'c': 3}, {}],
     set: [{1}, {1, 2}, {1, 2, 3}, set()],
 }
-all_types = dict(numeric_types.items() + non_numeric_hashable_types.items() + unhashable_types.items())
+all_types = dict(numeric_types.items() +
+                 non_numeric_hashable_types.items() + unhashable_types.items())
+
 
 def test_mean():
-    
+
     # numberic hashable types should work
     for type_, value_list in numeric_types.iteritems():
         ts = _make_ts(type_, key_list, value_list)
@@ -55,13 +58,14 @@ def test_mean():
                                  key_list[0], key_list[1])
         nose.tools.assert_raises(TypeError, ts.mean,
                                  key_list[0], key_list[1])
-        
+
+
 def test_to_bool():
 
     answer = {}
     for type_, value_list in all_types.iteritems():
         answer[type_] = [True if i else False for i in value_list]
-    
+
     # numberic hashable types should work
     for type_, value_list in all_types.iteritems():
         ts = _make_ts(type_, key_list, value_list)

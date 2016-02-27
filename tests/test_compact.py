@@ -4,6 +4,7 @@ import traces
 
 import random
 
+
 def test_compact():
 
     # since this is random, do it a bunch of times
@@ -22,5 +23,3 @@ def test_compact():
 
         # items should be exactly the same
         assert test_ts.items() == compact_ts.items()
-
-

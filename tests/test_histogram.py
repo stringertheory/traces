@@ -49,7 +49,7 @@ def _test_statistics(normalized):
             n = 1
         else:
             n = len(data)
-            
+
         nose.tools.assert_almost_equal(histogram.total(), n)
         nose.tools.assert_almost_equal(histogram.mean(), numpy.mean(data))
         nose.tools.assert_almost_equal(histogram.variance(), numpy.var(data))
@@ -78,7 +78,7 @@ def _test_statistics(normalized):
             histogram.quantile(-1)
         except ValueError:
             pass
-            
+
 
 def test_statistics():
     return _test_statistics(True)
@@ -93,7 +93,7 @@ def test_quantile_interpolation():
     data = [1, 1, 1, 2, 3, 5, 6, 7]
     histogram = traces.Histogram(data)
     normalized = histogram.normalized()
-    
+
     q_list = [0.001, 0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99, 0.999]
 
     # just do the inverse of the emperical cdf
@@ -103,10 +103,11 @@ def test_quantile_interpolation():
         nose.tools.assert_almost_equal(i, j)
 
     # same thing with normalized
-    result = normalized.quantiles(q_list, alpha=0, smallest_count=1.0/len(data))
+    result = normalized.quantiles(
+        q_list, alpha=0, smallest_count=1.0 / len(data))
     for i, j in zip(result, answer):
         nose.tools.assert_almost_equal(i, j)
-        
+
     # now do the linear interpolation method
     result = histogram.quantiles(q_list, alpha=0.5, smallest_count=1)
     answer = stats.mstats.mquantiles(
@@ -117,8 +118,7 @@ def test_quantile_interpolation():
 
     # same thing with normalized
     result = normalized.quantiles(
-        q_list, alpha=0.5, smallest_count=1.0/len(data),
+        q_list, alpha=0.5, smallest_count=1.0 / len(data),
     )
     for i, j in zip(result, answer):
         nose.tools.assert_almost_equal(i, j)
-    
