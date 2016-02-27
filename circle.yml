@@ -1,5 +1,6 @@
 dependencies:
   pre:
+    - sudo apt-get update; sudo apt-get install python-numpy python-scipy
     - pip install -r requirements/python-dev.txt
 
 test:
