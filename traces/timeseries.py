@@ -82,6 +82,15 @@ class TimeSeries(object):
         else:
             return self.default()
 
+    def get_by_index(self, index):
+        """Get the (t, value) pair of the time series by index."""
+        t = self.d.iloc[index]
+        return t, self.d[t]
+
+    def last(self):
+        """Returns the last (time, value) pair of the time series."""
+        return self.get_by_index(-1)
+
     def set(self, time, value, compact=False):
         """Set the value for the time series. If compact is True, only set the
         value if it's different from what it would be anyway.
@@ -118,14 +127,6 @@ class TimeSeries(object):
     def n_measurements(self):
         """Return the number of measurements in the time series."""
         return len(self.d)
-
-    def domain(self):
-        """Return a (min_time, max_time) tuple."""
-        if not self.d:
-            raise ValueError("can't get domain of empty TimeSeries")
-
-        # get minimum and maximum time with `iloc`
-        return (self.d.iloc[0], self.d.iloc[-1])
 
     def __len__(self):
         """Should this return the length of time in seconds that the time
@@ -321,52 +322,6 @@ class TimeSeries(object):
                 (type(self), type(other))
             raise TypeError(msg)
 
-    def operation(self, other, function):
-        """Calculate "elementwise" operation either between this TimeSeries
-        and another one, i.e.
-
-        operation(t) = function(self(t), other(t))
-        
-        or between this timeseries and a constant:
-
-        operation(t) = function(self(t), other)
-
-        If it's another time series, the measurement times in the
-        resulting TimeSeries will be the union of the sets of
-        measurement times of the input time series. If it's a
-        constant, the measurement times will not change.
-
-        """
-        result = TimeSeries()
-        if isinstance(other, TimeSeries):
-            for time, value in self:
-                result[time] = function(value, other[time])
-            for time, value in other:
-                result[time] = function(self[time], value)
-        else:
-            for time, value in self:
-                result[time] = function(value, other)
-        return result
-
-    def to_bool(self, invert=False):
-        """Return the truth value of each element."""
-        if invert:
-            def function(x, y): return False if x else True
-        else:
-            def function(x, y): return True if x else False
-        return self.operation(None, function)
-
-    def threshold(self, value, inclusive=False):
-        """Return True if > than treshold value (or >= threshold value if
-        inclusive=True).
-
-        """
-        if inclusive:
-            def function(x, y): return True if x >= y else False
-        else:
-            def function(x, y): return True if x > y else False
-        return self.operation(value, function)
-
     @staticmethod
     def iter_merge(timeseries_list):
         """Iterate through several time series in order, yielding (time, list)
@@ -440,6 +395,52 @@ class TimeSeries(object):
             result.set(t, set.union(*merged), compact=compact)
         return result
 
+    def operation(self, other, function):
+        """Calculate "elementwise" operation either between this TimeSeries
+        and another one, i.e.
+
+        operation(t) = function(self(t), other(t))
+
+        or between this timeseries and a constant:
+
+        operation(t) = function(self(t), other)
+
+        If it's another time series, the measurement times in the
+        resulting TimeSeries will be the union of the sets of
+        measurement times of the input time series. If it's a
+        constant, the measurement times will not change.
+
+        """
+        result = TimeSeries()
+        if isinstance(other, TimeSeries):
+            for time, value in self:
+                result[time] = function(value, other[time])
+            for time, value in other:
+                result[time] = function(self[time], value)
+        else:
+            for time, value in self:
+                result[time] = function(value, other)
+        return result
+
+    def to_bool(self, invert=False):
+        """Return the truth value of each element."""
+        if invert:
+            def function(x, y): return False if x else True
+        else:
+            def function(x, y): return True if x else False
+        return self.operation(None, function)
+
+    def threshold(self, value, inclusive=False):
+        """Return True if > than treshold value (or >= threshold value if
+        inclusive=True).
+
+        """
+        if inclusive:
+            def function(x, y): return True if x >= y else False
+        else:
+            def function(x, y): return True if x > y else False
+        return self.operation(value, function)
+
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
         return TimeSeries.from_many_sum([self, other])
@@ -511,12 +512,3 @@ class TimeSeries(object):
     def __xor__(self, other):
         """Allow a ^ b syntax"""
         return self.logical_xor(other)
-
-    def get_by_index(self, index):
-        """Get the (t, value) pair of the time series by index."""
-        t = self.d.iloc[index]
-        return t, self.d[t]
-
-    def last(self):
-        """Returns the last value of the time series."""
-        return self.get_by_index(-1)
