@@ -140,27 +140,27 @@ class TimeSeries(object):
         return '<TimeSeries>\n%s\n</TimeSeries>' % \
             pprint.pformat(self.d)
 
-    def iterintervals(self, value=None, n=2, pad=False, fillvalue=None):
-        """Iterate over groups of `n` points in the time series, optionally
-        only the groups where the starting value of the time series
-        matches `value`.
+    def iterintervals(self, value=None, n=2):
+        """Iterate over groups of `n` consecutive measurement points in the
+        time series, optionally only the groups where the starting
+        value of the time series matches `value`.
 
         """
-        # if value isn't a function, then make it one that returns
-        # true if the the argument matches value
+        # if value is None, don't filter intervals
         if value is None:
             def value_function(x):
                 return True
+
+        # if it's a function, use that to filter
         elif callable(value):
             value_function = value
+
+        # if value isn't a function but it's a value other than None,
+        # then make it one that returns true if the the argument
+        # matches value
         else:
             def value_function(x):
                 return x[0][1] == value
-
-        # if fillvalue is not given, then use max datetime and default
-        # value
-        if fillvalue is None:
-            fillvalue = (datetime.datetime.max, self.default())
 
         # tee the original iterator into n identical iterators
         streams = itertools.tee(iter(self), n)
@@ -171,12 +171,8 @@ class TimeSeries(object):
             for i in range(stream_index):
                 next(stream)
 
-        # now, zip the offset streams back together to yield pairs
-        if pad:
-            zipper = itertools.izip_longest(*streams, fillvalue=fillvalue)
-        else:
-            zipper = itertools.izip(*streams)
-        for intervals in zipper:
+        # now, zip the offset streams back together to yield tuples
+        for intervals in itertools.izip(*streams):
             if value_function(intervals):
                 yield intervals
 
