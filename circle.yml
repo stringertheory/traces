@@ -1,0 +1,10 @@
+dependencies:
+  pre:
+    - pip install -r requirements/python-dev.txt
+
+test:
+  override:
+    - nosetests --with-coverage --cover-package=traces
+    - pep8 traces/
+    - mkdocs build
+    
