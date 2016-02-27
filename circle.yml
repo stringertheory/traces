@@ -5,7 +5,6 @@ dependencies:
 
 test:
   override:
-    - nosetests --with-coverage --cover-package=traces
+    - nosetests --with-coverage --cover-package=traces --with-xunit
     - pep8 traces/
     - mkdocs build
-
