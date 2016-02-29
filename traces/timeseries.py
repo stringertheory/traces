@@ -325,6 +325,10 @@ class TimeSeries(object):
         in the list at time t.
 
         """
+        # cast to list since this is getting iterated over several
+        # times (will cause problem if timeseries_list is a generator)
+        timeseries_list = list(timeseries_list)
+
         # Create iterators for each timeseries and then add the first
         # item from each iterator onto a priority queue. The first
         # item to be popped will be the one with the lowest time
