@@ -319,7 +319,7 @@ class TimeSeries(object):
             raise TypeError(msg)
 
     @staticmethod
-    def iter_merge(timeseries_list):
+    def _iter_merge(timeseries_list):
         """Iterate through several time series in order, yielding (time, list)
         tuples where list is the values of each individual TimeSeries
         in the list at time t.
@@ -355,8 +355,8 @@ class TimeSeries(object):
             # at the index of the TimeSeries that this item came from
             state = list(state)
             state[index] = next_value
-            yield (t, state)
-
+            yield t, state
+                
             # add the next measurement from the time series to the
             # queue (if there is one)
             try:
@@ -364,6 +364,16 @@ class TimeSeries(object):
             except StopIteration:
                 pass
 
+    @classmethod
+    def iter_merge(cls, timeseries_list):
+        index, previous_t, previous_state = 0, object(), object()
+        for index, (t, state) in enumerate(cls._iter_merge(timeseries_list)):
+            if index > 0 and t != previous_t:
+                yield previous_t, previous_state
+            previous_t, previous_state = t, state
+        if index > 0:
+            yield previous_t, previous_state
+            
     @classmethod
     def merge(cls, ts_list, compact=False):
         """"""
