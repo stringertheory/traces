@@ -356,7 +356,7 @@ class TimeSeries(object):
             state = list(state)
             state[index] = next_value
             yield t, state
-                
+
             # add the next measurement from the time series to the
             # queue (if there is one)
             try:
@@ -373,7 +373,7 @@ class TimeSeries(object):
             previous_t, previous_state = t, state
         if index > 0:
             yield previous_t, previous_state
-            
+
     @classmethod
     def merge(cls, ts_list, compact=False):
         """"""
