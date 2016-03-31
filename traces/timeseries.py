@@ -375,12 +375,16 @@ class TimeSeries(object):
             yield previous_t, previous_state
 
     @classmethod
-    def merge(cls, ts_list, compact=False):
+    def merge(cls, ts_list, compact=False, operation=None):
         """"""
         default_value = [ts.default() for ts in ts_list]
         result = cls(default_type=list, default_value=default_value)
         for t, merged in cls.iter_merge(ts_list):
-            result.set(t, merged, compact=compact)
+            if operation is None:
+                value = merged
+            else:
+                value = operation(merged)
+            result.set(t, value, compact=compact)
         return result
 
     @classmethod
