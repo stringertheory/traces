@@ -52,6 +52,7 @@ def read_dependencies():
             package = line.strip().split('#')[0].strip()
             if package:
                 dependencies.append(package)
+    return dependencies
 
 setuptools.setup(
     name='traces',
