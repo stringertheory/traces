@@ -1,34 +1,95 @@
+Taking measurements at irregular intervals is common, but most tools
+for analyzing data over time are designed for regularly-spaced
+measurements. Traces aims to make it easy to:
 
-Measuring things at irregular time intervals is common. Events such as
-earthquakes, floods, or volcanic eruptions occur at irregular time
-intervals. In clinical trials, a patient’s health may be observed only
-at irregular time intervals. And, last but not least, the Internet of
-Things streams out a shit ton of data where sensor values are recorded
-at irregular intervals due to battery conservation strategies,
-uncertain network connectivity, and many other reasons.
+* read, write, and manipulate unevenly-spaced time series data
+* perform simple analyses of unevenly-spaced time series data without
+  making an awkward / lossy transformation to evenly-spaced
+  representations
+* gracefully transform unevenly-spaced times series data to
+  evenly-spaced representations
 
-And, while there are a bunch of tools for analyzing regularly spaced
-time series data, there aren't many for irregularly spaced time
-series.
+### Installation
 
-The goal of `traces` is to make it easier to do simple analyses of
-irregularly spaced time series data without an awkward, lossy
-conversion to a regularly spaced one.
+To install traces, run:
 
-- easy to write, access, and manipulate
-- enable simple, exploratory analysis (but not to get too fancy)
-- simple conversion to dense time series representation for further analysis
+```bash
+pip install traces
+```
 
+### Using traces
 
-# The `traces` model
+To see a simple way to use **traces**, let's look at these data from a
+light switch, also known as _Big Data from the Internet of Things_.
 
-Continuous time
+![light switch trace](img/trace.svg)
 
-This will have some "documentation."
+You create a `TimeSeries` in traces like you create a dictionary (in
+fact, a `TimeSeries` uses the excellent
+[sortedcontainers.SortedDict](http://www.grantjenks.com/docs/sortedcontainers/introduction.html#sorteddict)
+under the hood).
 
-## MathJax
+```python
+>>> time_series = traces.TimeSeries()
+>>> time_series[datetime(2016, 2, 1,  6,  0,  0)] = 0
+>>> time_series[datetime(2016, 2, 1,  7, 45, 56)] = 1
+>>> time_series[datetime(2016, 2, 1,  8, 51, 42)] = 0
+>>> time_series[datetime(2016, 2, 1, 12,  3, 56)] = 1
+>>> time_series[datetime(2016, 2, 1, 12,  7, 13)] = 0
+```
 
-When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are
-$$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
+Was the light on at 11am? Unlike a python dictionary, you can look up
+the value at any time even if it's not one of the measurement times:
 
-![screenshot](img/cat.jpg)
+```python
+>>> time_series[datetime(2016, 2, 1, 11,  0, 0)]
+0
+```
+
+What is you want to know the fraction of time during the day the light
+was on?
+
+```python
+>>> time_series.distribution(datetime(2016, 2, 1,  6,  0,  0), datetime(2016, 2, 1,  13,  0,  0))
+Histogram({0: 0.8355952380952381, 1: 0.16440476190476191})
+```
+
+About 16.4%. How about if you have data from the light switches from a
+whole building?
+
+![many light switch trace](img/traces.svg)
+
+How many lights are on in the building by time of day?
+
+```python
+>>> trace_list = [... list of lots of traces.TimeSeries ...]
+>>> count = traces.TimeSeries.merge(trace_list, operation=sum)
+```
+
+![many light switch count](img/count.svg)
+
+How many lights are on in the building on average during business
+hours, from 8am to 6pm?
+
+```python
+>>> count.mean(datetime(2016, 2, 1,  8,  0,  0), datetime(2016, 2, 1,  12 + 6,  0,  0))
+17.6312415081
+```
+
+The measurements points in a TimeSeries can be in any units, as long
+as they can be ordered, and the values can be anything. For example,
+it could keep track the contents of a grocery basket by the number of
+minutes within a shopping trip.
+
+```python
+>>> time_series = traces.TimeSeries()
+>>> time_series[1.2] = set(['broccoli'])
+>>> time_series[1.4] = set(['broccoli', 'orange'])
+>>> time_series[1.7] = set(['broccoli', 'orange', 'banana'])
+>>> time_series[2.2] = set(['orange', 'banana'])
+>>> time_series[3.5] = set(['orange', 'banana', 'beets'])
+```
+
+Traces has been designed by the team at
+[Datascope](http://datascopeanalytics.com/) based on several use cases
+in different domains.
