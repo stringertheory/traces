@@ -1,4 +1,4 @@
 from .timeseries import TimeSeries
 from .histogram import Histogram
 
-VERSION = '0.0.4'
+VERSION = '0.0.5'
