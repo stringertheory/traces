@@ -366,12 +366,13 @@ class TimeSeries(object):
 
     @classmethod
     def iter_merge(cls, timeseries_list):
-        index, previous_t, previous_state = 0, object(), object()
+        index, previous_t, previous_state = -1, object(), object()
         for index, (t, state) in enumerate(cls._iter_merge(timeseries_list)):
             if index > 0 and t != previous_t:
                 yield previous_t, previous_state
             previous_t, previous_state = t, state
-        if index > 0:
+
+        if index > -1:
             yield previous_t, previous_state
 
     @classmethod

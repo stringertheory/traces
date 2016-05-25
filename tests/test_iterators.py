@@ -80,3 +80,59 @@ def test_merge():
         msg = '%s != %s' % (pprint.pformat(method_a), pprint.pformat(method_b))
         assert method_a == method_b, msg
 
+def test_single_merges():
+
+    # a single empty time series
+    ts = TimeSeries()
+
+    merged = TimeSeries.merge([ts])
+
+    assert merged.items() == []
+
+    # multiple empty time series
+    ts_a = TimeSeries()
+    ts_b = TimeSeries()
+
+    merged = TimeSeries.merge([ts_a, ts_b])
+
+    assert merged.items() == []
+    
+    # test a single time series with only one measurement
+    ts = TimeSeries()
+    ts[21] = 42
+    
+    merged = TimeSeries.merge([ts])
+
+    assert merged.items() == [(21, [42])]
+
+    # test an empty time series and a time series with one measurement
+    ts_a = TimeSeries()
+    ts_a[21] = 42
+
+    ts_b = TimeSeries()
+    
+    merged = TimeSeries.merge([ts_a, ts_b])
+    
+    assert merged.items() == [(21, [42, 0])]
+
+    # test an empty time series and a time series with one entry
+    ts_a = TimeSeries()
+    ts_a[21] = 42
+    ts_a[22] = 41
+    ts_a[23] = 40
+
+    ts_b = TimeSeries()
+    ts_b[20] = 1
+    ts_b[22] = 2
+    ts_b[24] = 3
+    
+    merged = TimeSeries.merge([ts_a, ts_b])
+    
+    assert merged.items() == [
+        (20, [0, 1]),
+        (21, [42, 1]),
+        (22, [41, 2]),
+        (23, [40, 2]),
+        (24, [40, 3]),
+    ]
+    
