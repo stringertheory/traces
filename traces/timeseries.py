@@ -320,13 +320,13 @@ class TimeSeries(object):
 
     @staticmethod
     def _iter_merge(timeseries_list):
-        """Iterate through several time series in order, yielding (time, list)
-        tuples where list is the values of each individual TimeSeries
-        in the list at time t.
+        """This function uses a priority queue to efficiently yield the (time,
+        value_list) tuples that occur from merging together many time
+        series.
 
         """
         # cast to list since this is getting iterated over several
-        # times (will cause problem if timeseries_list is a generator)
+        # times (causes problem if timeseries_list is a generator)
         timeseries_list = list(timeseries_list)
 
         # Create iterators for each timeseries and then add the first
@@ -366,18 +366,35 @@ class TimeSeries(object):
 
     @classmethod
     def iter_merge(cls, timeseries_list):
+        """Iterate through several time series in order, yielding (time, list)
+        tuples where list is the values of each individual TimeSeries
+        in the list at time t.
+
+        """
+        # This function mostly wraps _iter_merge, the main point of
+        # this is to deal with the case of tied times, where we only
+        # want to yield the last list of values that occurs for any
+        # group of tied times.
         index, previous_t, previous_state = -1, object(), object()
         for index, (t, state) in enumerate(cls._iter_merge(timeseries_list)):
             if index > 0 and t != previous_t:
                 yield previous_t, previous_state
             previous_t, previous_state = t, state
 
+        # only yield final thing if there was at least one element
+        # yielded by _iter_merge
         if index > -1:
             yield previous_t, previous_state
 
     @classmethod
     def merge(cls, ts_list, compact=False, operation=None):
-        """"""
+        """Iterate through several time series in order, yielding (time,
+        `value`) where `value` is the either the list of each
+        individual TimeSeries in the list at time t (in the same order
+        as in ts_list) or the result of the optional `operation` on
+        that list of values.
+
+        """
         default_value = [ts.default() for ts in ts_list]
         result = cls(default_type=list, default_value=default_value)
         for t, merged in cls.iter_merge(ts_list):
