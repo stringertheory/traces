@@ -1,72 +1,59 @@
-import os
-import setuptools
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-GITHUB_URL = 'https://github.com/datascopeanalytics/traces'
+from setuptools import setup
 
-try:
-    import pypandoc
-except ImportError:
-    pypandoc = None
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
 
+with open('HISTORY.rst') as history_file:
+    history = history_file.read()
 
-def read_version():
-    """Parse the package __init__ file to find the version so that it's
-    not in multiple places.
+requirements = [
+    'Click>=6.0',
+    # TODO: put package requirements here
+]
 
-    """
-    filename = os.path.join("traces", "__init__.py")
-    version = None
-    with open(filename) as stream:
-        for line in stream:
-            if "VERSION" in line:
-                version = line.split('=')[-1].strip().replace("'", "")
+test_requirements = [
+    # TODO: put package test requirements here
+]
 
-    # throw error if version isn't in __init__ file
-    if version is None:
-        raise ValueError('must define VERSION in %s' % filename)
-                
-    return version
-
-def read_description():
-    """Read in the description from README and convert to RST for pypi if
-    the pypandoc package is available.
-
-    """
-    with open("README.md") as stream:
-        md = stream.read()
-        if pypandoc:
-            long_description = \
-                pypandoc.convert(md, 'rst', format='markdown_github')
-        else:
-            long_description = md
-
-    return long_description
-
-def read_dependencies():
-    """Read in the dependencies from the virtualenv requirements file.
-
-    """
-    dependencies = []
-    with open('requirements/python.txt', 'r') as stream:
-        for line in stream:
-            package = line.strip().split('#')[0].strip()
-            if package:
-                dependencies.append(package)
-    return dependencies
-
-setuptools.setup(
+setup(
     name='traces',
-    version=read_version(),
-    description="Tools for analysis of unevenly space time series.",
-    long_description=read_description(),
-    url=GITHUB_URL,
-    download_url="%s/archives/master" % GITHUB_URL,
-    author='Mike Stringer',
-    author_email='mike.stringer@datascopeanalytics.com',
-    license='MIT',
+    version='0.1.0',
+    description="Traces makes it easy to analyze timeseries data at irregular intervals.",
+    long_description=readme + '\n\n' + history,
+    author="Yoke Peng Leong",
+    author_email='ypleong@datascopeanalytics.com',
+    url='https://github.com/ypleong/traces',
     packages=[
         'traces',
     ],
-    install_requires=read_dependencies(),
+    package_dir={'traces':
+                 'traces'},
+    entry_points={
+        'console_scripts': [
+            'traces=traces.cli:main'
+        ]
+    },
+    include_package_data=True,
+    install_requires=requirements,
+    license="MIT license",
     zip_safe=False,
+    keywords='traces',
+    classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        "Programming Language :: Python :: 2",
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+    ],
+    test_suite='tests',
+    tests_require=test_requirements
 )

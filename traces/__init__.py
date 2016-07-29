@@ -1,4 +1,5 @@
-from .timeseries import TimeSeries
-from .histogram import Histogram
+# -*- coding: utf-8 -*-
 
-VERSION = '0.0.6'
+__author__ = 'Yoke Peng Leong'
+__email__ = 'ypleong@datascopeanalytics.com'
+__version__ = '0.1.0'
