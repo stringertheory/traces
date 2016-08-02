@@ -6,20 +6,22 @@ traces
 .. image:: https://img.shields.io/pypi/v/traces.svg
         :target: https://pypi.python.org/pypi/traces
 
-.. image:: https://img.shields.io/travis/ypleong/traces.svg
-        :target: https://travis-ci.org/ypleong/traces
+.. image:: https://img.shields.io/circleci/project/datascopeanalytics/traces/master.svg
+..        :target: https://travis-ci.org/datascopeanalytics/traces
+        :target: https://circleci.com/gh/datascopeanalytics/traces
 
 .. image:: https://readthedocs.org/projects/traces/badge/?version=latest
         :target: https://traces.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://pyup.io/repos/github/ypleong/traces/shield.svg
-     :target: https://pyup.io/repos/github/ypleong/traces/
+.. image:: https://pyup.io/repos/github/datascopeanalytics/traces/shield.svg
+     :target: https://pyup.io/repos/github/datascopeanalytics/traces/
      :alt: Updates
 
 
 Traces makes it easy to analyze timeseries data at irregular intervals.
 
+.. image:: https://camo.githubusercontent.com/4a7cf94aedbd23c13cc2d75fdc3b2af5c816c208/687474703a2f2f7374617469632e646967672e636f6d2f7374617469632f696d616765732f6469676765722e676966
 
 * Free software: MIT license
 * Documentation: https://traces.readthedocs.io.
