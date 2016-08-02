@@ -18,7 +18,7 @@ key_list = [
 numeric_types = {
     int: [1, 2, 3, 0],
     float: [1.0, 2.0, 3.0, 0.0],
-    long: [1L, 2L, 3L, 0L],
+    long: [1L, 2L, 3L, 0L], # TODO: Fix the error
     bool: [True, False, True, False],
     # complex: [complex(1, 0), complex(1, 1), complex(0, 1)],
 }
