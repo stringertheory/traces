@@ -5,9 +5,11 @@ Credits
 Development Lead
 ----------------
 
-* Yoke Peng Leong <ypleong@datascopeanalytics.com>
+* Mike Stringer <mike.stringer@datascopeanalytics.com >
+
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Yoke Peng Leong <ypleong@datascopeanalytics.com>
+
