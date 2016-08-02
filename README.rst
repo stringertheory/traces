@@ -7,7 +7,6 @@ traces
         :target: https://pypi.python.org/pypi/traces
 
 .. image:: https://img.shields.io/circleci/project/datascopeanalytics/traces/master.svg
-..        :target: https://travis-ci.org/datascopeanalytics/traces
         :target: https://circleci.com/gh/datascopeanalytics/traces
 
 .. image:: https://readthedocs.org/projects/traces/badge/?version=latest
