@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 from setuptools import setup
+
+# TODO: Test setup.py
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -9,23 +12,89 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'Click>=6.0',
-    # TODO: put package requirements here
-]
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
+def read_version():
+    """Parse the package __init__ file to find the version so that it's
+    not in multiple places.
+
+    """
+    filename = os.path.join("traces", "__init__.py")
+    version = None
+    with open(filename) as stream:
+        for line in stream:
+            if "version" in line:
+                version = line.split('=')[-1].strip().replace("'", "")
+
+    # throw error if version isn't in __init__ file
+    if version is None:
+        raise ValueError('must define VERSION in %s' % filename)
+
+    return version
+
+
+def read_author():
+    """Parse the package __init__ file to find the author so that it's
+    not in multiple places.
+
+    """
+    filename = os.path.join("traces", "__init__.py")
+    author = None
+    with open(filename) as stream:
+        for line in stream:
+            if "author" in line:
+                author = line.split('=')[-1].strip().replace("'", "")
+
+    # throw error if version isn't in __init__ file
+    if author is None:
+        raise ValueError('must define author in %s' % filename)
+
+    return author
+
+
+def read_author_email():
+    """Parse the package __init__ file to find the author email so that it's
+    not in multiple places.
+
+    """
+    filename = os.path.join("traces", "__init__.py")
+    author_email = None
+    with open(filename) as stream:
+        for line in stream:
+            if "email" in line:
+                author_email = line.split('=')[-1].strip().replace("'", "")
+
+    # throw error if version isn't in __init__ file
+    if author_email is None:
+        raise ValueError('must define author email in %s' % filename)
+
+    return author_email
+
+
+def read_dependencies(filepath):
+    """Read in the dependencies from the virtualenv requirements file.
+
+    """
+    dependencies = []
+    with open(filepath, 'r') as stream:
+        for line in stream:
+            package = line.strip().split('#')[0].strip()
+            if package:
+                dependencies.append(package)
+    return dependencies
+
+
+requirements = ['Click>=6.0'] + read_dependencies('requirements/python.txt')
+
+test_requirements = read_dependencies('requirements/python-test.txt')
 
 setup(
     name='traces',
-    version='0.1.0',
+    version=read_version(),
     description="Traces makes it easy to analyze timeseries data at irregular intervals.",
     long_description=readme + '\n\n' + history,
-    author="Yoke Peng Leong",
-    author_email='ypleong@datascopeanalytics.com',
-    url='https://github.com/ypleong/traces',
+    author=read_author(),
+    author_email=read_author_email(),
+    url='https://github.com/datascopeanalytics/traces',
     packages=[
         'traces',
     ],
