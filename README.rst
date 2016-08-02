@@ -6,8 +6,9 @@ traces
 .. image:: https://img.shields.io/pypi/v/traces.svg
         :target: https://pypi.python.org/pypi/traces
 
-.. image:: https://img.shields.io/travis/datascopeanalytics/traces.svg
-        :target: https://travis-ci.org/datascopeanalytics/traces
+.. image:: https://img.shields.io/circleci/datascopeanalytics/traces/ypl.svg
+        :target: https://circleci.com/project/datascopeanalytics/traces
+..        :target: https://travis-ci.org/datascopeanalytics/traces
 
 .. image:: https://readthedocs.org/projects/traces/badge/?version=latest
         :target: https://traces.readthedocs.io/en/latest/?badge=latest
