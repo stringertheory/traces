@@ -56,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'traces'
-copyright = u"2016, Yoke Peng Leong"
+copyright = u"2016, Datascope Analytics"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -210,7 +210,7 @@ latex_elements = {
 latex_documents = [
     ('index', 'traces.tex',
      u'traces Documentation',
-     u'Yoke Peng Leong', 'manual'),
+     u'Datascope Analytics', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -241,7 +241,7 @@ latex_documents = [
 man_pages = [
     ('index', 'traces',
      u'traces Documentation',
-     [u'Yoke Peng Leong'], 1)
+     [u'Datascope Analytics'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -256,7 +256,7 @@ man_pages = [
 texinfo_documents = [
     ('index', 'traces',
      u'traces Documentation',
-     u'Yoke Peng Leong',
+     u'Datascope Analytics',
      'traces',
      'One line description of project.',
      'Miscellaneous'),
