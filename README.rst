@@ -6,7 +6,7 @@ traces
 .. image:: https://img.shields.io/pypi/v/traces.svg
         :target: https://pypi.python.org/pypi/traces
 
-.. image:: https://img.shields.io/circleci/datascopeanalytics/traces/master.svg
+.. image:: https://circleci.com/gh/datascopeanalytics/traces/tree/ypl.svg?style=shield&circle-token=:circle-token
         :target: https://circleci.com/project/datascopeanalytics/traces
 ..        :target: https://travis-ci.org/datascopeanalytics/traces
 
