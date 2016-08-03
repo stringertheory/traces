@@ -126,7 +126,7 @@ def example_dictlike():
 
     # output the time series
     for i, j in l:
-        print i.isoformat(), j
+        print(i.isoformat(), j)
 
 
 def example_mean():
@@ -145,24 +145,24 @@ def example_mean():
     l[datetime.datetime(2010, 2, 5)] = 0
 
     for time, value in l:
-        print time.isoformat(), 0.1 * value + 1.1
+        print(time.isoformat(), 0.1 * value + 1.1)
 
-    print ''
+    print('')
 
     timestep = {'hours': 25}
     start_time = datetime.datetime(2010, 1, 1)
     while start_time <= datetime.datetime(2010, 2, 5):
         end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), l.mean(start_time, end_time)
+        print(start_time.isoformat(), l.mean(start_time, end_time))
         start_time = end_time
 
-    print ''
+    print('')
 
     start_time = datetime.datetime(2010, 1, 1)
     while start_time <= datetime.datetime(2010, 2, 5):
         end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), -0.2
-        print start_time.isoformat(), 1.2
+        print(start_time.isoformat(), -0.2)
+        print(start_time.isoformat(), 1.2)
         start_time = end_time
 
 
@@ -182,21 +182,21 @@ def example_arrow():
     l[arrow.Arrow(2010, 2, 5)] = 0
 
     for time, value in l:
-        print time.naive.isoformat(), 0.1 * value + 1.1
+        print(time.naive.isoformat(), 0.1 * value + 1.1)
 
-    print ''
+    print('')
 
     start = arrow.Arrow(2010, 1, 1)
     end = arrow.Arrow(2010, 2, 5)
     unit = {'hours': 25}
     for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), l.mean(start_time, end_time)
+        print(start_time.naive.isoformat(), l.mean(start_time, end_time))
 
-    print ''
+    print('')
 
     for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), -0.2
-        print start_time.naive.isoformat(), 1.2
+        print(start_time.naive.isoformat(), -0.2)
+        print(start_time.naive.isoformat(), 1.2)
 
 
 def example_sum():
@@ -228,23 +228,23 @@ def example_sum():
     for i, ts in enumerate([a, b, c]):
 
         for (t0, v0), (t1, v1) in ts.iterintervals(1):
-            print t0.isoformat(), i
-            print t1.isoformat(), i
+            print(t0.isoformat(), i)
+            print(t1.isoformat(), i)
 
-        print ''
+        print('')
 
         for (t0, v0), (t1, v1) in ts.iterintervals(0):
-            print t0.isoformat(), i
-            print t1.isoformat(), i
+            print(t0.isoformat(), i)
+            print(t1.isoformat(), i)
 
-        print ''
+        print('')
 
     # output the sum
     # for dt, i in sum([a, b, c]):
     #     print dt.isoformat(), i
     # print ''
     for dt, i in TimeSeries.from_many_sum([a, b, c]):
-        print dt.isoformat(), i
+        print(dt.isoformat(), i)
 
 
 def example_dictlike():
@@ -280,7 +280,7 @@ def example_dictlike():
 
     # output the time series
     for i, j in l:
-        print i.isoformat(), j
+        print(i.isoformat(), j)
 
 
 def example_mean():
@@ -299,24 +299,24 @@ def example_mean():
     l[datetime.datetime(2010, 2, 5)] = 0
 
     for time, value in l:
-        print time.isoformat(), 0.1 * value + 1.1
+        print(time.isoformat(), 0.1 * value + 1.1)
 
-    print ''
+    print('')
 
     timestep = {'hours': 25}
     start_time = datetime.datetime(2010, 1, 1)
     while start_time <= datetime.datetime(2010, 2, 5):
         end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), l.mean(start_time, end_time)
+        print(start_time.isoformat(), l.mean(start_time, end_time))
         start_time = end_time
 
-    print ''
+    print('')
 
     start_time = datetime.datetime(2010, 1, 1)
     while start_time <= datetime.datetime(2010, 2, 5):
         end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), -0.2
-        print start_time.isoformat(), 1.2
+        print(start_time.isoformat(), -0.2)
+        print(start_time.isoformat(), 1.2)
         start_time = end_time
 
 
@@ -336,18 +336,18 @@ def example_arrow():
     l[arrow.Arrow(2010, 2, 5)] = 0
 
     for time, value in l:
-        print time.naive.isoformat(), 0.1 * value + 1.1
+        print(time.naive.isoformat(), 0.1 * value + 1.1)
 
-    print ''
+    print('')
 
     start = arrow.Arrow(2010, 1, 1)
     end = arrow.Arrow(2010, 2, 5)
     unit = {'hours': 25}
     for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), l.mean(start_time, end_time)
+        print(start_time.naive.isoformat(), l.mean(start_time, end_time))
 
-    print ''
+    print('')
 
     for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), -0.2
-        print start_time.naive.isoformat(), 1.2
+        print(start_time.naive.isoformat(), -0.2)
+        print(start_time.naive.isoformat(), 1.2)

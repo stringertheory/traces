@@ -16,7 +16,7 @@ import pprint
 import math
 import random
 import itertools
-import Queue
+from queue import Queue
 
 # 3rd party
 import sortedcontainers
@@ -105,10 +105,12 @@ class TimeSeries(object):
 
         """
         previous_value = self.default()
-        for time, value in self.d.items():
-            if value == previous_value:
-                del self[time]
+        new_self = TimeSeries()
+        for time, value in self.d.items(): # TODO: Need to fix this.
+            if value != previous_value:
+                new_self[time] = value
             previous_value = value
+        self = new_self
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
