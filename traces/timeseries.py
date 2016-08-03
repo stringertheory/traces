@@ -105,12 +105,13 @@ class TimeSeries(object):
 
         """
         previous_value = self.default()
-        new_self = TimeSeries()
-        for time, value in self.d.items(): # TODO: Need to fix this.
-            if value != previous_value:
-                new_self[time] = value
+        remove_item = []
+        for time, value in self.d.items():
+            if value == previous_value:
+                remove_item.append(time)
             previous_value = value
-        self = new_self
+        for item in remove_item:
+            del self[item]
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
