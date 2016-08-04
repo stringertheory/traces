@@ -15,8 +15,14 @@ import datetime
 import pprint
 import math
 import random
-import itertools
-from queue import Queue
+from itertools import tee
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
+
+from queue import Queue, PriorityQueue
+from future.utils import listitems
 
 # 3rd party
 import sortedcontainers
@@ -115,7 +121,7 @@ class TimeSeries(object):
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
-        return self.d.items()
+        return listitems(self.d)  # TODO: Python 3 returns itemView instead of a list
 
     def remove(self, time):
         """Allow removal of measurements from the time series. This throws an
@@ -166,7 +172,7 @@ class TimeSeries(object):
                 return x[0][1] == value
 
         # tee the original iterator into n identical iterators
-        streams = itertools.tee(iter(self), n)
+        streams = tee(iter(self), n)
 
         # advance the "cursor" on each iterator by an increasing
         # offset
@@ -175,7 +181,7 @@ class TimeSeries(object):
                 next(stream)
 
         # now, zip the offset streams back together to yield tuples
-        for intervals in itertools.izip(*streams):
+        for intervals in zip(*streams):
             if value_function(intervals):
                 yield intervals
 
@@ -335,11 +341,11 @@ class TimeSeries(object):
         # Create iterators for each timeseries and then add the first
         # item from each iterator onto a priority queue. The first
         # item to be popped will be the one with the lowest time
-        queue = Queue.PriorityQueue()
+        queue = PriorityQueue()
         for index, timeseries in enumerate(timeseries_list):
             iterator = iter(timeseries)
             try:
-                item = (iterator.next(), index, iterator)
+                item = (next(iterator), index, iterator)
             except StopIteration:
                 pass
             else:
@@ -363,7 +369,7 @@ class TimeSeries(object):
             # add the next measurement from the time series to the
             # queue (if there is one)
             try:
-                queue.put((iterator.next(), index, iterator))
+                queue.put((next(iterator), index, iterator))
             except StopIteration:
                 pass
 

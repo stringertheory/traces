@@ -1,4 +1,5 @@
 import datetime
+from past.builtins import long
 
 
 def duration_to_number(duration, units='seconds'):

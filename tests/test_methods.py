@@ -1,6 +1,7 @@
 import datetime
 import nose
 import traces
+from future.utils import listitems, iteritems
 
 
 def _make_ts(type_, key_list, value_list):
@@ -30,28 +31,28 @@ unhashable_types = {
     dict: [{'a': 1}, {'b': 2}, {'c': 3}, {}],
     set: [{1}, {1, 2}, {1, 2, 3}, set()],
 }
-all_types = dict(numeric_types.items() +
-                 non_numeric_hashable_types.items() + unhashable_types.items())
+all_types = dict(listitems(numeric_types)+
+                 listitems(non_numeric_hashable_types) + listitems(unhashable_types))
 
 
 def test_mean():
 
     # numberic hashable types should work
-    for type_, value_list in numeric_types.iteritems():
+    for type_, value_list in iteritems(numeric_types):
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
         ts.mean(key_list[0], key_list[-1])
 
     # non-numeric hashable types should raise type error on mean, but
     # distribution should work
-    for type_, value_list in non_numeric_hashable_types.iteritems():
+    for type_, value_list in iteritems(non_numeric_hashable_types):
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
         nose.tools.assert_raises(TypeError, ts.mean, key_list[0], key_list[1])
 
     # non-numeric unhashable types should raise error on distribution
     # and mean
-    for type_, value_list in unhashable_types.iteritems():
+    for type_, value_list in iteritems(unhashable_types):
         ts = _make_ts(type_, key_list, value_list)
         nose.tools.assert_raises(TypeError, ts.distribution,
                                  key_list[0], key_list[1])
@@ -62,11 +63,11 @@ def test_mean():
 def test_to_bool():
 
     answer = {}
-    for type_, value_list in all_types.iteritems():
+    for type_, value_list in iteritems(all_types):
         answer[type_] = [True if i else False for i in value_list]
 
     # numberic hashable types should work
-    for type_, value_list in all_types.iteritems():
+    for type_, value_list in iteritems(all_types):
         ts = _make_ts(type_, key_list, value_list)
         result = ts.to_bool()
         values = [v for (k, v) in result.items()]
