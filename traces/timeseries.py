@@ -10,23 +10,19 @@ by Aleks Aris and others.
 """
 
 # standard library
-import sys
 import datetime
 import pprint
-import math
-import random
 from itertools import tee
 try:
     import itertools.izip as zip
 except ImportError:
     pass
 
-from queue import Queue, PriorityQueue
+from queue import PriorityQueue
 from future.utils import listitems
 
 # 3rd party
 import sortedcontainers
-import arrow
 
 # local
 from . import histogram
@@ -121,7 +117,7 @@ class TimeSeries(object):
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
-        return listitems(self.d)  # TODO: Python 3 returns itemView instead of a list
+        return listitems(self.d)  # Python 3 returns itemView instead of a list
 
     def remove(self, time):
         """Allow removal of measurements from the time series. This throws an

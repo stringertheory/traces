@@ -1,3 +1,5 @@
 pep8
 coveralls
 nose
+numpy
+scipy
