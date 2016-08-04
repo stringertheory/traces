@@ -2,6 +2,7 @@
 
 import click
 
+
 @click.command()
 def main(args=None):
     """Console script for traces"""
