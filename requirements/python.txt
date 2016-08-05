@@ -1,2 +1,2 @@
-sortedcontainers
-arrow
+sortedcontainers==1.5.3
+arrow==0.8.0
