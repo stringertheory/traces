@@ -4,7 +4,7 @@
 # needed to run the tests
 pep8
 coveralls
-nose
+nose==1.3.7
 
 # performance
 cprofilev
