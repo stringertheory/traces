@@ -1,5 +1,6 @@
 import math
 import sortedcontainers
+from six import itervalues, iteritems
 
 
 class Histogram(sortedcontainers.SortedDict):
@@ -21,18 +22,18 @@ class Histogram(sortedcontainers.SortedDict):
 
     def total(self):
         """Sum of values."""
-        return sum(self.itervalues())
+        return sum(itervalues(self))
 
     def mean(self):
         """Mean of the distribution."""
-        weighted_sum = sum(count * value for value, count in self.iteritems())
+        weighted_sum = sum(count * value for value, count in iteritems(self))
         return weighted_sum / float(self.total())
 
     def variance(self):
         """Variance of the distribution."""
         mean = self.mean()
         weighted_central_moment = \
-            sum(count * (value - mean)**2 for value, count in self.iteritems())
+            sum(count * (value - mean)**2 for value, count in iteritems(self))
         return weighted_central_moment / float(self.total())
 
     def standard_deviation(self):
@@ -46,7 +47,7 @@ class Histogram(sortedcontainers.SortedDict):
         """
         total = self.total()
         result = Histogram()
-        for value, count in self.iteritems():
+        for value, count in iteritems(self):
             result[value] = count / float(total)
         return result
 
@@ -65,7 +66,7 @@ class Histogram(sortedcontainers.SortedDict):
         """
         total = float(self.total())
 
-        smallest_observed_count = min(self.itervalues())
+        smallest_observed_count = min(itervalues(self))
         if smallest_count is None:
             smallest_count = smallest_observed_count
         else:
@@ -76,12 +77,12 @@ class Histogram(sortedcontainers.SortedDict):
         debug_plot = []
         cumulative_sum = 0.0
         inverse = sortedcontainers.SortedDict()
-        for value, count in self.iteritems():
-            debug_plot.append(((cumulative_sum) / total, value))
+        for value, count in iteritems(self):
+            debug_plot.append((cumulative_sum / total, value))
             inverse[(cumulative_sum + beta) / total] = value
             cumulative_sum += count
             inverse[(cumulative_sum - beta) / total] = value
-            debug_plot.append(((cumulative_sum) / total, value))
+            debug_plot.append((cumulative_sum / total, value))
 
         # get maximum and minumum q values
         q_min = inverse.iloc[0]

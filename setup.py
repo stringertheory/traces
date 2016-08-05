@@ -6,31 +6,6 @@ from setuptools import setup
 
 # TODO: Test setup.py
 
-with open('README.rst') as readme_file:
-    readme = readme_file.read()
-
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
-
-def read_version():
-    """Parse the package __init__ file to find the version so that it's
-    not in multiple places.
-
-    """
-    filename = os.path.join("traces", "__init__.py")
-    version = None
-    with open(filename) as stream:
-        for line in stream:
-            if "version" in line:
-                version = line.split('=')[-1].strip().replace("'", "")
-
-    # throw error if version isn't in __init__ file
-    if version is None:
-        raise ValueError('must define VERSION in %s' % filename)
-
-    return version
-
 
 def read_author():
     """Parse the package __init__ file to find the author so that it's
@@ -83,15 +58,15 @@ def read_dependencies(filepath):
     return dependencies
 
 
-requirements = ['Click>=6.0'] + read_dependencies('requirements/python.txt')
+requirements = read_dependencies('requirements/python.txt')
 
 test_requirements = read_dependencies('requirements/python-test.txt')
 
 setup(
     name='traces',
-    version=read_version(),
-    description="Traces makes it easy to analyze timeseries data at irregular intervals.",
-    long_description=readme + '\n\n' + history,
+    version='0.1.0',
+    description="Traces makes it easy to analyze time series data at irregular intervals.",
+    long_description="View on github: https://github.com/datascopeanalytics/traces",
     author=read_author(),
     author_email=read_author_email(),
     url='https://github.com/datascopeanalytics/traces',
@@ -100,11 +75,6 @@ setup(
     ],
     package_dir={'traces':
                  'traces'},
-    entry_points={
-        'console_scripts': [
-            'traces=traces.cli:main'
-        ]
-    },
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",

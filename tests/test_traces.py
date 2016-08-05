@@ -18,7 +18,6 @@ from traces import traces
 from traces import cli
 
 
-
 class TestTraces(unittest.TestCase):
 
     def setUp(self):
