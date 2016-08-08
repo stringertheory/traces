@@ -29,6 +29,7 @@ from . import histogram
 from . import utils
 
 
+# TODO: Good name? Traces vs time series vs others
 class TimeSeries(object):
 
     """A class to help manipulate and analyze time series that are the
@@ -245,6 +246,8 @@ class TimeSeries(object):
         return result
 
     def regularize(self, window_size, sampling_period, start_time, end_time):
+        # TODO: Need to be more general than datetime
+        # TODO: Output can be converted to pandas timeseries easily, put in doc too
         """Should there be a different function for sampling at regular time
         periods versus averaging over regular intervals?
 
