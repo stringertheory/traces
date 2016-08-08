@@ -570,6 +570,9 @@ class TimeSeries(object):
         """Allow a ^ b syntax"""
         return self.logical_xor(other)
 
+    def __eq__(self, other):
+        return self.items() == other.items()
+
 
 class TimeSeriesDomain(TimeSeries):
     domain = None
