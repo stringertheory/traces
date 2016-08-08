@@ -60,7 +60,51 @@ class TimeSeries(object):
 
     def __init__(self, data=None, domain=None):
         self.d = sortedcontainers.SortedDict(data)
-        self.domain = domain
+        self.domain = None
+        self.set_domain(domain)
+
+    def set_domain(self, domain):
+        """Create a time series with default values False
+        that represents the domain. domain has to be either
+        None, list or list of list"""
+        if domain is None:
+            ts = None
+
+        else:
+            ts = DefaultTimeSeries(default_values=False)
+            if any(isinstance(i, list) for i in domain):
+                for begin_time, end_time in domain:
+                    if begin_time is None:
+                        ts.default_values = True
+                    else:
+                        ts[begin_time] = True
+
+                    if end_time is not None:
+                        ts[end_time] = False
+            else:
+                begin_time, end_time = domain
+                if (begin_time is None) and (end_time is None):
+                    ts = None
+                else:
+                    if begin_time is None:
+                        ts.default_values = True
+                    else:
+                        ts[begin_time] = True
+
+                    if end_time is not None:
+                        ts[end_time] = False
+
+        self.domain = ts
+
+    # TODO: get domain
+
+    def is_in_domain(self, time):
+        """Check if time is inside the domain"""
+        if self.domain is not None:
+            if self.domain[time] is not True:
+                raise ValueError("{} is outside of the domain.".format(time))
+
+        return True
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
@@ -77,6 +121,8 @@ class TimeSeries(object):
         """Get the value of the time series, even in-between measured values.
 
         """
+        self.is_in_domain(time)
+
         index = self.d.bisect_right(time)
         if index > 0:
             previous_measurement_time = self.d.iloc[index - 1]
@@ -84,7 +130,8 @@ class TimeSeries(object):
         elif index == 0:
             return self.default()
         else:
-            return "Something is wrong."  # TODO: Check if this will ever happen
+            return "Something is wrong."
+            # TODO: Check if this will ever happen
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
@@ -100,8 +147,16 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
+        self.is_in_domain(time)
+
         if (len(self) == 0) or (not compact) or (compact and self.get(time) != value):
             self.d[time] = value
+
+    def update(self, data, compact=False):  # TODO: Need a test
+        """Set TimeSeries with a list. Compact it if necessary."""
+        self.d.update(data)
+        if compact:
+            self.compact()
 
     def compact(self):
         """Convert this instance to a compact version: the value will be the
@@ -573,3 +628,13 @@ class TimeSeries(object):
 
     def __eq__(self, other):
         return self.items() == other.items()
+
+
+class DefaultTimeSeries(TimeSeries):
+
+    def __init__(self, default_values=None):
+        TimeSeries.__init__(self)
+        self.default_values = default_values
+
+    def default(self):
+        return self.default_values
