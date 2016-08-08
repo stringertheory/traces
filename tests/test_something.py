@@ -13,26 +13,26 @@ def test_default_types():
     assert traces.TimeSeries(default_type=str)[T] == ''
 
 
-def test_default_values():
-    T = 0
-    assert traces.TimeSeries(default_type=int, default_value=1)[T] == 1
-    assert traces.TimeSeries(default_type=float, default_value=1.2)[T] == 1.2
-    assert traces.TimeSeries(default_type=list, default_value=[2])[T] == [2]
-    ts = traces.TimeSeries(default_type=dict, default_value={'a': 'b'})
-    assert ts[T] == {'a': 'b'}
-    assert traces.TimeSeries(default_type=set, default_value={1})[
-        T] == set([1])
-
-    ts = traces.TimeSeries(default_type=int, default_value=8)
-    ts[5] = 15
-    ts[10] = 1
-    assert ts[-1] == 8
-
-    ts = traces.TimeSeries(default_type=str, default_value='a')
-    ts[5] = 'b'
-    ts[6] = 'c'
-    ts[10] = 'a'
-    assert ts[3] == 'a'
+# def test_default_values():
+#     T = 0
+#     assert traces.TimeSeries(default_type=int, default_value=1)[T] == 1
+#     assert traces.TimeSeries(default_type=float, default_value=1.2)[T] == 1.2
+#     assert traces.TimeSeries(default_type=list, default_value=[2])[T] == [2]
+#     ts = traces.TimeSeries(default_type=dict, default_value={'a': 'b'})
+#     assert ts[T] == {'a': 'b'}
+#     assert traces.TimeSeries(default_type=set, default_value={1})[
+#         T] == set([1])
+#
+#     ts = traces.TimeSeries(default_type=int, default_value=8)
+#     ts[5] = 15
+#     ts[10] = 1
+#     assert ts[-1] == 8
+#
+#     ts = traces.TimeSeries(default_type=str, default_value='a')
+#     ts[5] = 'b'
+#     ts[6] = 'c'
+#     ts[10] = 'a'
+#     assert ts[3] == 'a'
 
 
 def test_compact():

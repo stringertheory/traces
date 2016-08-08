@@ -16,8 +16,8 @@ def test_scalar_ops():
     ts_threshold = a.threshold(value=1.1)
 
     # test before domain, should give default value
-    assert ts_half[datetime.datetime(2015, 2, 24)] == 0
-    assert ts_bool[datetime.datetime(2015, 2, 24)] == False
+    assert ts_half[datetime.datetime(2015, 2, 24)] == 0.5
+    assert ts_bool[datetime.datetime(2015, 2, 24)] == True
     assert ts_threshold[datetime.datetime(2015, 2, 24)] == False
 
     # test values throughout series
@@ -62,7 +62,7 @@ def test_sum():
     ts_sum = TimeSeries.from_many_sum([a, b, c])
 
     # test before domain, should give default value
-    assert ts_sum[datetime.datetime(2015, 2, 24)] == 0
+    assert ts_sum[datetime.datetime(2015, 2, 24)] == 1
 
     # test values throughout sum
     assert ts_sum[datetime.datetime(2015, 3, 1)] == 1

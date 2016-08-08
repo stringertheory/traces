@@ -58,10 +58,9 @@ class TimeSeries(object):
 
     """
 
-    def __init__(self, default_type=int, default_value=None):
+    def __init__(self, default_type=int):
         self.d = sortedcontainers.SortedDict()
         self.default_type = default_type
-        self.default_value = default_value
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
@@ -69,21 +68,23 @@ class TimeSeries(object):
 
     def default(self):
         """Return the default value of the time series."""
-        if self.default_value is None:
+        if len(self) == 0:
             return self.default_type()
         else:
-            return self.default_type(self.default_value)
+            return self.d.values()[0]
 
     def get(self, time):
         """Get the value of the time series, even in-between measured values.
 
         """
         index = self.d.bisect_right(time)
-        if index:
+        if index > 0:
             previous_measurement_time = self.d.iloc[index - 1]
             return self.d[previous_measurement_time]
-        else:
+        elif index == 0:
             return self.default()
+        else:
+            return "Something is wrong."  # TODO: Check if this will ever happen
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
@@ -99,7 +100,7 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
-        if (not compact) or (compact and self.get(time) != value):
+        if (len(self) == 0) or (not compact) or (compact and self.get(time) != value):
             self.d[time] = value
 
     def compact(self):
@@ -107,7 +108,7 @@ class TimeSeries(object):
         same at all times, but repeated measurements are discarded.
 
         """
-        previous_value = self.default()
+        previous_value = None
         remove_item = []
         for time, value in self.d.items():
             if value == previous_value:
@@ -195,10 +196,12 @@ class TimeSeries(object):
 
         # get start index and value
         start_index = self.d.bisect_right(start_time)
-        if start_index:
+        if start_index > 0:
             start_value = self.d[self.d.iloc[start_index - 1]]
+        elif start_index == 0:
+            start_value = self.d[self.d.iloc[0]]
         else:
-            start_value = self.default()
+            raise ValueError("start_index is negative for some reason")  # TODO: Verify that this will not happen.
 
         # get last measurement before end of time span
         end_index = self.d.bisect_right(end_time)
@@ -233,8 +236,7 @@ class TimeSeries(object):
             raise ValueError(message)
 
         result = TimeSeries(
-            default_type=self.default_type,
-            default_value=self.default_value,
+            default_type=self.default_type
         )
 
         # since start_time > end_time, this will always have at least
@@ -419,8 +421,7 @@ class TimeSeries(object):
         that list of values.
 
         """
-        default_value = [ts.default() for ts in ts_list]
-        result = cls(default_type=list, default_value=default_value)
+        result = cls(default_type=list)
         for t, merged in cls.iter_merge(ts_list):
             if operation is None:
                 value = merged
@@ -568,3 +569,7 @@ class TimeSeries(object):
     def __xor__(self, other):
         """Allow a ^ b syntax"""
         return self.logical_xor(other)
+
+
+class TimeSeriesDomain(TimeSeries):
+    domain = None
