@@ -7,5 +7,5 @@ test:
   override:
     - nosetests --with-coverage --cover-package=traces --with-xunit
     - pep8 traces/
-#    - mkdocs build  # TODO: Figure out what's this and how it works
+    - mkdocs build
 
