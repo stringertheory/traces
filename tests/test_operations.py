@@ -1,5 +1,4 @@
 import datetime
-import arrow
 import nose
 from traces import TimeSeries
 
@@ -90,6 +89,8 @@ def test_sum():
     # ts_sum = TimeSeries.from_many_sum([a, b, c])
     # for i, j in ts_sum:
     #     print i.isoformat(), j + baseline
+
+    assert 0 + a + b == a + b
 
 
 def example_dictlike():
@@ -245,4 +246,3 @@ def example_sum():
     for dt, i in TimeSeries.from_many_sum([a, b, c]):
         print(dt.isoformat(), i)
 
-    assert 0+a+b == a+b

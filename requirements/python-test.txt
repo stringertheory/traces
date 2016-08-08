@@ -1,6 +1,5 @@
 pep8
 coveralls
 nose
-arrow
 numpy
 scipy
