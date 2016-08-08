@@ -29,7 +29,7 @@ all_types = dict(listitems(numeric_types) +
 
 
 def _make_ts(type_, key_list, value_list):
-    ts = traces.TimeSeries(default_type=type_)
+    ts = traces.TimeSeries()
     for t, v in zip(key_list, value_list):
         ts[t] = v
     return ts

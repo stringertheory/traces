@@ -1,4 +1,5 @@
 from traces import TimeSeries
+import nose
 
 
 def test_init_data():
@@ -35,6 +36,8 @@ def test_init_data():
 
 def test_get():
     ts = TimeSeries()
+    nose.tools.assert_raises(ValueError, ts.get, 0)
+
     ts[1.2] = 1
     ts[3] = 0
     ts[6] = 2

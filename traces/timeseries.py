@@ -69,7 +69,7 @@ class TimeSeries(object):
     def default(self):
         """Return the default value of the time series."""
         if len(self) == 0:
-            return None
+            raise ValueError("There is no data in the TimeSeries.")
         else:
             return self.d.values()[0]
 
