@@ -249,6 +249,22 @@ class TimeSeries(object):
         periods versus averaging over regular intervals?
 
         """
+        if start_time > end_time:
+            msg = "start_time is larger than end_time."
+            raise ValueError(msg)
+
+        if not isinstance(sampling_period, int):
+            msg = "sampling_period must be an integer."
+            raise TypeError(msg)
+
+        if (window_size <= 0) or (sampling_period <= 0):
+            msg = "window_size and sampling_period have to be greater than 0."
+            raise ValueError(msg)
+
+        if sampling_period > utils.duration_to_number(end_time-start_time):
+            msg = "sampling_period must not be greater than the duration between start_time and end_time."
+            raise ValueError(msg)
+
         result = []
         half = float(window_size) / 2
         current_time = start_time

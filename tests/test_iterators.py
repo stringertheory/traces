@@ -52,6 +52,9 @@ def test_slice():
     assert ts.slice(-1, 1).items() == [(-1, 0), (0, 1), (1, 5)]
     assert ts.slice(-1, 0.5).items() == [(-1, 0), (0, 1), (0.5, 1)]
 
+    nose.tools.assert_raises(ValueError, ts.slice, 2.5, 0)
+
+
 def make_random_timeseries():
     length = random.randint(0, 10)
     result = TimeSeries()
@@ -61,7 +64,8 @@ def make_random_timeseries():
         x = random.randint(0, 5)
         result[t] = x
     return result
-    
+
+
 def test_merge():
 
     # since this is random, do it a bunch of times
@@ -79,6 +83,7 @@ def test_merge():
         
         msg = '%s != %s' % (pprint.pformat(method_a), pprint.pformat(method_b))
         assert method_a == method_b, msg
+
 
 def test_single_merges():
 
@@ -135,4 +140,4 @@ def test_single_merges():
         (23, [40, 2]),
         (24, [40, 3]),
     ]
-    
+
