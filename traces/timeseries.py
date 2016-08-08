@@ -58,9 +58,9 @@ class TimeSeries(object):
 
     """
 
-    def __init__(self, default_type=int):
-        self.d = sortedcontainers.SortedDict()
-        self.default_type = default_type
+    def __init__(self, data=None, domain=None):
+        self.d = sortedcontainers.SortedDict(data)
+        self.domain = domain
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
@@ -69,7 +69,7 @@ class TimeSeries(object):
     def default(self):
         """Return the default value of the time series."""
         if len(self) == 0:
-            return self.default_type()
+            return None
         else:
             return self.d.values()[0]
 
@@ -235,9 +235,7 @@ class TimeSeries(object):
             ) % (start_time, end_time)
             raise ValueError(message)
 
-        result = TimeSeries(
-            default_type=self.default_type
-        )
+        result = TimeSeries()
 
         # since start_time > end_time, this will always have at least
         # one item, so `value` gets set for following line
@@ -397,12 +395,15 @@ class TimeSeries(object):
         in the list at time t.
 
         """
+        # ignore all empty TimeSeries
+        clean_timeseries_list = [ts for ts in timeseries_list if len(ts) > 0]
+
         # This function mostly wraps _iter_merge, the main point of
         # this is to deal with the case of tied times, where we only
         # want to yield the last list of values that occurs for any
         # group of tied times.
         index, previous_t, previous_state = -1, object(), object()
-        for index, (t, state) in enumerate(cls._iter_merge(timeseries_list)):
+        for index, (t, state) in enumerate(cls._iter_merge(clean_timeseries_list)):
             if index > 0 and t != previous_t:
                 yield previous_t, previous_state
             previous_t, previous_state = t, state
@@ -421,7 +422,7 @@ class TimeSeries(object):
         that list of values.
 
         """
-        result = cls(default_type=list)
+        result = cls()
         for t, merged in cls.iter_merge(ts_list):
             if operation is None:
                 value = merged
@@ -436,7 +437,7 @@ class TimeSeries(object):
         TimeSeries.
 
         """
-        result = cls(default_type=float)
+        result = cls()
         for t, merged in cls.iter_merge(timeseries_list):
             result.set(t, sum(merged), compact=compact)
         return result
@@ -447,7 +448,7 @@ class TimeSeries(object):
         TimeSeries.
 
         """
-        result = cls(default_type=set)
+        result = cls()
         for t, merged in cls.iter_merge(timeseries_list):
             result.set(t, set.union(*merged), compact=compact)
         return result
@@ -572,7 +573,3 @@ class TimeSeries(object):
 
     def __eq__(self, other):
         return self.items() == other.items()
-
-
-class TimeSeriesDomain(TimeSeries):
-    domain = None

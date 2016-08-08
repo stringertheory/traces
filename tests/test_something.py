@@ -3,14 +3,6 @@ import nose
 import traces
 
 
-def test_default_types():
-    T = 0  # can be any key that's not in the time series
-    assert traces.TimeSeries(default_type=int)[T] == 0
-    assert traces.TimeSeries(default_type=float)[T] == 0.0
-    assert traces.TimeSeries(default_type=list)[T] == []
-    assert traces.TimeSeries(default_type=dict)[T] == {}
-    assert traces.TimeSeries(default_type=set)[T] == set()
-    assert traces.TimeSeries(default_type=str)[T] == ''
 
 
 # def test_default_values():

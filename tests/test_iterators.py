@@ -118,7 +118,7 @@ def test_single_merges():
     
     merged = TimeSeries.merge([ts_a, ts_b])
     
-    assert merged.items() == [(21, [42, 0])]
+    assert merged.items() == [(21, [42])]
 
     # test an empty time series and a time series with one entry
     ts_a = TimeSeries()
