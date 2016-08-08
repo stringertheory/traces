@@ -19,7 +19,7 @@ except ImportError:
     pass
 
 from queue import PriorityQueue
-from future.utils import listitems
+from future.utils import listitems, iteritems
 
 # 3rd party
 import sortedcontainers
@@ -64,7 +64,7 @@ class TimeSeries(object):
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
-        return self.d.iteritems()
+        return iteritems(self.d)
 
     def default(self):
         """Return the default value of the time series."""
