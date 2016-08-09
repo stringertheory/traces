@@ -53,18 +53,27 @@ def test_set_domain():
     assert ts.domain[10] == False
     assert ts.domain[21.2] == False
 
+    # TODO: check when time series is not empty
+
 
 def test_time_series():
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
-    ts.set_domain([1.5, 7])
+    nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
 
+    ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
+    ts.set_domain([1, 8.5])
     nose.tools.assert_raises(ValueError, ts.get, 0)
     assert ts[1.5] == 2
     assert ts[2.4] == 3
     assert ts[6] == 1
-    nose.tools.assert_raises(ValueError, ts.get, 7)
-    nose.tools.assert_raises(ValueError, ts.get, 8)
+    nose.tools.assert_raises(ValueError, ts.get, 8.5)
+    nose.tools.assert_raises(ValueError, ts.get, 9)
 
     ts[5] = 7
-    nose.tools.assert_raises(ValueError, ts.set, 8, 10)
+    nose.tools.assert_raises(ValueError, ts.set, 9, 10)
     nose.tools.assert_raises(ValueError, ts.set, 0, 10)
+
+    nose.tools.assert_raises(ValueError, TimeSeries,
+                             data=[(1, 2), (2, 3), (6, 1), (8, 4)],
+                             domain=[1.5, 7])
+

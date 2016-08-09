@@ -59,9 +59,10 @@ class TimeSeries(object):
     """
 
     def __init__(self, data=None, domain=None):
-        self.d = sortedcontainers.SortedDict(data)
         self.domain = None
         self.set_domain(domain)
+        self.is_data_in_domain(data)
+        self.d = sortedcontainers.SortedDict(data)
 
     def set_domain(self, domain):
         """Create a time series with default values False
@@ -94,11 +95,28 @@ class TimeSeries(object):
                     if end_time is not None:
                         ts[end_time] = False
 
+        if hasattr(self, 'd'):
+            self.is_data_in_domain(self.d, domain=ts)
+
         self.domain = ts
 
-    # TODO: get domain
+    # TODO: Should we allow for data outside of a domain when creating the TimeSeries
+    # TODO: get domain as an array
 
-    def is_in_domain(self, time):
+    def is_data_in_domain(self, data, domain=None):
+        """Check if data (sorteddict/dict) is inside the domain"""
+        if domain is None:
+            domain = self.domain
+
+        temp = sortedcontainers.SortedDict(data)
+        if domain is not None:
+            for key in temp.keys():
+                if domain[key] is not True:
+                    raise ValueError("({}, {}) is outside of the domain.".format(key, temp[key]))
+
+        return True
+
+    def is_time_in_domain(self, time):
         """Check if time is inside the domain"""
         if self.domain is not None:
             if self.domain[time] is not True:
@@ -121,7 +139,7 @@ class TimeSeries(object):
         """Get the value of the time series, even in-between measured values.
 
         """
-        self.is_in_domain(time)
+        self.is_time_in_domain(time)
 
         index = self.d.bisect_right(time)
         if index > 0:
@@ -147,13 +165,16 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
-        self.is_in_domain(time)
+        self.is_time_in_domain(time)
 
         if (len(self) == 0) or (not compact) or (compact and self.get(time) != value):
             self.d[time] = value
 
     def update(self, data, compact=False):
         """Set the values of TimeSeries using a list. Compact it if necessary."""
+
+        self.is_data_in_domain(data)
+
         self.d.update(data)
         if compact:
             self.compact()
