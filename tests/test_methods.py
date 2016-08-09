@@ -119,6 +119,9 @@ def test_regularize():
          ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
                  curr_time(i) + datetime.timedelta(seconds=1))) for i in range(0, 14)]
 
+    ts = traces.TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
+    assert ts.regularize(2, 1, 1, 8) == [(i, ts.mean(i-1, i+1)) for i in range(1, 9)]
+
 
 def test_to_bool():
 

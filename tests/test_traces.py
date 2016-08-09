@@ -78,8 +78,7 @@ def test_update():
     assert ts[1] == 2
 
     ts = TimeSeries([(1, 2), (2, 3), (6, 1), (8, 4)])
-    ts.update([(4, 1), (7, 4)])
-    ts.compact()
+    ts.update([(4, 1), (7, 4)], compact=True)
 
     assert ts.items() == [(1, 2), (2, 3), (4, 1), (7, 4)]
 

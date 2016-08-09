@@ -152,7 +152,7 @@ class TimeSeries(object):
         if (len(self) == 0) or (not compact) or (compact and self.get(time) != value):
             self.d[time] = value
 
-    def update(self, data, compact=False):  # TODO: Need a test
+    def update(self, data, compact=False):
         """Set the values of TimeSeries using a list. Compact it if necessary."""
         self.d.update(data)
         if compact:
@@ -301,7 +301,6 @@ class TimeSeries(object):
         return result
 
     def regularize(self, window_size, sampling_period, start_time, end_time):
-        # TODO: Need to be more general than datetime
         # TODO: Output can be converted to pandas timeseries easily, put in doc too
         """Should there be a different function for sampling at regular time
         periods versus averaging over regular intervals?
@@ -311,10 +310,6 @@ class TimeSeries(object):
             msg = "start_time is larger than end_time."
             raise ValueError(msg)
 
-        if not isinstance(sampling_period, int):
-            msg = "sampling_period must be an integer."
-            raise TypeError(msg)
-
         if (window_size <= 0) or (sampling_period <= 0):
             msg = "window_size and sampling_period have to be greater than 0."
             raise ValueError(msg)
@@ -323,15 +318,27 @@ class TimeSeries(object):
             msg = "sampling_period must not be greater than the duration between start_time and end_time."
             raise ValueError(msg)
 
-        result = []
         half = float(window_size) / 2
+
+        if isinstance(start_time, datetime.datetime):
+            if not isinstance(sampling_period, int):
+                msg = "sampling_period must be an integer."
+                raise TypeError(msg)
+
+            buffer_time = datetime.timedelta(seconds=half)
+            period_time = datetime.timedelta(seconds=sampling_period)
+        else:
+            buffer_time = half
+            period_time = sampling_period
+
+        result = []
         current_time = start_time
         while current_time <= end_time:
-            window_start = current_time - datetime.timedelta(seconds=half)
-            window_end = current_time + datetime.timedelta(seconds=half)
+            window_start = current_time - buffer_time
+            window_end = current_time + buffer_time
             mean = self.mean(window_start, window_end)
             result.append((current_time, mean))
-            current_time += datetime.timedelta(seconds=sampling_period)
+            current_time += period_time
         return result
 
     def mean(self, start_time, end_time):
