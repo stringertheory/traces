@@ -153,7 +153,7 @@ class TimeSeries(object):
             self.d[time] = value
 
     def update(self, data, compact=False):  # TODO: Need a test
-        """Set TimeSeries with a list. Compact it if necessary."""
+        """Set the values of TimeSeries using a list. Compact it if necessary."""
         self.d.update(data)
         if compact:
             self.compact()
