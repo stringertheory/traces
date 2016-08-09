@@ -1,7 +1,8 @@
 import datetime
 import nose
 import traces
-import unittest
+import pandas as pd
+from sortedcontainers import SortedDict
 from future.utils import listitems, iteritems
 
 key_list = [
@@ -79,23 +80,23 @@ def test_regularize():
         return datetime.datetime(2016, 1, 1, 1, 1, i)
 
     # Check first arguments
-    assert ts.regularize(2, 1, time_list[0], time_list[-1]) == [
-        (curr_time(i),
+    assert ts.regularize(2, 1, time_list[0], time_list[-1]) == {
+         curr_time(i):
          ts.mean(curr_time(i)-datetime.timedelta(seconds=1),
-                 curr_time(i)+datetime.timedelta(seconds=1))) for i in range(2,11)]
+                 curr_time(i)+datetime.timedelta(seconds=1)) for i in range(2, 11)}
 
-    assert ts.regularize(0.2, 1, time_list[0], time_list[-1]) == [
-        (curr_time(i),
+    assert ts.regularize(0.2, 1, time_list[0], time_list[-1]) == {
+         curr_time(i):
          ts.mean(curr_time(i) - datetime.timedelta(seconds=.1),
-                 curr_time(i) + datetime.timedelta(seconds=.1))) for i in range(2,11)]
+                 curr_time(i) + datetime.timedelta(seconds=.1)) for i in range(2, 11)}
 
     nose.tools.assert_raises(ValueError, ts.regularize, -1, 1, time_list[0], time_list[-1])
 
     # Check second arguments
-    assert ts.regularize(1, 2, time_list[0], time_list[-1]) == [
-        (curr_time(i),
+    assert ts.regularize(1, 2, time_list[0], time_list[-1]) == {
+         curr_time(i):
          ts.mean(curr_time(i) - datetime.timedelta(seconds=.5),
-                 curr_time(i) + datetime.timedelta(seconds=.5))) for i in range(2, 11, 2)]
+                 curr_time(i) + datetime.timedelta(seconds=.5)) for i in range(2, 11, 2)}
 
     nose.tools.assert_raises(TypeError, ts.regularize, 1, 1.4, time_list[0], time_list[-1])
     nose.tools.assert_raises(ValueError, ts.regularize, 1, -1, time_list[0], time_list[-1])
@@ -104,23 +105,32 @@ def test_regularize():
     # Check third and fourth arguments
     nose.tools.assert_raises(ValueError, ts.regularize, 1, 1, time_list[3], time_list[0])
 
-    assert ts.regularize(2, 1, curr_time(5), curr_time(10)) == [
-        (curr_time(i),
+    assert ts.regularize(2, 1, curr_time(5), curr_time(10)) == {
+         curr_time(i):
          ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
-                 curr_time(i) + datetime.timedelta(seconds=1))) for i in range(5, 11)]
+                 curr_time(i) + datetime.timedelta(seconds=1)) for i in range(5, 11)}
 
-    assert ts.regularize(2, 1, curr_time(2), curr_time(5)) == [
-        (curr_time(i),
+    assert ts.regularize(2, 1, curr_time(2), curr_time(5)) == {
+         curr_time(i):
          ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
-                 curr_time(i) + datetime.timedelta(seconds=1))) for i in range(2, 6)]
+                 curr_time(i) + datetime.timedelta(seconds=1)) for i in range(2, 6)}
 
-    assert ts.regularize(2, 1, curr_time(0), curr_time(13)) == [
-        (curr_time(i),
+    assert ts.regularize(2, 1, curr_time(0), curr_time(13)) == {
+         curr_time(i):
          ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
-                 curr_time(i) + datetime.timedelta(seconds=1))) for i in range(0, 14)]
+                 curr_time(i) + datetime.timedelta(seconds=1)) for i in range(0, 14)}
 
+    # Check using int
     ts = traces.TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
-    assert ts.regularize(2, 1, 1, 8) == [(i, ts.mean(i-1, i+1)) for i in range(1, 9)]
+    assert ts.regularize(2, 1, 1, 8) == {
+         i: ts.mean(i-1, i+1) for i in range(1, 9)}
+    assert ts.regularize(2, 0.5, 1, 8) == {
+        1+i/2.: ts.mean(1+i/2. - 1, 1+i/2. + 1) for i in range(0, 15)}
+
+    # Test pandas compatibility
+    pd_ts = pd.Series(ts.regularize(2, 1, 1, 8))
+    assert all(pd_ts.index[i-1] == i for i in range(1, 9))
+    assert all(pd_ts.values[i-1] == ts.mean(i-1, i+1) for i in range(1, 9))
 
 
 def test_to_bool():

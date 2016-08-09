@@ -301,9 +301,11 @@ class TimeSeries(object):
         return result
 
     def regularize(self, window_size, sampling_period, start_time, end_time):
-        # TODO: Output can be converted to pandas timeseries easily, put in doc too
         """Should there be a different function for sampling at regular time
         periods versus averaging over regular intervals?
+
+        Output: Dict that can be converted into pandas.Series
+        directly by calling pandas.Series(Dict)
 
         """
         if start_time > end_time:
@@ -331,13 +333,13 @@ class TimeSeries(object):
             buffer_time = half
             period_time = sampling_period
 
-        result = []
+        result = {}
         current_time = start_time
         while current_time <= end_time:
             window_start = current_time - buffer_time
             window_end = current_time + buffer_time
             mean = self.mean(window_start, window_end)
-            result.append((current_time, mean))
+            result[current_time] = mean
             current_time += period_time
         return result
 
