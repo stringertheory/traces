@@ -300,9 +300,42 @@ class TimeSeries(object):
 
         return result
 
-    def regularize(self, window_size, sampling_period, start_time, end_time):
-        """Should there be a different function for sampling at regular time
-        periods versus averaging over regular intervals?
+    def regularize(self, sampling_period, start_time, end_time):
+        """Sampling at regular time periods
+
+        Output: Dict that can be converted into pandas.Series
+        directly by calling pandas.Series(Dict)
+
+        """
+        if start_time > end_time:
+            msg = "start_time is larger than end_time."
+            raise ValueError(msg)
+
+        if sampling_period <= 0:
+            msg = "sampling_period have to be greater than 0."
+            raise ValueError(msg)
+
+        if sampling_period > utils.duration_to_number(end_time-start_time):
+            msg = "sampling_period must not be greater than the duration between start_time and end_time."
+            raise ValueError(msg)
+
+        if isinstance(start_time, datetime.datetime):
+            if not isinstance(sampling_period, int):
+                msg = "sampling_period must be an integer."
+                raise TypeError(msg)
+            period_time = datetime.timedelta(seconds=sampling_period)
+        else:
+            period_time = sampling_period
+
+        result = {}
+        current_time = start_time
+        while current_time <= end_time:
+            result[current_time] = self[current_time]
+            current_time += period_time
+        return result
+
+    def moving_average(self, window_size, sampling_period, start_time, end_time):
+        """Averaging over regular intervals
 
         Output: Dict that can be converted into pandas.Series
         directly by calling pandas.Series(Dict)
