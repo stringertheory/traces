@@ -100,7 +100,6 @@ class TimeSeries(object):
 
         self.domain = ts
 
-    # TODO: Should we allow for data outside of a domain when creating the TimeSeries
     # TODO: get domain as an array
 
     def is_data_in_domain(self, data, domain=None):
