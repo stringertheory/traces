@@ -1,17 +1,52 @@
 from traces import TimeSeries, DefaultTimeSeries
 import nose
+import warnings
+
+
+def check_warning(warn, fun, *args):
+    with warnings.catch_warnings(record=True) as w:
+        fun(*args)
+        assert len(w) == 1
+        assert issubclass(w[-1].category, warn)
+
+
+def test_is_time_in_domain():
+    ts = TimeSeries(domain=[0, 8])
+    assert ts.is_time_in_domain(-2) == False
+    assert ts.is_time_in_domain(0) == True
+    assert ts.is_time_in_domain(6) == True
+    assert ts.is_time_in_domain(8) == False
+    assert ts.is_time_in_domain(10) == False
+
+
+def test_is_data_in_domain():
+    ts = TimeSeries(domain=[0, 8])
+    data1 = [(1, 2), (2, 3), (6, 1), (7, 4)]
+    data2 = [(-1, 2), (1, 2), (2, 3)]
+    data3 = [(1, 2), (2, 3), (6, 1), (9, 4)]
+
+    ts_domain = DefaultTimeSeries(default_values=False)
+    ts_domain[1] = True
+    ts_domain[9] = False
+
+    assert ts.is_data_in_domain(data1, ts_domain) == True
+    assert ts.is_data_in_domain(data2, ts_domain) == False
+    assert ts.is_data_in_domain(data3, ts_domain) == False
 
 
 def test_default_time_series():
     ts = DefaultTimeSeries()
     assert ts[0] == None
+    assert ts.default() == None
 
     ts = DefaultTimeSeries(default_values=False)
     assert ts[0] == False
+    assert ts.default() == False
 
     ts[1] = True
     assert ts[2] == True
     assert ts[0] == False
+    assert ts.default() == False
 
 
 def test_set_domain():
@@ -53,12 +88,13 @@ def test_set_domain():
     assert ts.domain[10] == False
     assert ts.domain[21.2] == False
 
-    # TODO: check when time series is not empty
+    ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
+    nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
+    nose.tools.assert_raises(ValueError, ts.set_domain, [0, 7])
+    nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 9])
 
 
 def test_time_series():
-    ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
-    nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
     ts.set_domain([1, 8.5])

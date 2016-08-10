@@ -61,8 +61,10 @@ class TimeSeries(object):
     def __init__(self, data=None, domain=None):
         self.domain = None
         self.set_domain(domain)
-        self.is_data_in_domain(data)
-        self.d = sortedcontainers.SortedDict(data)
+        if self.is_data_in_domain(data):
+            self.d = sortedcontainers.SortedDict(data)
+        else:
+            raise ValueError("Data given are not in domain.")
 
     def set_domain(self, domain):
         """Create a time series with default values False
@@ -96,7 +98,8 @@ class TimeSeries(object):
                         ts[end_time] = False
 
         if hasattr(self, 'd'):
-            self.is_data_in_domain(self.d, domain=ts)
+            if not self.is_data_in_domain(self.d, domain=ts):
+                raise ValueError("Data are not in the domain.")
 
         self.domain = ts
 
@@ -111,7 +114,11 @@ class TimeSeries(object):
         if domain is not None:
             for key in temp.keys():
                 if domain[key] is not True:
-                    raise ValueError("({}, {}) is outside of the domain.".format(key, temp[key]))
+                    # raise ValueError("({}, {}) is outside of the domain."
+                    #                  .format(key, temp[key]))
+                    # warnings.warn("({}, {}) is outside of the domain."
+                    #               .format(key, temp[key]), Warning)
+                    return False
 
         return True
 
@@ -119,7 +126,11 @@ class TimeSeries(object):
         """Check if time is inside the domain"""
         if self.domain is not None:
             if self.domain[time] is not True:
-                raise ValueError("{} is outside of the domain.".format(time))
+                # raise ValueError("{} is outside of the domain."
+                #                  .format(time))
+                # warnings.warn("{} is outside of the domain."
+                #               .format(time), Warning)
+                return False
 
         return True
 
@@ -138,7 +149,9 @@ class TimeSeries(object):
         """Get the value of the time series, even in-between measured values.
 
         """
-        self.is_time_in_domain(time)
+        if not self.is_time_in_domain(time):
+            raise ValueError("{} is outside of the domain."
+                             .format(time))
 
         index = self.d.bisect_right(time)
         if index > 0:
@@ -164,7 +177,9 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
-        self.is_time_in_domain(time)
+        if not self.is_time_in_domain(time):
+            raise ValueError("({}, {}) is outside of the domain."
+                             .format(time, value))
 
         if (len(self) == 0) or (not compact) or (compact and self.get(time) != value):
             self.d[time] = value
@@ -172,7 +187,8 @@ class TimeSeries(object):
     def update(self, data, compact=False):
         """Set the values of TimeSeries using a list. Compact it if necessary."""
 
-        self.is_data_in_domain(data)
+        if not self.is_data_in_domain(data):
+            raise ValueError("Data are not in the domain.")
 
         self.d.update(data)
         if compact:
