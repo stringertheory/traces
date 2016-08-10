@@ -163,3 +163,10 @@ def test_time_series():
                              data=[(1, 2), (2, 3), (6, 1), (8, 4)],
                              domain=[1.5, 7])
 
+
+def test_slice():
+    ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
+    ts.set_domain([0, 8.5])
+
+    nose.tools.assert_raises(ValueError, ts.slice, -1, 4)
+    nose.tools.assert_raises(ValueError, ts.slice, 0, 9)

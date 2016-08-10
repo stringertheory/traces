@@ -252,6 +252,7 @@ class TimeSeries(object):
         value of the time series matches `value`.
 
         """
+        # TODO: How would this change with domain?
         # if value is None, don't filter intervals
         if value is None:
             def value_function(x):
@@ -287,6 +288,7 @@ class TimeSeries(object):
         span) and yields (time, duration, value) tuples.
 
         """
+        # TODO: How would this change with domain?
         # use first/last measurement as start/end time if not given
         if start_time is None:
             start_time = self.d.iloc[0]
@@ -333,6 +335,16 @@ class TimeSeries(object):
                 "Received start_time=%s and end_time=%s"
             ) % (start_time, end_time)
             raise ValueError(message)
+
+        if self.domain is not None:
+            if (not self.domain[end_time]) or (not self.domain[start_time]):
+                message = (
+                              "Can't slice a Timeseries when end_time or "
+                              "start_time is outside of the domain. "
+                              "Received start_time=%s and end_time=%s. "
+                              "Domain is %s."
+                          ) % (start_time, end_time, self.get_domain())
+                raise ValueError(message)
 
         result = TimeSeries()
 
