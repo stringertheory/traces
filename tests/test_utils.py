@@ -1,7 +1,9 @@
 from datetime import timedelta
-import traces.utils as utils
 from six import iteritems
 import nose
+
+import traces.utils as utils
+from traces.domain import Domain, inf
 
 
 timedelta_list = [
@@ -33,3 +35,42 @@ def test_duration_to_number():
     for item in non_numeric_types:
         nose.tools.assert_raises(TypeError, utils.duration_to_number, item)
 
+
+def test_convert_args_to_list():
+    iterable_inputs = [
+        [1, 2],
+        [[1, 2]],
+        [(1, 2)],
+        [[(1, 2)]],
+        [[[1, 2]]],
+        [[[1, 2], [4, 5]]],
+        [[(1, 2), (4, 5)]],
+        [([1, 2], [4, 5])],
+        [((1, 2), (4, 5))],
+        [[[1, 2], [4, 5], [6, 7]]],
+        [[(1, 2), (4, 5), (6, 7)]],
+        [([1, 2], [4, 5], [6, 7])],
+        [((1, 2), (4, 5), (6, 7))]
+    ]
+
+    iterable_inputs_answers = [
+        [[1, 2]],
+        [[1, 2]],
+        [[1, 2]],
+        [[1, 2]],
+        [[1, 2]],
+        [[1, 2], [4, 5]],
+        [[1, 2], [4, 5]],
+        [[1, 2], [4, 5]],
+        [[1, 2], [4, 5]],
+        [[1, 2], [4, 5], [6, 7]],
+        [[1, 2], [4, 5], [6, 7]],
+        [[1, 2], [4, 5], [6, 7]],
+        [[1, 2], [4, 5], [6, 7]]
+    ]
+
+    for inputs, answers in zip(iterable_inputs, iterable_inputs_answers):
+        assert utils.convert_args_to_list(inputs) == answers
+
+    nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2, 3, 4])
+    nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2])

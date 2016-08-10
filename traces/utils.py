@@ -1,6 +1,6 @@
 import datetime
 from past.builtins import long
-
+from collections import Iterable
 
 def duration_to_number(duration, units='seconds'):
     """If duration is already a numeric type, then just return
@@ -21,3 +21,32 @@ def duration_to_number(duration, units='seconds'):
     else:
         msg = 'duration is an unknown type (%s)' % duration
         raise TypeError(msg)
+
+
+def convert_args_to_list(args):
+    """Convert all input formats into a list of list"""
+    list_of_pairs = []
+    if any(isinstance(arg, Iterable) for arg in args):
+        # Domain([[1, 4]])
+        # Domain([(1, 4)])
+        # Domain([(1, 4), (5, 8)])
+        # Domain([[1, 4], [5, 8]])
+        if len(args) == 1 and any(isinstance(arg, Iterable) for arg in args[0]):
+            for start, end in args[0]:
+                list_of_pairs.append([start, end])
+        else:
+            # Domain([1, 4])
+            # Domain((1, 4))
+            # Domain((1, 4), (5, 8))
+            # Domain([1, 4], [5, 8])
+            for start, end in args:
+                list_of_pairs.append([start, end])
+    else:
+        # Domain(1, 2)
+        if len(args) == 2:
+            start, end = args
+            list_of_pairs.append([start, end])
+        else:
+            msg = "The argument type is invalid. ".format(args)
+            raise TypeError(msg)
+    return list_of_pairs
