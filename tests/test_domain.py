@@ -1,4 +1,4 @@
-from traces import TimeSeries, DefaultTimeSeries
+from traces import TimeSeries, DefaultTimeSeries, inf, Interval
 import nose
 import warnings
 
@@ -15,7 +15,7 @@ def test_is_time_in_domain():
     assert ts.is_time_in_domain(-2) == False
     assert ts.is_time_in_domain(0) == True
     assert ts.is_time_in_domain(6) == True
-    assert ts.is_time_in_domain(8) == False
+    assert ts.is_time_in_domain(8) == True
     assert ts.is_time_in_domain(10) == False
 
 
@@ -25,10 +25,7 @@ def test_is_data_in_domain():
     data2 = [(-1, 2), (1, 2), (2, 3)]
     data3 = [(1, 2), (2, 3), (6, 1), (9, 4)]
 
-    ts_domain = DefaultTimeSeries(default_values=False)
-    ts_domain[1] = True
-    ts_domain[9] = False
-
+    ts_domain = Interval([1, 7])
     assert ts.is_data_in_domain(data1, ts_domain) == True
     assert ts.is_data_in_domain(data2, ts_domain) == False
     assert ts.is_data_in_domain(data3, ts_domain) == False
@@ -52,59 +49,25 @@ def test_default_time_series():
 def test_set_domain():
 
     ts = TimeSeries()
-    assert ts.domain == None
+    assert ts.domain == Interval([-inf, inf])
 
     ts.set_domain(None)
-    assert ts.domain == None
+    assert ts.domain == Interval([-inf, inf])
 
-    ts.set_domain([None, 5])
-    assert ts.domain[3] == True
-    assert ts.domain[5] == False
-    assert ts.domain[6.7] == False
+    ts.set_domain([-inf, 5])
+    assert ts.domain == Interval([-inf, 5])
 
-    ts.set_domain([5, None])
-    assert ts.domain[3] == False
-    assert ts.domain[5] == True
-    assert ts.domain[6.7] == True
+    ts.set_domain([5, inf])
+    assert ts.domain == Interval([5, inf])
 
-    ts.set_domain([None, None])
-    assert ts.domain == None
+    ts.set_domain([-inf, inf])
+    assert ts.domain == Interval([-inf, inf])
 
     ts.set_domain([2, 5])
-    assert ts.domain[0] == False
-    assert ts.domain[2] == True
-    assert ts.domain[3] == True
-    assert ts.domain[5] == False
-    assert ts.domain[6.7] == False
+    assert ts.domain == Interval([2, 5])
 
     ts.set_domain([[2, 5], [9, 10]])
-    assert ts.domain[0] == False
-    assert ts.domain[2] == True
-    assert ts.domain[3] == True
-    assert ts.domain[5] == False
-    assert ts.domain[6.7] == False
-    assert ts.domain[9] == True
-    assert ts.domain[9.6] == True
-    assert ts.domain[10] == False
-    assert ts.domain[21.2] == False
-
-    ts.set_domain([[None, 1], [2, 5]])
-    assert ts.domain[0] == True
-    assert ts.domain[1] == False
-    assert ts.domain[1.5] == False
-    assert ts.domain[2] == True
-    assert ts.domain[3] == True
-    assert ts.domain[5] == False
-    assert ts.domain[6.7] == False
-
-    ts.set_domain([[2, 5], [9, None]])
-    assert ts.domain[0] == False
-    assert ts.domain[2] == True
-    assert ts.domain[3] == True
-    assert ts.domain[5] == False
-    assert ts.domain[6.7] == False
-    assert ts.domain[9] == True
-    assert ts.domain[9.6] == True
+    assert ts.domain == Interval([2, 5], [9, 10])
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
     nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
@@ -114,13 +77,13 @@ def test_set_domain():
 
 def test_get_domain():
     ts = TimeSeries()
-    assert ts.get_domain() == None
+    assert ts.get_domain() == Interval([-inf, inf])
 
     ts.set_domain(None)
-    assert ts.get_domain() == None
+    assert ts.get_domain() == Interval([-inf, inf])
 
-    ts.set_domain([None, 5])
-    assert ts.get_domain() == [None, 5]
+    ts.set_domain([-inf, 5])
+    assert ts.get_domain() == Interval([-inf, 5])
 
     ts.set_domain([5, None])
     assert ts.get_domain() == [5, None]
@@ -152,7 +115,7 @@ def test_time_series():
     assert ts[1.5] == 2
     assert ts[2.4] == 3
     assert ts[6] == 1
-    nose.tools.assert_raises(ValueError, ts.get, 8.5)
+    assert ts[8.5] == 4
     nose.tools.assert_raises(ValueError, ts.get, 9)
 
     ts[5] = 7

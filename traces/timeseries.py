@@ -23,10 +23,16 @@ from future.utils import listitems, iteritems
 
 # 3rd party
 import sortedcontainers
+from interval import interval
+from interval import inf as infinity
 
 # local
 from . import histogram
 from . import utils
+
+# Define infinity for TimeSeries
+inf = infinity
+Interval = interval
 
 
 # TODO: Good name? Traces vs time series vs others
@@ -77,55 +83,39 @@ class TimeSeries(object):
         # http://pyinterval.readthedocs.io/en/latest/install.html
 
         if domain is None:
-            ts = None
+            dom = Interval([-inf, inf])
 
         else:
-            ts = DefaultTimeSeries(default_values=False)
+            dom = Interval()
             if any(isinstance(i, list) for i in domain):
-                for begin_time, end_time in domain:
-                    if begin_time is None:
-                        ts.default_values = True
-                    else:
-                        ts[begin_time] = True
-
-                    if end_time is not None:
-                        ts[end_time] = False
+                dom |= Interval(*domain)
             else:
-                begin_time, end_time = domain
-                if (begin_time is None) and (end_time is None):
-                    ts = None
-                else:
-                    if begin_time is None:
-                        ts.default_values = True
-                    else:
-                        ts[begin_time] = True
-
-                    if end_time is not None:
-                        ts[end_time] = False
+                dom |= Interval(domain)
 
         if hasattr(self, 'd'):
-            if not self.is_data_in_domain(self.d, domain=ts):
+            if not self.is_data_in_domain(self.d, domain=dom):
                 raise ValueError("Data are not in the domain.")
 
-        self.domain = ts
+        self.domain = dom
 
     def get_domain(self):
         """Return the domain as None, list, or list of list"""
 
-        if self.domain is None:
-            return None
-
-        result = []
-        if self.domain.default() is True:
-            result.append([None, self.domain.get_by_index(0)[0]])
-
-        for (t0, v0), (t1, v1) in self.domain.iterintervals(value=True):
-            result.append([t0, t1])
-
-        if self.domain.get_by_index(-1)[1] is True:
-            result.append([self.domain.get_by_index(-1)[0], None])
-
-        return result if len(result) > 1 else result[0]
+        return self.domain
+        # if self.domain is None:
+        #     return None
+        #
+        # result = []
+        # if self.domain.default() is True:
+        #     result.append([None, self.domain.get_by_index(0)[0]])
+        #
+        # for (t0, v0), (t1, v1) in self.domain.iterintervals(value=True):
+        #     result.append([t0, t1])
+        #
+        # if self.domain.get_by_index(-1)[1] is True:
+        #     result.append([self.domain.get_by_index(-1)[0], None])
+        #
+        # return result if len(result) > 1 else result[0]
 
     def is_data_in_domain(self, data, domain=None):
         """Check if data (sorteddict/dict) is inside the domain"""
@@ -133,20 +123,19 @@ class TimeSeries(object):
             domain = self.domain
 
         temp = sortedcontainers.SortedDict(data)
-        if domain is not None:
-            for key in temp.keys():
-                if domain[key] is not True:
-                    return False
+        for key in temp.keys():
+            if key not in domain:
+                return False
 
         return True
 
     def is_time_in_domain(self, *args):
         """Check if time is inside the domain"""
-        if self.domain is not None:
+        if self.domain is not Interval([-inf, inf]):
             for time in args:
                 if time is None:
                     continue
-                elif self.domain[time] is not True:
+                elif time not in self.domain:
                     return False
 
         return True

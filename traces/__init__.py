@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .histogram import Histogram
-from .timeseries import TimeSeries, DefaultTimeSeries
+from .timeseries import TimeSeries, DefaultTimeSeries, inf, Interval
 
 __author__ = 'Mike Stringer'
 __email__ = 'mike.stringer@datascopeanalytics.com'
