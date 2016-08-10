@@ -94,6 +94,29 @@ def test_set_domain():
     nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 9])
 
 
+def test_get_domain():
+    ts = TimeSeries()
+    assert ts.get_domain() == None
+
+    ts.set_domain(None)
+    assert ts.get_domain() == None
+
+    ts.set_domain([None, 5])
+    assert ts.get_domain() == [None, 5]
+
+    ts.set_domain([5, None])
+    assert ts.get_domain() == [5, None]
+
+    ts.set_domain([None, None])
+    assert ts.get_domain() == None
+
+    ts.set_domain([2, 5])
+    assert ts.get_domain() == [2, 5]
+
+    ts.set_domain([[2, 5], [9, 10]])
+    assert ts.get_domain() == [[2, 5], [9, 10]]
+
+
 def test_time_series():
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])

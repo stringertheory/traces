@@ -103,7 +103,22 @@ class TimeSeries(object):
 
         self.domain = ts
 
-    # TODO: get domain as an array
+    def get_domain(self):
+
+        if self.domain is None:
+            return None
+
+        result = []
+        if self.domain.default() is True:
+            result.append([None, self.domain.get_by_index(0)[0]])
+
+        for (t0, v0), (t1, v1) in self.domain.iterintervals(value=True):
+            result.append([t0, t1])
+
+        if self.domain.get_by_index(-1)[1] is True:
+            result.append([self.domain.get_by_index(-1)[0], None])
+
+        return result if len(result) > 1 else result[0]
 
     def is_data_in_domain(self, data, domain=None):
         """Check if data (sorteddict/dict) is inside the domain"""
@@ -114,10 +129,6 @@ class TimeSeries(object):
         if domain is not None:
             for key in temp.keys():
                 if domain[key] is not True:
-                    # raise ValueError("({}, {}) is outside of the domain."
-                    #                  .format(key, temp[key]))
-                    # warnings.warn("({}, {}) is outside of the domain."
-                    #               .format(key, temp[key]), Warning)
                     return False
 
         return True
@@ -126,10 +137,6 @@ class TimeSeries(object):
         """Check if time is inside the domain"""
         if self.domain is not None:
             if self.domain[time] is not True:
-                # raise ValueError("{} is outside of the domain."
-                #                  .format(time))
-                # warnings.warn("{} is outside of the domain."
-                #               .format(time), Warning)
                 return False
 
         return True
