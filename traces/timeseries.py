@@ -104,6 +104,7 @@ class TimeSeries(object):
         self.domain = ts
 
     def get_domain(self):
+        """Return the domain as None, list, or list of list"""
 
         if self.domain is None:
             return None

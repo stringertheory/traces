@@ -88,6 +88,24 @@ def test_set_domain():
     assert ts.domain[10] == False
     assert ts.domain[21.2] == False
 
+    ts.set_domain([[None, 1], [2, 5]])
+    assert ts.domain[0] == True
+    assert ts.domain[1] == False
+    assert ts.domain[1.5] == False
+    assert ts.domain[2] == True
+    assert ts.domain[3] == True
+    assert ts.domain[5] == False
+    assert ts.domain[6.7] == False
+
+    ts.set_domain([[2, 5], [9, None]])
+    assert ts.domain[0] == False
+    assert ts.domain[2] == True
+    assert ts.domain[3] == True
+    assert ts.domain[5] == False
+    assert ts.domain[6.7] == False
+    assert ts.domain[9] == True
+    assert ts.domain[9.6] == True
+
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
     nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
     nose.tools.assert_raises(ValueError, ts.set_domain, [0, 7])
@@ -115,6 +133,15 @@ def test_get_domain():
 
     ts.set_domain([[2, 5], [9, 10]])
     assert ts.get_domain() == [[2, 5], [9, 10]]
+
+    ts.set_domain([[None, 1], [2, 5], [9, 10]])
+    assert ts.get_domain() == [[None, 1], [2, 5], [9, 10]]
+
+    ts.set_domain([[2, 5], [9, 10], [11, None]])
+    assert ts.get_domain() == [[2, 5], [9, 10], [11, None]]
+
+    ts.set_domain([[None, 1], [2, 5], [9, 10], [11, None]])
+    assert ts.get_domain() == [[None, 1], [2, 5], [9, 10], [11, None]]
 
 
 def test_time_series():
