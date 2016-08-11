@@ -1,13 +1,135 @@
-from traces import TimeSeries, DefaultTimeSeries, inf, Interval
+from traces import TimeSeries, inf, Domain, utils
+
 import nose
+
+from datetime import datetime
+from intervals import FloatInterval, DateTimeInterval
 import warnings
 
 
-def check_warning(warn, fun, *args):
-    with warnings.catch_warnings(record=True) as w:
-        fun(*args)
-        assert len(w) == 1
-        assert issubclass(w[-1].category, warn)
+# def check_warning(warn, fun, *args):
+#     with warnings.catch_warnings(record=True) as w:
+#         fun(*args)
+#         assert len(w) == 1
+#         assert issubclass(w[-1].category, warn)
+
+def test_construct_domain():
+    iterable_inputs = [
+        [],
+        [1, 2],
+        [(1, 2), (4, 5)],
+        [datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)],
+        [[datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)],
+         [datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)]]
+    ]
+
+    iterable_inputs_answers = [
+        [],
+        [FloatInterval([1, 2])],
+        [FloatInterval([1, 2]), FloatInterval([4, 5])],
+        [DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)])],
+        [DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)]),
+         DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)])]
+    ]
+
+    bad_inputs = [
+        ['a', 'b'],
+        [1, datetime(2011, 1, 2, 1)],
+        [[datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)], [2, 3]]
+    ]
+
+    dom = Domain()
+    assert dom._interval_list == []
+
+    for inputs, answers in zip(iterable_inputs, iterable_inputs_answers):
+        assert Domain(*inputs)._interval_list == answers
+
+    for inputs in bad_inputs:
+        nose.tools.assert_raises(TypeError, Domain, *inputs)
+
+
+def test_sort_interval():
+    interval_list = [FloatInterval([1, 2]), FloatInterval([4, 5])]
+    interval_list_2 = [FloatInterval([1, 4]),
+                       FloatInterval([1, 2]),
+                       FloatInterval([6, 8]),
+                       FloatInterval([9, 10]),
+                       FloatInterval([4, 5])
+                       ]
+    interval_list_2_answer = [FloatInterval([1, 2]),
+                       FloatInterval([1, 4]),
+                       FloatInterval([4, 5]),
+                       FloatInterval([6, 8]),
+                       FloatInterval([9, 10])
+                       ]
+    dom = Domain((1, 2), (4, 5))
+    assert dom.sort_intervals(interval_list) == interval_list
+    assert dom.sort_intervals(interval_list_2) == interval_list_2_answer
+
+
+def test_union_intervals():
+    interval_list = [FloatInterval([1, 2]), FloatInterval([4, 5])]
+    interval_list_2 = [FloatInterval([1, 4]),
+                       FloatInterval([1, 2]),
+                       FloatInterval([6, 8]),
+                       FloatInterval([9, 10]),
+                       FloatInterval([4, 5])
+                       ]
+    interval_list_2_answer = [FloatInterval([1, 5]),
+                              FloatInterval([6, 8]),
+                              FloatInterval([9, 10])
+                              ]
+
+    dom = Domain((1, 2), (4, 5))
+    assert dom.union_intervals(interval_list) == interval_list
+    assert dom.union_intervals(interval_list_2) == interval_list_2_answer
+
+
+def test_union():
+    dom1 = Domain(1, 2)
+    dom2 = Domain(3, 4)
+    assert dom1.union(dom2)._interval_list == [
+        FloatInterval([1, 2]),
+        FloatInterval([3, 4])
+    ]
+    assert dom1._interval_list == [
+        FloatInterval([1, 2])
+    ]
+    assert dom2._interval_list == [
+        FloatInterval([3, 4])
+    ]
+    assert (dom1 | dom2)._interval_list == [
+        FloatInterval([1, 2]),
+        FloatInterval([3, 4])
+    ]
+
+    dom_list = [
+        Domain(1, 2),
+        Domain(3, 4),
+        Domain(2, 5),
+        Domain([1, 2], [9, 10])
+    ]
+    assert dom_list[0].union(*dom_list[1:])._interval_list == [
+        FloatInterval([1, 5]),
+        FloatInterval([9, 10])
+    ]
+    assert (dom_list[0] | dom_list[1] | dom_list[2] | dom_list[3])._interval_list == [
+        FloatInterval([1, 5]),
+        FloatInterval([9, 10])
+    ]
+    assert dom_list[0]._interval_list == [
+        FloatInterval([1, 2])
+    ]
+    assert dom_list[1]._interval_list == [
+        FloatInterval([3, 4])
+    ]
+    assert dom_list[2]._interval_list == [
+        FloatInterval([2, 5])
+    ]
+    assert dom_list[3]._interval_list == [
+        FloatInterval([1, 2]),
+        FloatInterval([9, 10])
+    ]
 
 
 def test_is_time_in_domain():
@@ -25,49 +147,34 @@ def test_is_data_in_domain():
     data2 = [(-1, 2), (1, 2), (2, 3)]
     data3 = [(1, 2), (2, 3), (6, 1), (9, 4)]
 
-    ts_domain = Interval([1, 7])
-    assert ts.is_data_in_domain(data1, ts_domain) == True
-    assert ts.is_data_in_domain(data2, ts_domain) == False
-    assert ts.is_data_in_domain(data3, ts_domain) == False
-
-
-def test_default_time_series():
-    ts = DefaultTimeSeries()
-    assert ts[0] == None
-    assert ts.default() == None
-
-    ts = DefaultTimeSeries(default_values=False)
-    assert ts[0] == False
-    assert ts.default() == False
-
-    ts[1] = True
-    assert ts[2] == True
-    assert ts[0] == False
-    assert ts.default() == False
+    # ts_domain = Interval([1, 7])
+    # assert ts.is_data_in_domain(data1, ts_domain) == True
+    # assert ts.is_data_in_domain(data2, ts_domain) == False
+    # assert ts.is_data_in_domain(data3, ts_domain) == False
 
 
 def test_set_domain():
 
-    ts = TimeSeries()
-    assert ts.domain == Interval([-inf, inf])
-
-    ts.set_domain(None)
-    assert ts.domain == Interval([-inf, inf])
-
-    ts.set_domain([-inf, 5])
-    assert ts.domain == Interval([-inf, 5])
-
-    ts.set_domain([5, inf])
-    assert ts.domain == Interval([5, inf])
-
-    ts.set_domain([-inf, inf])
-    assert ts.domain == Interval([-inf, inf])
-
-    ts.set_domain([2, 5])
-    assert ts.domain == Interval([2, 5])
-
-    ts.set_domain([[2, 5], [9, 10]])
-    assert ts.domain == Interval([2, 5], [9, 10])
+    # ts = TimeSeries()
+    # assert ts.domain == Interval([-inf, inf])
+    #
+    # ts.set_domain(None)
+    # assert ts.domain == Interval([-inf, inf])
+    #
+    # ts.set_domain([-inf, 5])
+    # assert ts.domain == Interval([-inf, 5])
+    #
+    # ts.set_domain([5, inf])
+    # assert ts.domain == Interval([5, inf])
+    #
+    # ts.set_domain([-inf, inf])
+    # assert ts.domain == Interval([-inf, inf])
+    #
+    # ts.set_domain([2, 5])
+    # assert ts.domain == Interval([2, 5])
+    #
+    # ts.set_domain([[2, 5], [9, 10]])
+    # assert ts.domain == Interval([2, 5], [9, 10])
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
     nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
@@ -76,14 +183,14 @@ def test_set_domain():
 
 
 def test_get_domain():
-    ts = TimeSeries()
-    assert ts.get_domain() == Interval([-inf, inf])
-
-    ts.set_domain(None)
-    assert ts.get_domain() == Interval([-inf, inf])
-
-    ts.set_domain([-inf, 5])
-    assert ts.get_domain() == Interval([-inf, 5])
+    # ts = TimeSeries()
+    # assert ts.get_domain() == Interval([-inf, inf])
+    #
+    # ts.set_domain(None)
+    # assert ts.get_domain() == Interval([-inf, inf])
+    #
+    # ts.set_domain([-inf, 5])
+    # assert ts.get_domain() == Interval([-inf, 5])
 
     ts.set_domain([5, None])
     assert ts.get_domain() == [5, None]

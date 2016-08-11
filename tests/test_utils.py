@@ -38,6 +38,7 @@ def test_duration_to_number():
 
 def test_convert_args_to_list():
     iterable_inputs = [
+        [],
         [1, 2],
         [[1, 2]],
         [(1, 2)],
@@ -54,6 +55,7 @@ def test_convert_args_to_list():
     ]
 
     iterable_inputs_answers = [
+        [],
         [[1, 2]],
         [[1, 2]],
         [[1, 2]],

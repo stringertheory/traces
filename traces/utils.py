@@ -2,6 +2,7 @@ import datetime
 from past.builtins import long
 from collections import Iterable
 
+
 def duration_to_number(duration, units='seconds'):
     """If duration is already a numeric type, then just return
     duration. If duration is a timedelta, return a duration in
@@ -24,14 +25,17 @@ def duration_to_number(duration, units='seconds'):
 
 
 def convert_args_to_list(args):
-    """Convert all input formats into a list of list"""
+    """Convert all iterable pairs of inputs into a list of list"""
     list_of_pairs = []
-    if any(isinstance(arg, Iterable) for arg in args):
+    if len(args) == 0:
+        return []
+
+    if any(isinstance(arg, (list, tuple)) for arg in args):
         # Domain([[1, 4]])
         # Domain([(1, 4)])
         # Domain([(1, 4), (5, 8)])
         # Domain([[1, 4], [5, 8]])
-        if len(args) == 1 and any(isinstance(arg, Iterable) for arg in args[0]):
+        if len(args) == 1 and any(isinstance(arg, (list, tuple)) for arg in args[0]):
             for start, end in args[0]:
                 list_of_pairs.append([start, end])
         else:
@@ -49,4 +53,5 @@ def convert_args_to_list(args):
         else:
             msg = "The argument type is invalid. ".format(args)
             raise TypeError(msg)
+
     return list_of_pairs

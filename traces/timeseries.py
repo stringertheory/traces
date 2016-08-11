@@ -23,16 +23,10 @@ from future.utils import listitems, iteritems
 
 # 3rd party
 import sortedcontainers
-from interval import interval
-from interval import inf as infinity
 
 # local
 from . import histogram
 from . import utils
-
-# Define infinity for TimeSeries
-inf = infinity
-Interval = interval
 
 
 # TODO: Good name? Traces vs time series vs others
@@ -64,7 +58,7 @@ class TimeSeries(object):
 
     """
 
-    def __init__(self, data=None, domain=None):
+    def __init__(self, data=None, domain=None, default_values=None):
         self.domain = None
         self.set_domain(domain)
         if self.is_data_in_domain(data):
@@ -72,15 +66,13 @@ class TimeSeries(object):
         else:
             raise ValueError("Data given are not in domain.")
 
+        self.default_values = default_values
+
+    # TODO: Require rewrite
     def set_domain(self, domain):
         """Create a time series with default values False
         that represents the domain. domain has to be either
         None, list or list of list"""
-
-        # TODO: Redefine domain so that when domain=[a, b], b is also in the domain?
-        # TODO: Timeseries might not be a good object to define domain
-        # because it's not a closed interval. Try
-        # http://pyinterval.readthedocs.io/en/latest/install.html
 
         if domain is None:
             dom = Interval([-inf, inf])
@@ -98,6 +90,7 @@ class TimeSeries(object):
 
         self.domain = dom
 
+    # TODO: Require rewrite
     def get_domain(self):
         """Return the domain as None, list, or list of list"""
 
@@ -117,6 +110,7 @@ class TimeSeries(object):
         #
         # return result if len(result) > 1 else result[0]
 
+    # TODO: Require rewrite
     def is_data_in_domain(self, data, domain=None):
         """Check if data (sorteddict/dict) is inside the domain"""
         if domain is None:
@@ -129,6 +123,7 @@ class TimeSeries(object):
 
         return True
 
+    # TODO: Require rewrite
     def is_time_in_domain(self, *args):
         """Check if time is inside the domain"""
         if self.domain is not Interval([-inf, inf]):
@@ -149,12 +144,13 @@ class TimeSeries(object):
         if len(self) == 0:
             raise ValueError("There is no data in the TimeSeries.")
         else:
-            return self.d.values()[0]
+            return self.d.values()[0] if self.default_values is None else self.default_values
 
     def get(self, time):
         """Get the value of the time series, even in-between measured values.
 
         """
+        # TODO: Require rewrite
         if not self.is_time_in_domain(time):
             raise ValueError("{} is outside of the domain."
                              .format(time))
@@ -183,6 +179,7 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
+        # TODO: Require rewrite
         if not self.is_time_in_domain(time):
             raise ValueError("({}, {}) is outside of the domain."
                              .format(time, value))
@@ -193,6 +190,7 @@ class TimeSeries(object):
     def update(self, data, compact=False):
         """Set the values of TimeSeries using a list. Compact it if necessary."""
 
+        # TODO: Require rewrite
         if not self.is_data_in_domain(data):
             raise ValueError("Data are not in the domain.")
 
@@ -334,6 +332,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(message)
 
+        # TODO: Require rewrite
         if not self.is_time_in_domain(start_time, end_time):
             message = (
                           "Can't slice a Timeseries when end_time or "
@@ -367,6 +366,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
+        # TODO: Require rewrite
         if not self.is_time_in_domain(start_time, end_time):
             message = (
                           "Can't regularize a Timeseries when end_time or "
@@ -422,6 +422,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
+        # TODO: Require rewrite
         if not self.is_time_in_domain(start_time, end_time):
             message = (
                           "Can't calculate moving average of "
@@ -482,6 +483,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
+        # TODO: Require rewrite
         if not self.is_time_in_domain(start_time, end_time):
             message = (
                           "Can't calculate mean of a Timeseries "
@@ -521,6 +523,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
+        # TODO: Require rewrite
         if not self.is_time_in_domain(start_time, end_time):
             message = (
                 "Can't calculate distribution of a Timeseries "
@@ -800,12 +803,3 @@ class TimeSeries(object):
     def __eq__(self, other):
         return self.items() == other.items()
 
-
-class DefaultTimeSeries(TimeSeries):
-
-    def __init__(self, default_values=None):
-        TimeSeries.__init__(self)
-        self.default_values = default_values
-
-    def default(self):
-        return self.default_values
