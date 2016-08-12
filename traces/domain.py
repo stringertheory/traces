@@ -35,38 +35,43 @@ class Domain(object):
 
         # TODO: get domain intervals in a list
         temp_interval_list = []
-        if len(args) is not 0:
-            list_of_pairs = convert_args_to_list(args)
 
-            if list_of_pairs[0] == [-inf, inf]:
-                temp_interval_list.append(intervals.FloatInterval([-inf, inf]))
+        if len(args) is not 0:
+            if args[0] is None:
+                temp_interval_list.append(intervals.FloatInterval(None))
 
             else:
-                first_item = list_of_pairs[0]
-                if any(isinstance(item, datetime.datetime) for item in first_item):
-                    data_type = datetime.datetime
-                elif any(isinstance(item,  (int, float)) for item in first_item):
-                    data_type = float
-                else:
-                    msg = "Can't create a Domain with {}.".format(type(first_item))
-                    raise TypeError(msg)
+                list_of_pairs = convert_args_to_list(args)
 
-                if data_type == datetime.datetime:
-                    for start, end in list_of_pairs:
-                        if (isinstance(start, (datetime.datetime)) or start == -inf) and \
-                                (isinstance(end, (datetime.datetime, inf)) or end == inf):
-                            temp_interval_list.append(intervals.DateTimeInterval([start, end]))
-                        else:
-                            msg = "Can't create a Domain with mixed types."
-                            raise TypeError(msg)
-                elif data_type == float:
-                    for start, end in list_of_pairs:
-                        if (isinstance(start, (int, float)) or start == -inf) and \
-                                (isinstance(end, (int, float)) or end == inf):
-                            temp_interval_list.append(intervals.FloatInterval([start, end]))
-                        else:
-                            msg = "Can't create a Domain with mixed types."
-                            raise TypeError(msg)
+                if list_of_pairs[0] == [-inf, inf]:
+                    temp_interval_list.append(intervals.FloatInterval([-inf, inf]))
+
+                else:
+                    first_item = list_of_pairs[0]
+                    if any(isinstance(item, datetime.datetime) for item in first_item):
+                        data_type = datetime.datetime
+                    elif any(isinstance(item,  (int, float)) for item in first_item):
+                        data_type = float
+                    else:
+                        msg = "Can't create a Domain with {}.".format(type(first_item))
+                        raise TypeError(msg)
+
+                    if data_type == datetime.datetime:
+                        for start, end in list_of_pairs:
+                            if (isinstance(start, (datetime.datetime)) or start == -inf or start is None) and \
+                                    (isinstance(end, (datetime.datetime, inf)) or end == inf or end is None):
+                                temp_interval_list.append(intervals.DateTimeInterval([start, end]))
+                            else:
+                                msg = "Can't create a Domain with mixed types."
+                                raise TypeError(msg)
+                    elif data_type == float:
+                        for start, end in list_of_pairs:
+                            if (isinstance(start, (int, float)) or start == -inf or start is None) and \
+                                    (isinstance(end, (int, float)) or end == inf or end is None):
+                                temp_interval_list.append(intervals.FloatInterval([start, end]))
+                            else:
+                                msg = "Can't create a Domain with mixed types."
+                                raise TypeError(msg)
 
         self._interval_list = self.union_intervals(temp_interval_list)
 

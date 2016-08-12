@@ -62,7 +62,7 @@ class TimeSeries(object):
     def __init__(self, data=None, domain=None, default_values=None):
 
         if domain is None:
-            self.domain = Domain([-inf, inf])
+            self.domain = Domain(domain)
             self.d = sortedcontainers.SortedDict(data)
         else:
             self.domain = None
@@ -78,10 +78,7 @@ class TimeSeries(object):
     def set_domain(self, domain):
         """Create domain for a TimeSeries."""
 
-        if domain is None:
-            dom = Domain([-inf, inf])
-
-        elif isinstance(domain, Domain):
+        if isinstance(domain, Domain):
             dom = domain
         else:
             dom = Domain(domain)
@@ -141,7 +138,7 @@ class TimeSeries(object):
 
         """
         # TODO: Require rewrite
-        if not self.is_time_in_domain(time):
+        if time not in self.domain:
             raise ValueError("{} is outside of the domain."
                              .format(time))
 
@@ -170,7 +167,7 @@ class TimeSeries(object):
 
         """
         # TODO: Require rewrite
-        if not self.is_time_in_domain(time):
+        if time not in self.domain:
             raise ValueError("({}, {}) is outside of the domain."
                              .format(time, value))
 

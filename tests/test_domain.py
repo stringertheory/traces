@@ -197,35 +197,35 @@ def test_set_domain():
 
 
 def test_get_domain():
-    # ts = TimeSeries()
-    # assert ts.get_domain() == Interval([-inf, inf])
-    #
-    # ts.set_domain(None)
-    # assert ts.get_domain() == Interval([-inf, inf])
-    #
-    # ts.set_domain([-inf, 5])
-    # assert ts.get_domain() == Interval([-inf, 5])
+    ts = TimeSeries()
+    assert ts.get_domain() == Domain([-inf, inf])
 
-    ts.set_domain([5, None])
-    assert ts.get_domain() == [5, None]
+    ts.set_domain(None)
+    assert ts.get_domain() == Domain([-inf, inf])
 
-    ts.set_domain([None, None])
-    assert ts.get_domain() == None
+    ts.set_domain([-inf, 5])
+    assert ts.get_domain() == Domain([-inf, 5])
+
+    ts.set_domain([5, inf])
+    assert ts.get_domain() == Domain([5, inf])
+
+    ts.set_domain([-inf, inf])
+    assert ts.get_domain() == Domain(-inf, inf)
 
     ts.set_domain([2, 5])
-    assert ts.get_domain() == [2, 5]
+    assert ts.get_domain() == Domain([2, 5])
 
     ts.set_domain([[2, 5], [9, 10]])
-    assert ts.get_domain() == [[2, 5], [9, 10]]
+    assert ts.get_domain() == Domain([[2, 5], [9, 10]])
 
-    ts.set_domain([[None, 1], [2, 5], [9, 10]])
-    assert ts.get_domain() == [[None, 1], [2, 5], [9, 10]]
+    ts.set_domain([[-inf, 1], [2, 5], [9, 10]])
+    assert ts.get_domain() == Domain([[-inf, 1], [2, 5], [9, 10]])
 
     ts.set_domain([[2, 5], [9, 10], [11, None]])
-    assert ts.get_domain() == [[2, 5], [9, 10], [11, None]]
+    assert ts.get_domain() == Domain([[2, 5], [9, 10], [11, None]])
 
     ts.set_domain([[None, 1], [2, 5], [9, 10], [11, None]])
-    assert ts.get_domain() == [[None, 1], [2, 5], [9, 10], [11, None]]
+    assert ts.get_domain() == Domain([[None, 1], [2, 5], [9, 10], [11, None]])
 
 
 def test_time_series():
