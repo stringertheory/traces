@@ -11,7 +11,6 @@ from .utils import convert_args_to_list
 # Define infinity for traces
 inf = inf
 
-
 class Domain(object):
     """
     initialize with:
@@ -32,31 +31,34 @@ class Domain(object):
 
     """
     def __init__(self, *args):
-        self._interval_list = []
 
+        # TODO: get domain intervals in a list
+        temp_interval_list = []
         if len(args) is not 0:
             list_of_pairs = convert_args_to_list(args)
-            first_item = list_of_pairs[0][0]
+            first_item = list_of_pairs[0]
 
-            if isinstance(first_item, datetime.datetime):
+            if any(isinstance(item, datetime.datetime) for item in first_item):
                 for start, end in list_of_pairs:
-                    if isinstance(start, datetime.datetime) and \
-                            isinstance(end, datetime.datetime):
-                        self._interval_list.append(intervals.DateTimeInterval([start, end]))
+                    if (isinstance(start, (datetime.datetime)) or start == -inf) and \
+                            (isinstance(end, (datetime.datetime, inf)) or end == inf):
+                        temp_interval_list.append(intervals.DateTimeInterval([start, end]))
                     else:
                         msg = "Can't create a Domain with mixed types."
                         raise TypeError(msg)
-            elif isinstance(first_item, (int, float)):
+            elif any(isinstance(item, (int, float)) for item in first_item):
                 for start, end in list_of_pairs:
-                    if isinstance(start, (int, float)) and \
-                            isinstance(end, (int, float)):
-                        self._interval_list.append(intervals.FloatInterval([start, end]))
+                    if (isinstance(start, (int, float)) or start == -inf) and \
+                            (isinstance(end, (int, float)) or end == inf):
+                        temp_interval_list.append(intervals.FloatInterval([start, end]))
                     else:
                         msg = "Can't create a Domain with mixed types."
                         raise TypeError(msg)
             else:
                 msg = "Can't create a Domain that is {}.".format(type(first_item))
                 raise TypeError(msg)
+
+        self._interval_list = self.union_intervals(temp_interval_list)
 
     def __repr__(self):
         return '<Domain>\n{}\n</Domain>'.format(self._interval_list)
@@ -87,10 +89,11 @@ class Domain(object):
 
     def union(self, *other):
         """Union of a list of Domains.
-        Also, return the Domain that is the union of all Domains."""
-        result = self
+        Return the Domain that is the union of all Domains."""
+        result = Domain()
+        result._interval_list = self._interval_list
         for dom in other:
-            result = Domain.union_intervals(result._interval_list + dom._interval_list)
+            result._interval_list = self.union_intervals(result._interval_list + dom._interval_list)
 
         return result
 
@@ -98,7 +101,14 @@ class Domain(object):
         pass
 
     def __contains__(self, item):
-        pass
+        if self._interval_list is None:
+            return False
+
+        for interval in self._interval_list:
+            if interval.lower <= item <= interval.upper:
+                return True
+
+        return False
 
     def __or__(self, other):
         """Allow a | b syntax"""

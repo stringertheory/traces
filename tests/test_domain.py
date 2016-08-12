@@ -1,4 +1,4 @@
-from traces import TimeSeries, inf, Domain, utils
+from traces import TimeSeries, inf, Domain
 
 import nose
 
@@ -16,6 +16,8 @@ import warnings
 def test_construct_domain():
     iterable_inputs = [
         [],
+        [-inf, 3],
+        [1, inf],
         [1, 2],
         [(1, 2), (4, 5)],
         [datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)],
@@ -25,11 +27,12 @@ def test_construct_domain():
 
     iterable_inputs_answers = [
         [],
+        [FloatInterval([-inf, 3])],
+        [FloatInterval([1, inf])],
         [FloatInterval([1, 2])],
         [FloatInterval([1, 2]), FloatInterval([4, 5])],
         [DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)])],
-        [DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)]),
-         DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)])]
+        [DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)])]
     ]
 
     bad_inputs = [
@@ -46,6 +49,17 @@ def test_construct_domain():
 
     for inputs in bad_inputs:
         nose.tools.assert_raises(TypeError, Domain, *inputs)
+
+
+def test_contain():
+    dom = Domain([1, 2], [4, inf])
+    assert (0 in dom) == False
+    assert (1 in dom) == True
+    assert (1.5 in dom) == True
+    assert (2 in dom) == True
+    assert (3 in dom) == False
+    assert (4 in dom) == True
+    assert (100 in dom) == True
 
 
 def test_sort_interval():

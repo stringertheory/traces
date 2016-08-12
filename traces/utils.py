@@ -36,20 +36,19 @@ def convert_args_to_list(args):
         # Domain([(1, 4), (5, 8)])
         # Domain([[1, 4], [5, 8]])
         if len(args) == 1 and any(isinstance(arg, (list, tuple)) for arg in args[0]):
-            for start, end in args[0]:
-                list_of_pairs.append([start, end])
+            for item in args[0]:
+                list_of_pairs.append(list(item))
         else:
             # Domain([1, 4])
             # Domain((1, 4))
             # Domain((1, 4), (5, 8))
             # Domain([1, 4], [5, 8])
-            for start, end in args:
-                list_of_pairs.append([start, end])
+            for item in args:
+                list_of_pairs.append(list(item))
     else:
         # Domain(1, 2)
         if len(args) == 2:
-            start, end = args
-            list_of_pairs.append([start, end])
+            list_of_pairs.append(list(args))
         else:
             msg = "The argument type is invalid. ".format(args)
             raise TypeError(msg)
