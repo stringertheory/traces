@@ -112,7 +112,13 @@ class Domain(object):
 
         return result
 
-    def intersection(self, other):
+    def intersection(self, other):  # TODO
+        pass
+
+    def start(self):  # TODO
+        pass
+
+    def end(self):  # TODO
         pass
 
     def __contains__(self, item):

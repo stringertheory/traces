@@ -320,7 +320,7 @@ class TimeSeries(object):
             raise ValueError(message)
 
         # TODO: Require rewrite
-        if not self.is_time_in_domain(start_time, end_time):
+        if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't slice a Timeseries when end_time or "
                           "start_time is outside of the domain. "
@@ -354,7 +354,7 @@ class TimeSeries(object):
             raise ValueError(msg)
 
         # TODO: Require rewrite
-        if not self.is_time_in_domain(start_time, end_time):
+        if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't regularize a Timeseries when end_time or "
                           "start_time is outside of the domain. "
@@ -410,7 +410,7 @@ class TimeSeries(object):
             raise ValueError(msg)
 
         # TODO: Require rewrite
-        if not self.is_time_in_domain(start_time, end_time):
+        if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't calculate moving average of "
                           "a Timeseries when end_time or "
@@ -471,7 +471,7 @@ class TimeSeries(object):
             raise ValueError(msg)
 
         # TODO: Require rewrite
-        if not self.is_time_in_domain(start_time, end_time):
+        if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't calculate mean of a Timeseries "
                           "when end_time or "
@@ -502,6 +502,9 @@ class TimeSeries(object):
         `start_time` to `end_time`.
 
         """
+        # TODO: If no start and/or end time give the start and/or end time of the domain
+        # TODO: If no mask is given, take self.domain as a mask
+        # TODO: If no self.domain and no start and/or end time return error
         if start_time > end_time:
             msg = (
                 "Can't calculate distribution of a Timeseries "
@@ -511,7 +514,7 @@ class TimeSeries(object):
             raise ValueError(msg)
 
         # TODO: Require rewrite
-        if not self.is_time_in_domain(start_time, end_time):
+        if start_time not in self.domain or end_time not in self.domain:
             message = (
                 "Can't calculate distribution of a Timeseries "
                 "when end_time or "
