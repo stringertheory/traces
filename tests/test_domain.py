@@ -146,49 +146,49 @@ def test_union():
     ]
 
 
-def test_is_time_in_domain():
-    ts = TimeSeries(domain=[0, 8])
-    assert ts.is_time_in_domain(-2) == False
-    assert ts.is_time_in_domain(0) == True
-    assert ts.is_time_in_domain(6) == True
-    assert ts.is_time_in_domain(8) == True
-    assert ts.is_time_in_domain(10) == False
-
-
 def test_is_data_in_domain():
     ts = TimeSeries(domain=[0, 8])
     data1 = [(1, 2), (2, 3), (6, 1), (7, 4)]
     data2 = [(-1, 2), (1, 2), (2, 3)]
     data3 = [(1, 2), (2, 3), (6, 1), (9, 4)]
 
-    # ts_domain = Interval([1, 7])
-    # assert ts.is_data_in_domain(data1, ts_domain) == True
-    # assert ts.is_data_in_domain(data2, ts_domain) == False
-    # assert ts.is_data_in_domain(data3, ts_domain) == False
+    assert ts.is_data_in_domain(data1) == True
+    assert ts.is_data_in_domain(data2) == False
+    assert ts.is_data_in_domain(data3) == False
+
+    ts_domain = Domain([1, 7])
+    assert ts.is_data_in_domain(data1, ts_domain) == True
+    assert ts.is_data_in_domain(data2, ts_domain) == False
+    assert ts.is_data_in_domain(data3, ts_domain) == False
+
+    ts_domain = Domain(-inf, inf)
+    assert ts.is_data_in_domain(data1, ts_domain) == True
+    assert ts.is_data_in_domain(data2, ts_domain) == True
+    assert ts.is_data_in_domain(data3, ts_domain) == True
 
 
 def test_set_domain():
 
-    # ts = TimeSeries()
-    # assert ts.domain == Interval([-inf, inf])
-    #
-    # ts.set_domain(None)
-    # assert ts.domain == Interval([-inf, inf])
-    #
-    # ts.set_domain([-inf, 5])
-    # assert ts.domain == Interval([-inf, 5])
-    #
-    # ts.set_domain([5, inf])
-    # assert ts.domain == Interval([5, inf])
-    #
-    # ts.set_domain([-inf, inf])
-    # assert ts.domain == Interval([-inf, inf])
-    #
-    # ts.set_domain([2, 5])
-    # assert ts.domain == Interval([2, 5])
-    #
-    # ts.set_domain([[2, 5], [9, 10]])
-    # assert ts.domain == Interval([2, 5], [9, 10])
+    ts = TimeSeries()
+    assert ts.domain == Domain([-inf, inf])
+
+    ts.set_domain(None)
+    assert ts.domain == Domain([-inf, inf])
+
+    ts.set_domain([-inf, 5])
+    assert ts.domain == Domain([-inf, 5])
+
+    ts.set_domain([5, inf])
+    assert ts.domain == Domain([5, inf])
+
+    ts.set_domain([-inf, inf])
+    assert ts.domain == Domain([-inf, inf])
+
+    ts.set_domain([2, 5])
+    assert ts.domain == Domain([2, 5])
+
+    ts.set_domain([[2, 5], [9, 10]])
+    assert ts.domain == Domain([2, 5], [9, 10])
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
     nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])

@@ -27,6 +27,7 @@ import sortedcontainers
 # local
 from . import histogram
 from . import utils
+from .domain import Domain, inf
 
 
 # TODO: Good name? Traces vs time series vs others
@@ -59,30 +60,31 @@ class TimeSeries(object):
     """
 
     def __init__(self, data=None, domain=None, default_values=None):
-        self.domain = None
-        self.set_domain(domain)
-        if self.is_data_in_domain(data):
+
+        if domain is None:
+            self.domain = Domain([-inf, inf])
             self.d = sortedcontainers.SortedDict(data)
         else:
-            raise ValueError("Data given are not in domain.")
+            self.domain = None
+            self.set_domain(domain)
+
+            if self.is_data_in_domain(data):
+                self.d = sortedcontainers.SortedDict(data)
+            else:
+                raise ValueError("Data given are not in domain.")
 
         self.default_values = default_values
 
-    # TODO: Require rewrite
     def set_domain(self, domain):
-        """Create a time series with default values False
-        that represents the domain. domain has to be either
-        None, list or list of list"""
+        """Create domain for a TimeSeries."""
 
         if domain is None:
-            dom = Interval([-inf, inf])
+            dom = Domain([-inf, inf])
 
+        elif isinstance(domain, Domain):
+            dom = domain
         else:
-            dom = Interval()
-            if any(isinstance(i, list) for i in domain):
-                dom |= Interval(*domain)
-            else:
-                dom |= Interval(domain)
+            dom = Domain(domain)
 
         if hasattr(self, 'd'):
             if not self.is_data_in_domain(self.d, domain=dom):
@@ -120,18 +122,6 @@ class TimeSeries(object):
         for key in temp.keys():
             if key not in domain:
                 return False
-
-        return True
-
-    # TODO: Require rewrite
-    def is_time_in_domain(self, *args):
-        """Check if time is inside the domain"""
-        if self.domain is not Interval([-inf, inf]):
-            for time in args:
-                if time is None:
-                    continue
-                elif time not in self.domain:
-                    return False
 
         return True
 

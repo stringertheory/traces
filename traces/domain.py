@@ -11,6 +11,7 @@ from .utils import convert_args_to_list
 # Define infinity for traces
 inf = inf
 
+
 class Domain(object):
     """
     initialize with:
@@ -36,27 +37,36 @@ class Domain(object):
         temp_interval_list = []
         if len(args) is not 0:
             list_of_pairs = convert_args_to_list(args)
-            first_item = list_of_pairs[0]
 
-            if any(isinstance(item, datetime.datetime) for item in first_item):
-                for start, end in list_of_pairs:
-                    if (isinstance(start, (datetime.datetime)) or start == -inf) and \
-                            (isinstance(end, (datetime.datetime, inf)) or end == inf):
-                        temp_interval_list.append(intervals.DateTimeInterval([start, end]))
-                    else:
-                        msg = "Can't create a Domain with mixed types."
-                        raise TypeError(msg)
-            elif any(isinstance(item, (int, float)) for item in first_item):
-                for start, end in list_of_pairs:
-                    if (isinstance(start, (int, float)) or start == -inf) and \
-                            (isinstance(end, (int, float)) or end == inf):
-                        temp_interval_list.append(intervals.FloatInterval([start, end]))
-                    else:
-                        msg = "Can't create a Domain with mixed types."
-                        raise TypeError(msg)
+            if list_of_pairs[0] == [-inf, inf]:
+                temp_interval_list.append(intervals.FloatInterval([-inf, inf]))
+
             else:
-                msg = "Can't create a Domain that is {}.".format(type(first_item))
-                raise TypeError(msg)
+                first_item = list_of_pairs[0]
+                if any(isinstance(item, datetime.datetime) for item in first_item):
+                    data_type = datetime.datetime
+                elif any(isinstance(item,  (int, float)) for item in first_item):
+                    data_type = float
+                else:
+                    msg = "Can't create a Domain with {}.".format(type(first_item))
+                    raise TypeError(msg)
+
+                if data_type == datetime.datetime:
+                    for start, end in list_of_pairs:
+                        if (isinstance(start, (datetime.datetime)) or start == -inf) and \
+                                (isinstance(end, (datetime.datetime, inf)) or end == inf):
+                            temp_interval_list.append(intervals.DateTimeInterval([start, end]))
+                        else:
+                            msg = "Can't create a Domain with mixed types."
+                            raise TypeError(msg)
+                elif data_type == float:
+                    for start, end in list_of_pairs:
+                        if (isinstance(start, (int, float)) or start == -inf) and \
+                                (isinstance(end, (int, float)) or end == inf):
+                            temp_interval_list.append(intervals.FloatInterval([start, end]))
+                        else:
+                            msg = "Can't create a Domain with mixed types."
+                            raise TypeError(msg)
 
         self._interval_list = self.union_intervals(temp_interval_list)
 
@@ -101,7 +111,7 @@ class Domain(object):
         pass
 
     def __contains__(self, item):
-        if self._interval_list is None:
+        if (self._interval_list is None) or (len(self._interval_list) == 0):
             return False
 
         for interval in self._interval_list:
@@ -109,6 +119,15 @@ class Domain(object):
                 return True
 
         return False
+
+    def __eq__(self, other):
+        if len(self._interval_list) != len(other._interval_list):
+            return False
+        else:
+            for self_interval, other_interval in zip(self._interval_list, other._interval_list):
+                return (self_interval.lower == other_interval.lower) and (self_interval.upper == other_interval.upper)
+
+        return True
 
     def __or__(self, other):
         """Allow a | b syntax"""
