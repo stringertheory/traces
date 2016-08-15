@@ -76,7 +76,8 @@ class Domain(object):
         self._interval_list = self.union_intervals(temp_interval_list)
 
     def __repr__(self):
-        return '<Domain>\n{}\n</Domain>'.format(self._interval_list)
+        output = '\n'.join('{}'.format([interval.lower, interval.upper]) for interval in self._interval_list)
+        return '<Domain>\n{}\n</Domain>'.format(output)
 
     @staticmethod
     def sort_intervals(interval_list):
