@@ -99,6 +99,22 @@ def test_union_intervals():
     assert dom.union_intervals(interval_list_2) == interval_list_2_answer
 
 
+def test_intersection_intervals():
+    interval_list = [FloatInterval([1, 2]), FloatInterval([4, 5])]
+    interval_list_2 = [FloatInterval([1, 4]),
+                       FloatInterval([1, 2]),
+                       FloatInterval([6, 8]),
+                       FloatInterval([9, 10]),
+                       FloatInterval([4, 5])
+                       ]
+    interval_list_2_answer = [FloatInterval([1, 2]),
+                              FloatInterval([4, 5])
+                              ]
+
+    dom = Domain((1, 2), (4, 5))
+    assert dom.intersection_intervals(interval_list, interval_list_2) == interval_list_2_answer
+
+
 def test_union():
     dom1 = Domain(1, 2)
     dom2 = Domain(3, 4)

@@ -103,6 +103,48 @@ class Domain(object):
 
         return new_interval_list
 
+    @staticmethod
+    def intersection_intervals(interval_list1, interval_list2):
+        # TODO: Working now, need more testing
+        """Intersection of two lists of intervals"""
+        if len(interval_list1) == 0 or len(interval_list2) == 0:
+            return []
+
+        new_interval_list = []
+        sorted_interval_list1 = Domain.union_intervals(interval_list1)
+        sorted_interval_list2 = Domain.union_intervals(interval_list2)
+
+        first1 = sorted_interval_list1[0]
+        first2 = sorted_interval_list2[0]
+
+        if first1.lower <= first2.lower:
+            curr = sorted_interval_list1
+            other = sorted_interval_list2
+        else:
+            curr = sorted_interval_list2
+            other = sorted_interval_list1
+
+        curr_node = curr.pop(0)
+        other_node = other.pop(0)
+
+        while True:
+            if curr_node.is_connected(other_node):
+                new_interval_list.append(curr_node & other_node)
+                if curr_node.upper > other_node.upper:
+                    if len(other) == 0:
+                        break
+                    else:
+                        other_node = other.pop(0)
+                else:
+                    if len(curr) == 0:
+                        break
+                    else:
+                        curr_node = curr.pop(0)
+            else:
+                curr_node = curr.pop(0)
+
+        return new_interval_list
+
     def union(self, *other):
         """Union of a list of Domains.
         Return the Domain that is the union of all Domains."""
