@@ -268,20 +268,24 @@ class TimeSeries(object):
 
         """
         # TODO: How would this change with domain?
-        # use first/last measurement as start/end time if not given
         if start_time is None:
-            start_time = self.d.iloc[0]
+            start_time = self.domain.start()
+            if start_time == -inf:
+                raise ValueError('Start time of the domain is negative infinity.'
+                                 ' Specify a start time in iterperiods.')
+
         if end_time is None:
-            end_time = self.d.iloc[-1]
+            end_time = self.domain.end()
+            if start_time == inf:
+                raise ValueError('End time of the domain is infinity.'
+                                 ' Specify a start time in iterperiods.')
+
+        if start_time == -inf or end_time == inf:
+            raise ValueError('Start/end time cannot be infinity.')
 
         # get start index and value
         start_index = self.d.bisect_right(start_time)
-        if start_index > 0:
-            start_value = self.d[self.d.iloc[start_index - 1]]
-        elif start_index == 0:
-            start_value = self.d[self.d.iloc[0]]
-        else:
-            raise ValueError("start_index is negative for some reason")  # TODO: Verify that this will not happen.
+        start_value = self[start_time]
 
         # get last measurement before end of time span
         end_index = self.d.bisect_right(end_time)
