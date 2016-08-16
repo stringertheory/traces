@@ -36,8 +36,9 @@ class Domain(object):
         # TODO: get domain intervals in a list
         temp_interval_list = []
 
+        # TODO: there might be better way to do all these checks
         if len(args) is not 0:
-            if args[0] is None:
+            if not args[0]:
                 temp_interval_list.append(intervals.FloatInterval(None))
 
             else:
@@ -168,11 +169,19 @@ class Domain(object):
                 result._interval_list, dom._interval_list)
         return result
 
-    def start(self):  # TODO
-        pass
+    def start(self):
+        """Return the start time of the domain."""
+        if len(self._interval_list) == 0:
+            return None
+        else:
+            return self._interval_list[0].lower
 
-    def end(self):  # TODO
-        pass
+    def end(self):
+        """Return the end time of the domain."""
+        if len(self._interval_list) == 0:
+            return None
+        else:
+            return self._interval_list[-1].upper
 
     def __contains__(self, item):
         if (self._interval_list is None) or (len(self._interval_list) == 0):

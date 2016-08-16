@@ -237,6 +237,24 @@ def test_intersection():
     ]
 
 
+def test_start_end():
+    dom = Domain([])
+    assert dom.start() == -inf
+    assert dom.end() == inf
+
+    dom = Domain([-1, 2])
+    assert dom.start() == -1
+    assert dom.end() == 2
+
+    dom = Domain([-1, 2], [4, 5], [6, 10])
+    assert dom.start() == -1
+    assert dom.end() == 10
+
+    dom = Domain([-inf, 2], [4, 5], [6, inf])
+    assert dom.start() == -inf
+    assert dom.end() == inf
+
+
 def test_is_data_in_domain():
     ts = TimeSeries(domain=[0, 8])
     data1 = [(1, 2), (2, 3), (6, 1), (7, 4)]

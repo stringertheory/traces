@@ -109,7 +109,6 @@ class TimeSeries(object):
         #
         # return result if len(result) > 1 else result[0]
 
-    # TODO: Require rewrite
     def is_data_in_domain(self, data, domain=None):
         """Check if data (sorteddict/dict) is inside the domain"""
         if domain is None:
@@ -137,7 +136,6 @@ class TimeSeries(object):
         """Get the value of the time series, even in-between measured values.
 
         """
-        # TODO: Require rewrite
         if time not in self.domain:
             raise ValueError("{} is outside of the domain."
                              .format(time))
@@ -166,7 +164,6 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
-        # TODO: Require rewrite
         if time not in self.domain:
             raise ValueError("({}, {}) is outside of the domain."
                              .format(time, value))
@@ -177,7 +174,6 @@ class TimeSeries(object):
     def update(self, data, compact=False):
         """Set the values of TimeSeries using a list. Compact it if necessary."""
 
-        # TODO: Require rewrite
         if not self.is_data_in_domain(data):
             raise ValueError("Data are not in the domain.")
 
@@ -319,7 +315,6 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(message)
 
-        # TODO: Require rewrite
         if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't slice a Timeseries when end_time or "
@@ -346,6 +341,19 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
+        # TODO: Require rewrite
+        if not start_time:
+            start_time = self.domain.start()
+            if start_time == -inf:
+                raise ValueError('Start time of the domain is negative infinity.'
+                                 ' Cannot regularize without specifying a start time.')
+
+        if not end_time:
+            end_time = self.domain.end()
+            if start_time == inf:
+                raise ValueError('End time of the domain is infinity.'
+                                 ' Cannot regularize without specifying an end time.')
+
         if start_time > end_time:
             msg = (
                 "Can't regularize a Timeseries when end_time <= start_time. "
@@ -353,7 +361,6 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
-        # TODO: Require rewrite
         if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't regularize a Timeseries when end_time or "
@@ -401,6 +408,7 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
+        # TODO: Require rewrite
         if start_time > end_time:
             msg = (
                 "Can't calculate moving average of a Timeseries "
@@ -409,7 +417,6 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
-        # TODO: Require rewrite
         if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't calculate moving average of "
@@ -461,7 +468,7 @@ class TimeSeries(object):
         time range from `start_time` to `end_time`.
 
         """
-
+        # TODO: Require rewrite
         if start_time > end_time:
             msg = (
                 "Can't calculate mean of a Timeseries "
@@ -470,7 +477,6 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
-        # TODO: Require rewrite
         if start_time not in self.domain or end_time not in self.domain:
             message = (
                           "Can't calculate mean of a Timeseries "
