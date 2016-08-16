@@ -105,7 +105,6 @@ class Domain(object):
 
     @staticmethod
     def intersection_intervals(interval_list1, interval_list2):
-        # TODO: Working now, need more testing
         """Intersection of two lists of intervals"""
         if len(interval_list1) == 0 or len(interval_list2) == 0:
             return []
@@ -141,7 +140,10 @@ class Domain(object):
                     else:
                         curr_node = curr.pop(0)
             else:
-                curr_node = curr.pop(0)
+                if len(curr) == 0:
+                    break
+                else:
+                    curr_node = curr.pop(0)
 
         return new_interval_list
 
