@@ -255,6 +255,16 @@ def test_start_end():
     assert dom.end() == inf
 
 
+def test_slice():
+    dom = Domain([-1, 2], [4, 5], [6, 10])
+    assert dom.slice(-3, 12) == Domain([-1, 2], [4, 5], [6, 10])
+    assert dom.slice(-1, 10) == Domain([-1, 2], [4, 5], [6, 10])
+    assert dom.slice(1, 9) == Domain([1, 2], [4, 5], [6, 9])
+    assert dom.slice(4.5, 9) == Domain([4.5, 5], [6, 9])
+
+    nose.tools.assert_raises(ValueError, dom.slice, 12, 3)
+
+
 def test_is_data_in_domain():
     ts = TimeSeries(domain=[0, 8])
     data1 = [(1, 2), (2, 3), (6, 1), (7, 4)]

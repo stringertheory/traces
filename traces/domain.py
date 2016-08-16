@@ -183,6 +183,35 @@ class Domain(object):
         else:
             return self._interval_list[-1].upper
 
+    def slice(self, start_time, end_time):
+        """Return a segment of Domain within start and end"""
+
+        if end_time <= start_time:
+            message = (
+                "Can't slice a Domain when end_time <= start_time. "
+                "Received start_time={} and end_time={}."
+            ).format(start_time, end_time)
+            raise ValueError(message)
+
+        results = []
+        for interval in self._interval_list:
+            curr_start = interval.start()
+            curr_end = interval.end()
+            if curr_start <= end_time and curr_end >= start_time:
+                if curr_start >= start_time:
+                    temp_start = curr_start
+                else:
+                    temp_start = start_time
+
+                if curr_end <= end_time:
+                    temp_end = curr_end
+                else:
+                    temp_end = end_time
+
+                results.append(intervals.Interval([temp_start, temp_end]))
+
+        return results
+
     def __contains__(self, item):
         if (self._interval_list is None) or (len(self._interval_list) == 0):
             return False
