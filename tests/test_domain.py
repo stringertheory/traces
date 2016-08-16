@@ -363,3 +363,15 @@ def test_slice():
 
     nose.tools.assert_raises(ValueError, ts.slice, -1, 4)
     nose.tools.assert_raises(ValueError, ts.slice, 0, 9)
+
+
+def test_regularize():
+    # Check using int
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain(1, 9))
+    assert ts.regularize(1) == {
+        i: ts[i] for i in range(1, 10)}
+    assert ts.regularize(0.5) == {
+        1 + i / 2.: ts[1 + i / 2.] for i in range(0, 17)}
+
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
+    nose.tools.assert_raises(ValueError, ts.regularize, 0.5)

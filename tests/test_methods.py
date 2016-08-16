@@ -108,6 +108,8 @@ def test_regularize():
         i: ts[i] for i in range(1, 9)}
     assert ts.regularize(0.5, 1, 8) == {
         1 + i / 2.: ts[1+i/2.] for i in range(0, 15)}
+    nose.tools.assert_raises(ValueError, ts.regularize, 0.5, -traces.inf, 8)
+    nose.tools.assert_raises(ValueError, ts.regularize, 0.5, 1, traces.inf)
 
     # Test pandas compatibility
     pd_ts = pd.Series(ts.regularize(1, 1, 8))

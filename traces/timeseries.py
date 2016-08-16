@@ -341,7 +341,6 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
-        # TODO: Require rewrite
         if not start_time:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -353,6 +352,9 @@ class TimeSeries(object):
             if start_time == inf:
                 raise ValueError('End time of the domain is infinity.'
                                  ' Cannot regularize without specifying an end time.')
+
+        if start_time == -inf or end_time == inf:
+            raise ValueError('Start/end time cannot be infinity.')
 
         if start_time > end_time:
             msg = (
