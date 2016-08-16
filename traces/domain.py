@@ -38,7 +38,7 @@ class Domain(object):
 
         # TODO: there might be better way to do all these checks
         if len(args) is not 0:
-            if not args[0]:
+            if not args[0] and len(args) != 2:
                 temp_interval_list.append(intervals.FloatInterval(None))
 
             else:

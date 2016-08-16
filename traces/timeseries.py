@@ -17,7 +17,7 @@ try:
     import itertools.izip as zip
 except ImportError:
     pass
-
+from copy import deepcopy
 from queue import PriorityQueue
 from future.utils import listitems, iteritems
 
@@ -341,13 +341,13 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
-        if not start_time:
+        if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
                 raise ValueError('Start time of the domain is negative infinity.'
                                  ' Cannot regularize without specifying a start time.')
 
-        if not end_time:
+        if end_time is None:
             end_time = self.domain.end()
             if start_time == inf:
                 raise ValueError('End time of the domain is infinity.'
@@ -391,10 +391,10 @@ class TimeSeries(object):
         else:
             period_time = sampling_period
 
-        if start_time is None:
-            start_time = self.get_by_index(0)[0]
-        if end_time is None:
-            end_time = self.last()[0]
+        # if start_time is None:
+        #     start_time = self.get_by_index(0)[0]
+        # if end_time is None:
+        #     end_time = self.last()[0]
 
         result = {}
         current_time = start_time
@@ -403,14 +403,28 @@ class TimeSeries(object):
             current_time += period_time
         return result
 
-    def moving_average(self, window_size, sampling_period, start_time, end_time):
+    def moving_average(self, window_size, sampling_period, start_time=None, end_time=None):
         """Averaging over regular intervals
 
         Output: Dict that can be converted into pandas.Series
         directly by calling pandas.Series(Dict)
 
         """
-        # TODO: Require rewrite
+        if start_time is None:
+            start_time = self.domain.start()
+            if start_time == -inf:
+                raise ValueError('Start time of the domain is negative infinity.'
+                                 ' Cannot calculate moving average without specifying a start time.')
+
+        if end_time is None:
+            end_time = self.domain.end()
+            if start_time == inf:
+                raise ValueError('End time of the domain is infinity.'
+                                 ' Cannot calculate moving average without specifying an end time.')
+
+        if start_time == -inf or end_time == inf:
+            raise ValueError('Start/end time cannot be infinity.')
+
         if start_time > end_time:
             msg = (
                 "Can't calculate moving average of a Timeseries "
@@ -455,22 +469,39 @@ class TimeSeries(object):
             buffer_time = half
             period_time = sampling_period
 
+        temp = deepcopy(self)
+        temp.domain = Domain(self.domain.start() - buffer_time, self.domain.end() + buffer_time)
+
         result = {}
         current_time = start_time
         while current_time <= end_time:
             window_start = current_time - buffer_time
             window_end = current_time + buffer_time
-            mean = self.mean(window_start, window_end)
+            mean = temp.mean(window_start, window_end)
             result[current_time] = mean
             current_time += period_time
         return result
 
-    def mean(self, start_time, end_time):
+    def mean(self, start_time=None, end_time=None):
         """This calculated the average value of the time series over the given
         time range from `start_time` to `end_time`.
 
         """
-        # TODO: Require rewrite
+        if start_time is None:
+            start_time = self.domain.start()
+            if start_time == -inf:
+                raise ValueError('Start time of the domain is negative infinity.'
+                                 ' Cannot calculate mean without specifying a start time.')
+
+        if end_time is None:
+            end_time = self.domain.end()
+            if start_time == inf:
+                raise ValueError('End time of the domain is infinity.'
+                                 ' Cannot calculate mean without specifying an end time.')
+
+        if start_time == -inf or end_time == inf:
+            raise ValueError('Start/end time cannot be infinity.')
+
         if start_time > end_time:
             msg = (
                 "Can't calculate mean of a Timeseries "
