@@ -202,6 +202,41 @@ def test_union():
     ]
 
 
+def test_intersection():
+    dom1 = Domain(1, 2)
+    dom2 = Domain(3, 4)
+    assert dom1.intersection(dom2)._interval_list == []
+    assert dom1._interval_list == [
+        FloatInterval([1, 2])
+    ]
+    assert dom2._interval_list == [
+        FloatInterval([3, 4])
+    ]
+    assert (dom1 & dom2)._interval_list == []
+
+    dom_list = [
+        Domain(1, 2),
+        Domain(2, 5),
+        Domain([1, 2], [9, 10])
+    ]
+    assert dom_list[0].intersection(*dom_list[1:])._interval_list == [
+        FloatInterval([2, 2])
+    ]
+    assert (dom_list[1] & dom_list[2] & dom_list[0])._interval_list == [
+        FloatInterval([2, 2])
+    ]
+    assert dom_list[0]._interval_list == [
+        FloatInterval([1, 2])
+    ]
+    assert dom_list[1]._interval_list == [
+        FloatInterval([2, 5])
+    ]
+    assert dom_list[2]._interval_list == [
+        FloatInterval([1, 2]),
+        FloatInterval([9, 10])
+    ]
+
+
 def test_is_data_in_domain():
     ts = TimeSeries(domain=[0, 8])
     data1 = [(1, 2), (2, 3), (6, 1), (7, 4)]

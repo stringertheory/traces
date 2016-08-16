@@ -153,12 +153,20 @@ class Domain(object):
         result = Domain()
         result._interval_list = self._interval_list
         for dom in other:
-            result._interval_list = self.union_intervals(result._interval_list + dom._interval_list)
+            result._interval_list = self.union_intervals(
+                result._interval_list + dom._interval_list)
 
         return result
 
-    def intersection(self, other):  # TODO
-        pass
+    def intersection(self, *other):
+        """Intersection of a list of Domains.
+        Return the Domain that is the intersection of all Domains."""
+        result = Domain()
+        result._interval_list = self._interval_list
+        for dom in other:
+            result._interval_list = self.intersection_intervals(
+                result._interval_list, dom._interval_list)
+        return result
 
     def start(self):  # TODO
         pass
@@ -188,3 +196,7 @@ class Domain(object):
     def __or__(self, other):
         """Allow a | b syntax"""
         return self.union(other)
+
+    def __and__(self, other):
+        """Allow a & b syntax"""
+        return self.intersection(other)

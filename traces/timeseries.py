@@ -89,7 +89,7 @@ class TimeSeries(object):
 
         self.domain = dom
 
-    # TODO: Require rewrite
+    # TODO: Return list of Domain?
     def get_domain(self):
         """Return the domain as None, list, or list of list"""
 
