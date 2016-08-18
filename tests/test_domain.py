@@ -375,6 +375,17 @@ def test_slice():
     nose.tools.assert_raises(ValueError, ts.slice, 0, 9)
 
 
+def test_get_current_interval():
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
+    assert ts.domain.get_current_interval(1) == Domain(1, 2)
+    assert ts.domain.get_current_interval(4) == Domain(3, 5)
+    assert ts.domain.get_current_interval(8) == Domain(6, 8)
+
+    nose.tools.assert_raises(ValueError, ts.domain.get_current_interval, 2.5)
+    nose.tools.assert_raises(ValueError, ts.domain.get_current_interval, 5.5)
+    nose.tools.assert_raises(ValueError, ts.domain.get_current_interval, 9)
+
+
 def test_regularize():
     # Check using int
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain(1, 9))

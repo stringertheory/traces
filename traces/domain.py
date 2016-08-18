@@ -212,6 +212,15 @@ class Domain(object):
 
         return results
 
+    def get_current_interval(self, time):
+        """Return the interval in which the time is located at"""
+        if time not in self:
+            raise ValueError("{} is not within the Domain.".format(time))
+
+        for interval in self._interval_list:
+            if interval.lower <= time <= interval.upper:
+                return Domain(interval.lower, interval.upper)
+
     def __contains__(self, item):
         if (self._interval_list is None) or (len(self._interval_list) == 0):
             return False
