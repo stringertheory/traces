@@ -78,14 +78,18 @@ class TimeSeries(object):
     def set_domain(self, domain):
         """Create domain for a TimeSeries."""
 
-        if isinstance(domain, Domain):
-            dom = domain
-        else:
-            dom = Domain(domain)
+        if domain is None:
+            dom = Domain(-inf, inf)
 
-        if hasattr(self, 'd'):
-            if not self.is_data_in_domain(self.d, domain=dom):
-                raise ValueError("Data are not in the domain.")
+        else:
+            if isinstance(domain, Domain):
+                dom = domain
+            else:
+                dom = Domain(domain)
+
+            if hasattr(self, 'd'):
+                if not self.is_data_in_domain(self.d, domain=dom):
+                    raise ValueError("Data are not in the domain.")
 
         self.domain = dom
 
@@ -266,8 +270,9 @@ class TimeSeries(object):
         """This iterates over the periods (optionally, within a given time
         span) and yields (time, duration, value) tuples.
 
+        Duration only account for the time that's within the domain.
+
         """
-        # TODO: How would this change with domain?
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -295,8 +300,10 @@ class TimeSeries(object):
         int_t0, int_value = start_time, start_value
         for int_t1 in self.d.islice(start_index, end_index):
 
+            duration = self.domain.get_duration(int_t0, int_t1)
+
             # yield the time, duration, and value of the period
-            yield int_t0, (int_t1 - int_t0), int_value
+            yield int_t0, duration, int_value
 
             # set start point to the end of this interval for next
             # iteration
@@ -305,7 +312,9 @@ class TimeSeries(object):
 
         # yield the time, duration, and value of the final period
         if int_t0 < end_time:
-            yield int_t0, (end_time - int_t0), int_value
+            duration = self.domain.get_duration(int_t0, end_time)
+
+            yield int_t0, duration, int_value
 
     def slice(self, start_time, end_time):
         """Return a slice of the time series that has a first reading at

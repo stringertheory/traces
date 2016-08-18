@@ -195,8 +195,8 @@ class Domain(object):
 
         results = []
         for interval in self._interval_list:
-            curr_start = interval.start()
-            curr_end = interval.end()
+            curr_start = interval.lower
+            curr_end = interval.upper
             if curr_start <= end_time and curr_end >= start_time:
                 if curr_start >= start_time:
                     temp_start = curr_start
@@ -208,18 +208,22 @@ class Domain(object):
                 else:
                     temp_end = end_time
 
-                results.append(intervals.Interval([temp_start, temp_end]))
+                results.append([temp_start, temp_end])
 
-        return results
+        sliced_domain = Domain(results)
 
-    def get_current_interval(self, time):
-        """Return the interval in which the time is located at"""
-        if time not in self:
-            raise ValueError("{} is not within the Domain.".format(time))
+        return sliced_domain
 
-        for interval in self._interval_list:
-            if interval.lower <= time <= interval.upper:
-                return Domain(interval.lower, interval.upper)
+    def get_duration(self, start, end):
+        """Return the duration between start and end"""
+
+        sliced_domain = self.slice(start, end)
+
+        duration = datetime.timedelta(0) if isinstance(start, datetime.datetime) else 0
+        for interval in sliced_domain._interval_list:
+            duration += interval.upper - interval.lower
+
+        return duration
 
     def __contains__(self, item):
         if (self._interval_list is None) or (len(self._interval_list) == 0):

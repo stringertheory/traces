@@ -374,16 +374,31 @@ def test_slice():
     nose.tools.assert_raises(ValueError, ts.slice, -1, 4)
     nose.tools.assert_raises(ValueError, ts.slice, 0, 9)
 
+    assert ts.domain.slice(1.5, 8.5) == Domain(1.5, 8.5)
 
-def test_get_current_interval():
+    ts.set_domain([[0, 1.5], [2, 5], [5.5, 7], [8, 9]])
+
+    assert ts.domain.slice(1.5, 8.5) == Domain([[1.5, 1.5], [2, 5], [5.5, 7], [8, 8.5]])
+
+
+def test_get_duration():
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
-    assert ts.domain.get_current_interval(1) == Domain(1, 2)
-    assert ts.domain.get_current_interval(4) == Domain(3, 5)
-    assert ts.domain.get_current_interval(8) == Domain(6, 8)
+    assert ts.domain.get_duration(0, 9) == 5
+    assert ts.domain.get_duration(1, 8) == 5
+    assert ts.domain.get_duration(1, 2.5) == 1
+    assert ts.domain.get_duration(1.5, 7.5) == 4
 
-    nose.tools.assert_raises(ValueError, ts.domain.get_current_interval, 2.5)
-    nose.tools.assert_raises(ValueError, ts.domain.get_current_interval, 5.5)
-    nose.tools.assert_raises(ValueError, ts.domain.get_current_interval, 9)
+
+def test_iterperiods():
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
+    answers = [
+        ()
+    ]
+
+    i = 0
+    for time, duration, value in ts.iterperiods():
+        assert (time, duration, value) == answers[i]
+        i += 1
 
 
 def test_regularize():
