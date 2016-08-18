@@ -33,21 +33,6 @@ def test_init_data():
     assert ts[8] == 4
     assert ts[10] == 4
 
-# TODO: test default_values
-# def test_default_values():
-#     ts = DefaultTimeSeries()
-#     assert ts[0] == None
-#     assert ts.default() == None
-#
-#     ts = DefaultTimeSeries(default_values=False)
-#     assert ts[0] == False
-#     assert ts.default() == False
-#
-#     ts[1] = True
-#     assert ts[2] == True
-#     assert ts[0] == False
-#     assert ts.default() == False
-
 
 def test_get():
     ts = TimeSeries()

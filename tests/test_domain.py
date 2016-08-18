@@ -391,12 +391,27 @@ def test_get_duration():
 
 def test_iterperiods():
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
-    answers = [
-        ()
-    ]
 
+    answers = [
+        (1, 1, 2),
+        (2, 2, 3),
+        (6, 2, 1),
+        (8, 0, 4)
+    ]
     i = 0
     for time, duration, value in ts.iterperiods():
+        assert (time, duration, value) == answers[i]
+        i += 1
+
+    answers = [
+        (0, 0, 2),
+        (1, 1, 2),
+        (2, 2, 3),
+        (6, 2, 1),
+        (8, 0, 4)
+    ]
+    i = 0
+    for time, duration, value in ts.iterperiods(0, 9):
         assert (time, duration, value) == answers[i]
         i += 1
 
@@ -433,3 +448,15 @@ def test_mean():
 
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
     nose.tools.assert_raises(ValueError, ts.mean)
+
+
+def test_distribution():
+    ts = TimeSeries([[1, 1], [2, 0], [6, 1], [8, 0]], domain=Domain([1, 2], [3, 5], [6, 8]))
+
+    distribution = ts.distribution()
+    assert distribution[0] == 2./5
+    assert distribution[1] == 3./5
+
+    distribution = ts.distribution(0, 9)
+    assert distribution[0] == 2. / 5
+    assert distribution[1] == 3. / 5

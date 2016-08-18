@@ -153,7 +153,15 @@ class Domain(object):
         Return the Domain that is the union of all Domains."""
         result = Domain()
         result._interval_list = self._interval_list
+
+        if self._interval_list == [intervals.FloatInterval([-inf, inf])]:
+            return result
+
         for dom in other:
+            if dom == Domain(-inf, inf):
+                result._interval_list = [intervals.FloatInterval([-inf, inf])]
+                return result
+
             result._interval_list = self.union_intervals(
                 result._interval_list + dom._interval_list)
 
@@ -164,9 +172,18 @@ class Domain(object):
         Return the Domain that is the intersection of all Domains."""
         result = Domain()
         result._interval_list = self._interval_list
+
+        if self._interval_list == [intervals.FloatInterval([-inf, inf])]:
+            result._interval_list = [type(other[0]._interval_list[0])(None)]
+
         for dom in other:
+            if dom == Domain([-inf, inf]):
+                temp_interval_list = [type(self._interval_list[0])(None)]
+            else:
+                temp_interval_list = dom._interval_list
+
             result._interval_list = self.intersection_intervals(
-                result._interval_list, dom._interval_list)
+                result._interval_list, temp_interval_list)
         return result
 
     def start(self):
@@ -193,6 +210,12 @@ class Domain(object):
             ).format(start_time, end_time)
             raise ValueError(message)
 
+        if start_time > self.end():
+            raise ValueError("Start time is larger than the end of the Domain.")
+
+        if end_time < self.start():
+            raise ValueError("End time is smaller than the start of the Domain.")
+
         results = []
         for interval in self._interval_list:
             curr_start = interval.lower
@@ -216,6 +239,9 @@ class Domain(object):
 
     def get_duration(self, start, end):
         """Return the duration between start and end"""
+
+        if start > self.end() or end < self.start():
+            return 0
 
         sliced_domain = self.slice(start, end)
 

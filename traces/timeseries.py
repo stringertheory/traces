@@ -290,7 +290,7 @@ class TimeSeries(object):
 
         # get start index and value
         start_index = self.d.bisect_right(start_time)
-        start_value = self[start_time]
+        start_value = self.d[self.d.iloc[start_index-1]] if start_index is not 0 else self.default()
 
         # get last measurement before end of time span
         end_index = self.d.bisect_right(end_time)
@@ -354,6 +354,8 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
+
+        # TODO: How should regularize behave if the domain is not connected?
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -376,7 +378,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
-        if start_time not in self.domain or end_time not in self.domain:
+        if start_time < self.domain.start() or end_time > self.domain.end():
             message = (
                           "Can't regularize a Timeseries when end_time or "
                           "start_time is outside of the domain. "
@@ -423,6 +425,7 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
+        # TODO: How should moving_average behave if the domain is not connected?
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -446,7 +449,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
-        if start_time not in self.domain or end_time not in self.domain:
+        if start_time < self.domain.start() or end_time > self.domain.end():
             message = (
                           "Can't calculate moving average of "
                           "a Timeseries when end_time or "
@@ -500,6 +503,7 @@ class TimeSeries(object):
         time range from `start_time` to `end_time`.
 
         """
+        # TODO: How should mean behave if the domain is not connected?
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -523,7 +527,7 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
-        if start_time not in self.domain or end_time not in self.domain:
+        if start_time < self.domain.start() or end_time > self.domain.end():
             message = (
                           "Can't calculate mean of a Timeseries "
                           "when end_time or "
@@ -554,9 +558,21 @@ class TimeSeries(object):
         `start_time` to `end_time`.
 
         """
-        # TODO: If no start and/or end time give the start and/or end time of the domain
-        # TODO: If no mask is given, take self.domain as a mask
-        # TODO: If no self.domain and no start and/or end time return error
+        if start_time is None:
+            start_time = self.domain.start()
+            if start_time == -inf:
+                raise ValueError('Start time of the domain is negative infinity.'
+                                 ' Cannot calculate distribution without specifying a start time.')
+
+        if end_time is None:
+            end_time = self.domain.end()
+            if start_time == inf:
+                raise ValueError('End time of the domain is infinity.'
+                                 ' Cannot calculate distribution without specifying an end time.')
+
+        if start_time == -inf or end_time == inf:
+            raise ValueError('Start/end time cannot be infinity.')
+
         if start_time > end_time:
             msg = (
                 "Can't calculate distribution of a Timeseries "
@@ -565,37 +581,18 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(msg)
 
-        # TODO: Require rewrite
-        if start_time not in self.domain or end_time not in self.domain:
-            message = (
-                "Can't calculate distribution of a Timeseries "
-                "when end_time or "
-                "start_time is outside of the domain. "
-                "Received start_time={} and end_time={}. "
-                "Domain is {}."
-            ).format(start_time, end_time, self.get_domain())
-            raise ValueError(message)
-
         counter = histogram.Histogram()
         if mask:
-            mask_iterator = mask.iterperiods(start_time, end_time)
-            for mask_start, mask_duration, mask_value in mask_iterator:
-                mask_end = mask_start + mask_duration
-                if mask_value:
-                    self_iterator = self.iterperiods(mask_start, mask_end)
-                    for t0, duration, value in self_iterator:
-                        counter[value] += utils.duration_to_number(
-                            duration,
-                            units='seconds',
-                        )
+            new_ts = deepcopy(self)
+            new_ts.domain &= mask
         else:
-            # increment counter with duration of each period
-            counter = histogram.Histogram()
-            for t0, duration, value in self.iterperiods(start_time, end_time):
-                counter[value] += utils.duration_to_number(
-                    duration,
-                    units='seconds',
-                )
+            new_ts = self
+
+        for t0, duration, value in new_ts.iterperiods(start_time, end_time):
+            counter[value] += utils.duration_to_number(
+                duration,
+                units='seconds',
+            )
 
         # divide by total duration if result needs to be normalized
         if normalized:
