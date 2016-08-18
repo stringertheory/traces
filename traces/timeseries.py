@@ -328,22 +328,26 @@ class TimeSeries(object):
             ).format(start_time, end_time)
             raise ValueError(message)
 
-        if start_time not in self.domain or end_time not in self.domain:
+        if start_time > self.domain.end() or end_time < self.domain.start():
             message = (
-                          "Can't slice a Timeseries when end_time or "
-                          "start_time is outside of the domain. "
+                          "Can't slice a Timeseries when end_time and "
+                          "start_time are outside of the domain. "
                           "Received start_time={} and end_time={}. "
                           "Domain is {}."
                       ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
 
         result = TimeSeries()
+        if start_time in self.domain:
+            result[start_time] = self[start_time]
+        for time, value in self.items():
+            if (time > start_time) and (time <= end_time):
+                result[time] = value
 
-        # since start_time > end_time, this will always have at least
-        # one item, so `value` gets set for following line
-        for dt, duration, value in self.iterperiods(start_time, end_time):
-            result[dt] = value
-        result[end_time] = self[end_time]
+            if time > end_time:
+                break
+
+        result.set_domain(self.domain.slice(start_time, end_time))
 
         return result
 
