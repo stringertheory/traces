@@ -229,29 +229,12 @@ class TimeSeries(object):
         return '<TimeSeries>\n%s\n</TimeSeries>' % \
             pprint.pformat(self.d)
 
-    def iterintervals(self, value=None, n=2):
+    def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
         time series, optionally only the groups where the starting
         value of the time series matches `value`.
 
         """
-        # TODO: How would this change with domain? Remove value filter
-        # if value is None, don't filter intervals
-        if value is None:
-            def value_function(x):
-                return True
-
-        # if it's a function, use that to filter
-        elif callable(value):
-            value_function = value
-
-        # if value isn't a function but it's a value other than None,
-        # then make it one that returns true if the the argument
-        # matches value
-        else:
-            def value_function(x):
-                return x[0][1] == value
-
         # tee the original iterator into n identical iterators
         streams = tee(iter(self), n)
 
@@ -263,8 +246,7 @@ class TimeSeries(object):
 
         # now, zip the offset streams back together to yield tuples
         for intervals in zip(*streams):
-            if value_function(intervals):
-                yield intervals
+            yield intervals
 
     def iterperiods(self, start_time=None, end_time=None, value=None):
         """This iterates over the periods (optionally, within a given time

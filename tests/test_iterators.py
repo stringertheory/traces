@@ -22,21 +22,21 @@ def test_iterintervals():
         result.append((v0, v1))
     assert answer == result
 
-    answer = [(1, 0), (1, 2)]
-    result = []
-    for (t0, v0), (t1, v1) in ts.iterintervals(value=1):
-        result.append((v0, v1))
-    assert answer == result
-
-    def filter(args):
-        (t0, v0), (t1, v1) = args
-        return True if not v0 else False
-
-    answer = [(0, 1)]
-    result = []
-    for (t0, v0), (t1, v1) in ts.iterintervals(value=filter):
-        result.append((v0, v1))
-    assert answer == result
+    # answer = [(1, 0), (1, 2)]
+    # result = []
+    # for (t0, v0), (t1, v1) in ts.iterintervals(value=1):
+    #     result.append((v0, v1))
+    # assert answer == result
+    #
+    # def filter(args):
+    #     (t0, v0), (t1, v1) = args
+    #     return True if not v0 else False
+    #
+    # answer = [(0, 1)]
+    # result = []
+    # for (t0, v0), (t1, v1) in ts.iterintervals(value=filter):
+    #     result.append((v0, v1))
+    # assert answer == result
 
 
 def test_iterperiods():
