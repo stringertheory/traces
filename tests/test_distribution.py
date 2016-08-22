@@ -90,3 +90,16 @@ def test_integer_times():
 
     assert distribution[0] == 2.0 / 3
     assert distribution[1] == 1.0 / 3
+
+
+def test_distribution_set():
+    time_series = TimeSeries()
+    time_series[1.2] = {'broccoli'}
+    time_series[1.4] = {'broccoli', 'orange'}
+    time_series[1.7] = {'broccoli', 'orange', 'banana'}
+    time_series[2.2] = {'orange', 'banana'}
+    time_series[3.5] = {'orange', 'banana', 'beets'}
+
+    # TODO: How to convert the set into multiple ts?
+
+    time_series.distribution(0, 4)

@@ -255,6 +255,17 @@ def test_start_end():
     assert dom.end() == inf
 
 
+def test_intervals():
+    dom = Domain([])
+    assert dom.intervals() == [(-inf, inf)]
+
+    dom = Domain([-inf, 2], [6, inf])
+    assert dom.intervals() == [(-inf, 2), (6, inf)]
+
+    dom = Domain([-1, 2], [4, 5], [6, 10])
+    assert dom.intervals() == [(-1, 2), (4, 5), (6, 10)]
+
+
 def test_slice():
     dom = Domain([-1, 2], [4, 5], [6, 10])
     assert dom.slice(-3, 12) == Domain([-1, 2], [4, 5], [6, 10])
@@ -405,9 +416,9 @@ def test_iterperiods():
 
     answers = [
         (1, 1, 2),
-        (2, 2, 3),
-        (6, 2, 1),
-        (8, 0, 4)
+        (2, 0, 3),
+        (3, 2, 3),
+        (6, 2, 1)
     ]
     i = 0
     for time, duration, value in ts.iterperiods():
@@ -417,7 +428,8 @@ def test_iterperiods():
     answers = [
         (0, 0, 2),
         (1, 1, 2),
-        (2, 2, 3),
+        (2, 0, 3),
+        (3, 2, 3),
         (6, 2, 1),
         (8, 0, 4)
     ]
@@ -452,10 +464,16 @@ def test_moving_average():
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
     nose.tools.assert_raises(ValueError, ts.moving_average, 0.5, 1)
 
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
+    nose.tools.assert_raises(NotImplementedError, ts.moving_average, 0.5, 1)
+
 
 def test_mean():
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain(0, 9))
     assert ts.mean() == 22./9
+
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
+    nose.tools.assert_raises(NotImplementedError, ts.mean)
 
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
     nose.tools.assert_raises(ValueError, ts.mean)

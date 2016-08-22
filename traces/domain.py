@@ -200,6 +200,17 @@ class Domain(object):
         else:
             return self._interval_list[-1].upper
 
+    def intervals(self):
+        """Return domain as a list of tuple (start, end)"""
+
+        if len(self._interval_list) == 0:
+            return []
+
+        output = []
+        for interval in self._interval_list:
+            output.append((interval.lower, interval.upper))
+        return output
+
     def slice(self, start_time, end_time):
         """Return a segment of Domain within start and end"""
 
@@ -277,3 +288,6 @@ class Domain(object):
     def __and__(self, other):
         """Allow a & b syntax"""
         return self.intersection(other)
+
+    def __len__(self):
+        return len(self._interval_list)

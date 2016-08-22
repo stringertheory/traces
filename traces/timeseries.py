@@ -93,7 +93,7 @@ class TimeSeries(object):
 
         self.domain = dom
 
-    # TODO: Return list of Domain?
+    # TODO: Return list of Domain? Have a function that return tuple in Domain().intervals()
     def get_domain(self):
         """Return the domain as None, list, or list of list"""
 
@@ -152,7 +152,7 @@ class TimeSeries(object):
             return self.default()
         else:
             return "Something is wrong."
-            # TODO: Check if this will ever happen
+            # TODO: Check if this will ever happen. Raise error.
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
@@ -235,7 +235,7 @@ class TimeSeries(object):
         value of the time series matches `value`.
 
         """
-        # TODO: How would this change with domain?
+        # TODO: How would this change with domain? Remove value filter
         # if value is None, don't filter intervals
         if value is None:
             def value_function(x):
@@ -273,6 +273,9 @@ class TimeSeries(object):
         Duration only account for the time that's within the domain.
 
         """
+
+        # TODO: Break when domain breaks, add value filter
+
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -289,6 +292,8 @@ class TimeSeries(object):
             raise ValueError('Start/end time cannot be infinity.')
 
         # get start index and value
+        # if start_time < self.domain.start():
+        #     start_time = self.domain.start()
         start_index = self.d.bisect_right(start_time)
         start_value = self.d[self.d.iloc[start_index-1]] if start_index is not 0 else self.default()
 
@@ -297,23 +302,28 @@ class TimeSeries(object):
 
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
+        iter_time = sorted(list({int_t1 for int_t1 in self.d.islice(start_index, end_index)} | {begin for begin, end in self.domain.intervals() if begin > start_time}))
+
         int_t0, int_value = start_time, start_value
-        for int_t1 in self.d.islice(start_index, end_index):
+
+        for int_t1 in iter_time:
 
             duration = self.domain.get_duration(int_t0, int_t1)
 
+            # if utils.duration_to_number(duration) > 0:
             # yield the time, duration, and value of the period
             yield int_t0, duration, int_value
 
             # set start point to the end of this interval for next
             # iteration
             int_t0 = int_t1
-            int_value = self.d[int_t0]
+            int_value = self[int_t0]
 
         # yield the time, duration, and value of the final period
         if int_t0 < end_time:
             duration = self.domain.get_duration(int_t0, end_time)
 
+            # if utils.duration_to_number(duration) > 0:
             yield int_t0, duration, int_value
 
     def slice(self, start_time, end_time):
@@ -321,6 +331,9 @@ class TimeSeries(object):
         `start_time` and a last reading at `end_time`.
 
         """
+
+        # TODO: Option to slice domain or not
+
         if end_time <= start_time:
             message = (
                 "Can't slice a Timeseries when end_time <= start_time. "
@@ -359,7 +372,7 @@ class TimeSeries(object):
 
         """
 
-        # TODO: How should regularize behave if the domain is not connected?
+        # TODO: How should regularize behave if the domain is not connected? Throw an error.
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -429,7 +442,7 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
-        # TODO: How should moving_average behave if the domain is not connected?
+        # TODO: How should moving_average behave if the domain is not connected? Throw an error.
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -462,6 +475,9 @@ class TimeSeries(object):
                           "Domain is {}."
                       ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
+
+        if len(self.domain) > 1:
+            raise NotImplementedError('Cannot calculate moving average when Domain is not connected.')
 
         if (window_size <= 0) or (sampling_period <= 0):
             msg = "Can't calculate moving average of a Timeseries " \
@@ -507,7 +523,6 @@ class TimeSeries(object):
         time range from `start_time` to `end_time`.
 
         """
-        # TODO: How should mean behave if the domain is not connected?
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -540,6 +555,9 @@ class TimeSeries(object):
                           "Domain is {}."
                       ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
+
+        if len(self.domain) > 1:
+            raise NotImplementedError('Cannot calculate mean when Domain is not connected.')
 
         total_seconds = utils.duration_to_number(end_time - start_time)
 
@@ -587,7 +605,7 @@ class TimeSeries(object):
 
         counter = histogram.Histogram()
         if mask:
-            new_ts = deepcopy(self)
+            new_ts = self.slice(mask.start(), mask.end())
             new_ts.domain &= mask
         else:
             new_ts = self
