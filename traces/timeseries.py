@@ -266,15 +266,13 @@ class TimeSeries(object):
             if value_function(intervals):
                 yield intervals
 
-    def iterperiods(self, start_time=None, end_time=None):
+    def iterperiods(self, start_time=None, end_time=None, value=None):
         """This iterates over the periods (optionally, within a given time
         span) and yields (time, duration, value) tuples.
 
         Duration only account for the time that's within the domain.
 
         """
-
-        # TODO: Break when domain breaks, add value filter
 
         if start_time is None:
             start_time = self.domain.start()
@@ -290,6 +288,22 @@ class TimeSeries(object):
 
         if start_time == -inf or end_time == inf:
             raise ValueError('Start/end time cannot be infinity.')
+
+        # if value is None, don't filter intervals
+        if value is None:
+            def value_function(x):
+                return True
+
+        # if it's a function, use that to filter
+        elif callable(value):
+            value_function = value
+
+        # if value isn't a function but it's a value other than None,
+        # then make it one that returns true if the the argument
+        # matches value
+        else:
+            def value_function(x):
+                return x[2] == value
 
         # get start index and value
         # if start_time < self.domain.start():
@@ -310,9 +324,9 @@ class TimeSeries(object):
 
             duration = self.domain.get_duration(int_t0, int_t1)
 
-            # if utils.duration_to_number(duration) > 0:
             # yield the time, duration, and value of the period
-            yield int_t0, duration, int_value
+            if value_function([int_t0, duration, int_value]):
+                yield int_t0, duration, int_value
 
             # set start point to the end of this interval for next
             # iteration
@@ -323,8 +337,8 @@ class TimeSeries(object):
         if int_t0 < end_time:
             duration = self.domain.get_duration(int_t0, end_time)
 
-            # if utils.duration_to_number(duration) > 0:
-            yield int_t0, duration, int_value
+            if value_function([int_t0, duration, int_value]):
+                yield int_t0, duration, int_value
 
     def slice(self, start_time, end_time):
         """Return a slice of the time series that has a first reading at
@@ -371,8 +385,9 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
+        if len(self.domain) > 1:
+            raise NotImplementedError('Cannot calculate moving average when Domain is not connected.')
 
-        # TODO: How should regularize behave if the domain is not connected? Throw an error.
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
@@ -442,7 +457,6 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
-        # TODO: How should moving_average behave if the domain is not connected? Throw an error.
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:

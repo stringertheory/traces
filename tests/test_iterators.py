@@ -39,6 +39,41 @@ def test_iterintervals():
     assert answer == result
 
 
+def test_iterperiods():
+    ts = TimeSeries()
+    ts.set(datetime.datetime(2015, 3, 1), 1)
+    ts.set(datetime.datetime(2015, 3, 2), 0)
+    ts.set(datetime.datetime(2015, 3, 3), 1)
+    ts.set(datetime.datetime(2015, 3, 4), 2)
+
+    answer = [(datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 2) - datetime.datetime(2015, 3, 1), 1),
+              (datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3) - datetime.datetime(2015, 3, 2), 0),
+              (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4) - datetime.datetime(2015, 3, 3), 1)]
+    result = []
+    for (t0, dur0, v0) in ts.iterperiods(start_time=datetime.datetime(2015, 3, 1), end_time=datetime.datetime(2015, 3, 4)):
+        result.append((t0, dur0, v0))
+    assert answer == result
+
+    answer = [(datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 2) - datetime.datetime(2015, 3, 1), 1),
+              (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4) - datetime.datetime(2015, 3, 3), 1)]
+    result = []
+    for (t0, dur0, v0) in ts.iterperiods(start_time=datetime.datetime(2015, 3, 1),
+                                         end_time=datetime.datetime(2015, 3, 4), value=1):
+        result.append((t0, dur0, v0))
+    assert answer == result
+
+    def filter(args):
+        (t0, dur0, v0) = args
+        return True if not v0 else False
+
+    answer = [(datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3) - datetime.datetime(2015, 3, 2), 0)]
+    result = []
+    for (t0, dur0, v0) in ts.iterperiods(start_time=datetime.datetime(2015, 3, 1),
+                                         end_time=datetime.datetime(2015, 3, 4), value=filter):
+        result.append((t0, dur0, v0))
+    assert answer == result
+
+
 def test_slice():
 
     ts = TimeSeries(int)

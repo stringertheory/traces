@@ -450,6 +450,9 @@ def test_regularize():
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
     nose.tools.assert_raises(ValueError, ts.regularize, 0.5)
 
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
+    nose.tools.assert_raises(NotImplementedError, ts.regularize, 0.5)
+
 
 def test_moving_average():
     # Check using int
