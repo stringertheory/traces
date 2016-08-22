@@ -93,25 +93,9 @@ class TimeSeries(object):
 
         self.domain = dom
 
-    # TODO: Return list of Domain? Have a function that return tuple in Domain().intervals()
     def get_domain(self):
-        """Return the domain as None, list, or list of list"""
-
+        """Return the domain"""
         return self.domain
-        # if self.domain is None:
-        #     return None
-        #
-        # result = []
-        # if self.domain.default() is True:
-        #     result.append([None, self.domain.get_by_index(0)[0]])
-        #
-        # for (t0, v0), (t1, v1) in self.domain.iterintervals(value=True):
-        #     result.append([t0, t1])
-        #
-        # if self.domain.get_by_index(-1)[1] is True:
-        #     result.append([self.domain.get_by_index(-1)[0], None])
-        #
-        # return result if len(result) > 1 else result[0]
 
     def is_data_in_domain(self, data, domain=None):
         """Check if data (sorteddict/dict) is inside the domain"""
@@ -151,8 +135,7 @@ class TimeSeries(object):
         elif index == 0:
             return self.default()
         else:
-            return "Something is wrong."
-            # TODO: Check if this will ever happen. Raise error.
+            raise ValueError("self.d.bisect_right(time) returns a negative value. This is not expected.")
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
@@ -322,13 +305,11 @@ class TimeSeries(object):
             if value_function([int_t0, duration, int_value]):
                 yield int_t0, duration, int_value
 
-    def slice(self, start_time, end_time):
+    def slice(self, start_time, end_time, slice_domain=True):
         """Return a slice of the time series that has a first reading at
         `start_time` and a last reading at `end_time`.
 
         """
-
-        # TODO: Option to slice domain or not
 
         if end_time <= start_time:
             message = (
@@ -356,7 +337,10 @@ class TimeSeries(object):
             if time > end_time:
                 break
 
-        result.set_domain(self.domain.slice(start_time, end_time))
+        if slice_domain:
+            result.set_domain(self.domain.slice(start_time, end_time))
+        else:
+            result.set_domain(self.domain)
 
         return result
 
