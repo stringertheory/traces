@@ -101,5 +101,3 @@ def test_distribution_set():
     time_series[3.5] = {'orange', 'banana', 'beets'}
 
     # TODO: How to convert the set into multiple ts?
-
-    time_series.distribution(0, 4)
