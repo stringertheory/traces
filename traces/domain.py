@@ -33,7 +33,6 @@ class Domain(object):
     """
     def __init__(self, *args):
 
-        # TODO: get domain intervals in a list
         temp_interval_list = []
 
         # TODO: there might be better way to do all these checks
@@ -79,6 +78,10 @@ class Domain(object):
     def __repr__(self):
         output = '\n'.join('{}'.format([interval.lower, interval.upper]) for interval in self._interval_list)
         return '<Domain>\n{}\n</Domain>'.format(output)
+
+    def n_intervals(self):
+        """Number of disconnected domain"""
+        return len(self._interval_list)
 
     @staticmethod
     def sort_intervals(interval_list):
@@ -202,7 +205,6 @@ class Domain(object):
 
     def intervals(self):
         """Return domain as a list of tuple (start, end)"""
-
         if len(self._interval_list) == 0:
             return []
 
@@ -248,8 +250,14 @@ class Domain(object):
 
         return sliced_domain
 
-    def get_duration(self, start, end):
+    def get_duration(self, start=None, end=None):
         """Return the duration between start and end"""
+
+        if start is None:
+            start = self.start()
+
+        if end is None:
+            end = self.end()
 
         if start > self.end() or end < self.start():
             return 0
@@ -289,5 +297,3 @@ class Domain(object):
         """Allow a & b syntax"""
         return self.intersection(other)
 
-    def __len__(self):
-        return len(self._interval_list)

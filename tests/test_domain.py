@@ -407,14 +407,23 @@ def test_ts_slice():
     assert new.d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1)]).d
 
 
-
-
 def test_get_duration():
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
     assert ts.domain.get_duration(0, 9) == 5
     assert ts.domain.get_duration(1, 8) == 5
     assert ts.domain.get_duration(1, 2.5) == 1
     assert ts.domain.get_duration(1.5, 7.5) == 4
+
+    assert ts.domain.get_duration() == 5
+
+    dom = Domain(-inf, inf)
+    assert dom.get_duration() == inf
+
+    dom = Domain(-inf, 4)
+    assert dom.get_duration() == -inf
+
+    dom = Domain(-3, inf)
+    assert dom.get_duration() == inf
 
 
 def test_iterperiods():

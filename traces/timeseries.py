@@ -351,7 +351,7 @@ class TimeSeries(object):
         directly by calling pandas.Series(Dict)
 
         """
-        if len(self.domain) > 1:
+        if self.domain.n_intervals() > 1:
             raise NotImplementedError('Cannot calculate moving average when Domain is not connected.')
 
         if start_time is None:
@@ -456,7 +456,7 @@ class TimeSeries(object):
                       ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
 
-        if len(self.domain) > 1:
+        if self.domain.n_intervals() > 1:
             raise NotImplementedError('Cannot calculate moving average when Domain is not connected.')
 
         if (window_size <= 0) or (sampling_period <= 0):
@@ -536,7 +536,7 @@ class TimeSeries(object):
                       ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
 
-        if len(self.domain) > 1:
+        if self.domain.n_intervals() > 1:
             raise NotImplementedError('Cannot calculate mean when Domain is not connected.')
 
         total_seconds = utils.duration_to_number(end_time - start_time)
