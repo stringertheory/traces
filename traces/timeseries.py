@@ -665,15 +665,24 @@ class TimeSeries(object):
         in the list at time t.
 
         """
-        # ignore all empty TimeSeries
-        clean_timeseries_list = [ts for ts in timeseries_list if len(ts) > 0]
+
+        if len(timeseries_list) == 0:
+            raise ValueError("timeseries_list is empty. There is nothing to merge.")
+
+        domain = timeseries_list[0].domain
+        for ts in timeseries_list:
+            if len(ts) == 0:
+                raise ValueError("Can't merge empty TimeSeries.")
+
+            if ts.domain != domain:
+                raise ValueError("The domains of the TimeSeries are not the same.")
 
         # This function mostly wraps _iter_merge, the main point of
         # this is to deal with the case of tied times, where we only
         # want to yield the last list of values that occurs for any
         # group of tied times.
         index, previous_t, previous_state = -1, object(), object()
-        for index, (t, state) in enumerate(cls._iter_merge(clean_timeseries_list)):
+        for index, (t, state) in enumerate(cls._iter_merge(timeseries_list)):
             if index > 0 and t != previous_t:
                 yield previous_t, previous_state
             previous_t, previous_state = t, state
@@ -692,7 +701,7 @@ class TimeSeries(object):
         that list of values.
 
         """
-        # TODO: How would merge change with domain?
+
         result = cls()
         for t, merged in cls.iter_merge(ts_list):
             if operation is None:

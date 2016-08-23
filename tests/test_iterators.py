@@ -91,7 +91,7 @@ def test_slice():
 
 
 def make_random_timeseries():
-    length = random.randint(0, 10)
+    length = random.randint(1, 10)
     result = TimeSeries()
     t = 0
     for i in range(length):
@@ -110,7 +110,7 @@ def test_merge():
         # long. Each TimeSeries is of random length between 0 and 20,
         # with random time points and random values.
         ts_list = []
-        for i in range(random.randint(0, 5)):
+        for i in range(random.randint(1, 5)):
             ts_list.append(make_random_timeseries())
 
         method_a = list(TimeSeries.merge(ts_list))
@@ -124,18 +124,12 @@ def test_single_merges():
 
     # a single empty time series
     ts = TimeSeries()
-
-    merged = TimeSeries.merge([ts])
-
-    assert merged.items() == []
+    nose.tools.assert_raises(ValueError, TimeSeries.merge, [ts])
 
     # multiple empty time series
     ts_a = TimeSeries()
     ts_b = TimeSeries()
-
-    merged = TimeSeries.merge([ts_a, ts_b])
-
-    assert merged.items() == []
+    nose.tools.assert_raises(ValueError, TimeSeries.merge, [ts_a, ts_b])
     
     # test a single time series with only one measurement
     ts = TimeSeries()
@@ -148,12 +142,9 @@ def test_single_merges():
     # test an empty time series and a time series with one measurement
     ts_a = TimeSeries()
     ts_a[21] = 42
-
     ts_b = TimeSeries()
-    
-    merged = TimeSeries.merge([ts_a, ts_b])
-    
-    assert merged.items() == [(21, [42])]
+
+    nose.tools.assert_raises(ValueError, TimeSeries.merge, [ts_a, ts_b])
 
     # test an empty time series and a time series with one entry
     ts_a = TimeSeries()
