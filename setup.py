@@ -64,7 +64,7 @@ test_requirements = read_dependencies('requirements/python-test.txt')
 
 setup(
     name='traces',
-    version='0.0.7',
+    version='0.1.0',
     description="Traces makes it easy to analyze time series data at irregular intervals.",
     long_description="View on github: https://github.com/datascopeanalytics/traces",
     author=read_author(),
