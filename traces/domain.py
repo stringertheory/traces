@@ -285,7 +285,9 @@ class Domain(object):
             return False
         else:
             for self_interval, other_interval in zip(self._interval_list, other._interval_list):
-                return (self_interval.lower == other_interval.lower) and (self_interval.upper == other_interval.upper)
+                if not ((self_interval.lower == other_interval.lower) and
+                            (self_interval.upper == other_interval.upper)):
+                    return False
 
         return True
 

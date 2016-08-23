@@ -51,6 +51,19 @@ def test_construct_domain():
         nose.tools.assert_raises(TypeError, Domain, *inputs)
 
 
+def test_equal():
+    dom = Domain([1, 2], [3, 4], [5, 6])
+    assert dom == dom
+    assert not (dom == Domain([1, 2]))
+    assert not (dom == Domain([1, 2], [3, 6]))
+    assert not (dom == Domain([1, 2], [3, 6], [7, 8]))
+
+    dom = Domain([-inf, 2], [5, inf])
+    assert dom == dom
+    assert not (dom == Domain([-inf, inf]))
+    assert not (dom == Domain([-inf, 1], [2, inf]))
+
+
 def test_contain():
     dom = Domain([1, 2], [4, inf])
     assert (0 in dom) == False

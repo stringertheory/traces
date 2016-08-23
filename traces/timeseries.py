@@ -692,6 +692,7 @@ class TimeSeries(object):
         that list of values.
 
         """
+        # TODO: How would merge change with domain?
         result = cls()
         for t, merged in cls.iter_merge(ts_list):
             if operation is None:
