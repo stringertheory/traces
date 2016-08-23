@@ -673,8 +673,7 @@ class TimeSeries(object):
         for ts in timeseries_list:
             if len(ts) == 0:
                 raise ValueError("Can't merge empty TimeSeries.")
-
-            if ts.domain != domain:
+            if not domain == ts.domain:
                 raise ValueError("The domains of the TimeSeries are not the same.")
 
         # This function mostly wraps _iter_merge, the main point of
