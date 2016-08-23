@@ -81,9 +81,9 @@ hours, from 8am to 6pm?
 17.6312415081
 ```
 
-If you would like to convert an unevenly spaced time series to evenly spaced time series, we also provide two options. If you just want to fill up the blank spaces, you can do:
+<!--If you would like to convert an unevenly spaced time series to evenly spaced time series, we also provide two options. If you just want to fill up the blank spaces, you can do:-->
 
-Additionally, you can do moving average:
+<!--Additionally, you can do moving average:-->
 
 <!--TODO: Regularize and moving average example.-->
 
