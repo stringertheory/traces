@@ -64,7 +64,7 @@ test_requirements = read_dependencies('requirements/python-test.txt')
 
 setup(
     name='traces',
-    version='0.1.0',
+    version='0.0.7',
     description="Traces makes it easy to analyze time series data at irregular intervals.",
     long_description="View on github: https://github.com/datascopeanalytics/traces",
     author=read_author(),
@@ -85,11 +85,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],

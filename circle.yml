@@ -3,6 +3,10 @@ dependencies:
     - sudo apt-get update; sudo apt-get install python-numpy python-scipy
     - pip install -r requirements/python-test.txt
 
+  override:
+    - pip install tox tox-pyenv
+    - pyenv local 2.7.12 3.4.5 3.5.2
+
 test:
   override:
     - nosetests --with-coverage --cover-package=traces --with-xunit
