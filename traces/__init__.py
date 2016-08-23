@@ -1,4 +1,9 @@
-from .timeseries import TimeSeries
-from .histogram import Histogram
+# -*- coding: utf-8 -*-
 
-VERSION = '0.0.6'
+from .histogram import Histogram
+from .timeseries import TimeSeries
+from .domain import Domain, inf
+
+__author__ = 'Mike Stringer'
+__email__ = 'mike.stringer@datascopeanalytics.com'
+__version__ = '0.0.7'

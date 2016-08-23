@@ -2,7 +2,7 @@ import datetime
 
 import nose
 
-from traces import TimeSeries
+from traces import TimeSeries, Domain
 
 
 def test_distribution():
@@ -40,11 +40,12 @@ def test_default_values():
     a.set(datetime.datetime(2015, 3, 4), 0)
 
     # not normalized
-    distribution = a.distribution()
-
-    total = 24 * 60 * 60 * 3
-    assert distribution[0] == 24 * 60 * 60 * 1 / float(total)
-    assert distribution[1] == 24 * 60 * 60 * 2 / float(total)
+    nose.tools.assert_raises(ValueError, a.distribution)
+    # distribution = a.distribution()
+    #
+    # total = 24 * 60 * 60 * 3
+    # assert distribution[0] == 24 * 60 * 60 * 1 / float(total)
+    # assert distribution[1] == 24 * 60 * 60 * 2 / float(total)
 
 
 def test_mask():
@@ -59,9 +60,7 @@ def test_mask():
     a.set(datetime.datetime(2015, 3, 4), 0)
     end_time = datetime.datetime(2015, 3, 5)
 
-    mask = TimeSeries()
-    mask.set(datetime.datetime(2015, 3, 1), 1)
-    mask.set(datetime.datetime(2015, 3, 3), 0)
+    mask = Domain(datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 3))
 
     # not normalized
     distribution = a.distribution(
@@ -91,3 +90,14 @@ def test_integer_times():
 
     assert distribution[0] == 2.0 / 3
     assert distribution[1] == 1.0 / 3
+
+
+def test_distribution_set():
+    time_series = TimeSeries()
+    time_series[1.2] = {'broccoli'}
+    time_series[1.4] = {'broccoli', 'orange'}
+    time_series[1.7] = {'broccoli', 'orange', 'banana'}
+    time_series[2.2] = {'orange', 'banana'}
+    time_series[3.5] = {'orange', 'banana', 'beets'}
+
+    # TODO: How to convert the set into multiple ts?

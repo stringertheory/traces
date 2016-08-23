@@ -1,3 +1,6 @@
+traces
+======
+
 Taking measurements at irregular intervals is common, but most tools
 for analyzing data over time are designed for regularly-spaced
 measurements. Traces aims to make it easy to:
@@ -11,11 +14,13 @@ measurements. Traces aims to make it easy to:
 
 ### Installation
 
-To install traces, run:
+To install traces, run this command in your terminal:
 
 ```bash
-pip install traces
+$ pip install traces
 ```
+
+Need more help with installing? See [Installation](installation.md).
 
 ### Using traces
 
@@ -75,6 +80,12 @@ hours, from 8am to 6pm?
 >>> count.mean(datetime(2016, 2, 1,  8,  0,  0), datetime(2016, 2, 1,  12 + 6,  0,  0))
 17.6312415081
 ```
+
+<!--If you would like to convert an unevenly spaced time series to evenly spaced time series, we also provide two options. If you just want to fill up the blank spaces, you can do:-->
+
+<!--Additionally, you can do moving average:-->
+
+<!--TODO: Regularize and moving average example.-->
 
 The measurements points in a TimeSeries can be in any units, as long
 as they can be ordered, and the values can be anything. For example,

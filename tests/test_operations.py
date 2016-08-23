@@ -1,7 +1,5 @@
 import datetime
-
 import nose
-
 from traces import TimeSeries
 
 
@@ -17,8 +15,8 @@ def test_scalar_ops():
     ts_threshold = a.threshold(value=1.1)
 
     # test before domain, should give default value
-    assert ts_half[datetime.datetime(2015, 2, 24)] == 0
-    assert ts_bool[datetime.datetime(2015, 2, 24)] == False
+    assert ts_half[datetime.datetime(2015, 2, 24)] == 0.5
+    assert ts_bool[datetime.datetime(2015, 2, 24)] == True
     assert ts_threshold[datetime.datetime(2015, 2, 24)] == False
 
     # test values throughout series
@@ -63,7 +61,7 @@ def test_sum():
     ts_sum = TimeSeries.from_many_sum([a, b, c])
 
     # test before domain, should give default value
-    assert ts_sum[datetime.datetime(2015, 2, 24)] == 0
+    assert ts_sum[datetime.datetime(2015, 2, 24)] == 1
 
     # test values throughout sum
     assert ts_sum[datetime.datetime(2015, 3, 1)] == 1
@@ -91,6 +89,8 @@ def test_sum():
     # ts_sum = TimeSeries.from_many_sum([a, b, c])
     # for i, j in ts_sum:
     #     print i.isoformat(), j + baseline
+
+    assert 0 + a + b == a + b
 
 
 def example_dictlike():
@@ -126,7 +126,7 @@ def example_dictlike():
 
     # output the time series
     for i, j in l:
-        print i.isoformat(), j
+        print(i.isoformat(), j)
 
 
 def example_mean():
@@ -145,24 +145,24 @@ def example_mean():
     l[datetime.datetime(2010, 2, 5)] = 0
 
     for time, value in l:
-        print time.isoformat(), 0.1 * value + 1.1
+        print(time.isoformat(), 0.1 * value + 1.1)
 
-    print ''
+    print('')
 
     timestep = {'hours': 25}
     start_time = datetime.datetime(2010, 1, 1)
     while start_time <= datetime.datetime(2010, 2, 5):
         end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), l.mean(start_time, end_time)
+        print(start_time.isoformat(), l.mean(start_time, end_time))
         start_time = end_time
 
-    print ''
+    print('')
 
     start_time = datetime.datetime(2010, 1, 1)
     while start_time <= datetime.datetime(2010, 2, 5):
         end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), -0.2
-        print start_time.isoformat(), 1.2
+        print(start_time.isoformat(), -0.2)
+        print(start_time.isoformat(), 1.2)
         start_time = end_time
 
 
@@ -182,21 +182,21 @@ def example_arrow():
     l[arrow.Arrow(2010, 2, 5)] = 0
 
     for time, value in l:
-        print time.naive.isoformat(), 0.1 * value + 1.1
+        print(time.naive.isoformat(), 0.1 * value + 1.1)
 
-    print ''
+    print('')
 
     start = arrow.Arrow(2010, 1, 1)
     end = arrow.Arrow(2010, 2, 5)
     unit = {'hours': 25}
     for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), l.mean(start_time, end_time)
+        print(start_time.naive.isoformat(), l.mean(start_time, end_time))
 
-    print ''
+    print('')
 
     for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), -0.2
-        print start_time.naive.isoformat(), 1.2
+        print(start_time.naive.isoformat(), -0.2)
+        print(start_time.naive.isoformat(), 1.2)
 
 
 def example_sum():
@@ -228,126 +228,21 @@ def example_sum():
     for i, ts in enumerate([a, b, c]):
 
         for (t0, v0), (t1, v1) in ts.iterintervals(1):
-            print t0.isoformat(), i
-            print t1.isoformat(), i
+            print(t0.isoformat(), i)
+            print(t1.isoformat(), i)
 
-        print ''
+        print('')
 
         for (t0, v0), (t1, v1) in ts.iterintervals(0):
-            print t0.isoformat(), i
-            print t1.isoformat(), i
+            print(t0.isoformat(), i)
+            print(t1.isoformat(), i)
 
-        print ''
+        print('')
 
     # output the sum
     # for dt, i in sum([a, b, c]):
     #     print dt.isoformat(), i
     # print ''
     for dt, i in TimeSeries.from_many_sum([a, b, c]):
-        print dt.isoformat(), i
+        print(dt.isoformat(), i)
 
-
-def example_dictlike():
-
-    # test overwriting keys
-    l = TimeSeries()
-    l[datetime.datetime(2010, 1, 1)] = 5
-    l[datetime.datetime(2010, 1, 2)] = 4
-    l[datetime.datetime(2010, 1, 3)] = 3
-    l[datetime.datetime(2010, 1, 7)] = 2
-    l[datetime.datetime(2010, 1, 4)] = 1
-    l[datetime.datetime(2010, 1, 4)] = 10
-    l[datetime.datetime(2010, 1, 4)] = 5
-    l[datetime.datetime(2010, 1, 1)] = 1
-    l[datetime.datetime(2010, 1, 7)] = 1.2
-    l[datetime.datetime(2010, 1, 8)] = 1.3
-    l[datetime.datetime(2010, 1, 12)] = 1.3
-
-    # do some wackiness with a bunch of points
-    dt = datetime.datetime(2010, 1, 12)
-    for i in range(1000):
-        dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.sin(i / float(math.pi))
-
-    dt -= datetime.timedelta(hours=500)
-    dt -= datetime.timedelta(minutes=30)
-    for i in range(1000):
-        dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.cos(i / float(math.pi))
-
-    # what does this get?
-    print >> sys.stderr, l[datetime.datetime(2010, 1, 3, 23, 59, 59)]
-
-    # output the time series
-    for i, j in l:
-        print i.isoformat(), j
-
-
-def example_mean():
-
-    l = TimeSeries()
-    l[datetime.datetime(2010, 1, 1)] = 0
-    l[datetime.datetime(2010, 1, 3, 10)] = 1
-    l[datetime.datetime(2010, 1, 5)] = 0
-    l[datetime.datetime(2010, 1, 8)] = 1
-    l[datetime.datetime(2010, 1, 17)] = 0
-    l[datetime.datetime(2010, 1, 19)] = 1
-    l[datetime.datetime(2010, 1, 23)] = 0
-    l[datetime.datetime(2010, 1, 26)] = 1
-    l[datetime.datetime(2010, 1, 28)] = 0
-    l[datetime.datetime(2010, 1, 31)] = 1
-    l[datetime.datetime(2010, 2, 5)] = 0
-
-    for time, value in l:
-        print time.isoformat(), 0.1 * value + 1.1
-
-    print ''
-
-    timestep = {'hours': 25}
-    start_time = datetime.datetime(2010, 1, 1)
-    while start_time <= datetime.datetime(2010, 2, 5):
-        end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), l.mean(start_time, end_time)
-        start_time = end_time
-
-    print ''
-
-    start_time = datetime.datetime(2010, 1, 1)
-    while start_time <= datetime.datetime(2010, 2, 5):
-        end_time = start_time + datetime.timedelta(**timestep)
-        print start_time.isoformat(), -0.2
-        print start_time.isoformat(), 1.2
-        start_time = end_time
-
-
-def example_arrow():
-
-    l = TimeSeries()
-    l[arrow.Arrow(2010, 1, 1)] = 0
-    l[arrow.Arrow(2010, 1, 3, 10)] = 1
-    l[arrow.Arrow(2010, 1, 5)] = 0
-    l[arrow.Arrow(2010, 1, 8)] = 1
-    l[arrow.Arrow(2010, 1, 17)] = 0
-    l[arrow.Arrow(2010, 1, 19)] = 1
-    l[arrow.Arrow(2010, 1, 23)] = 0
-    l[arrow.Arrow(2010, 1, 26)] = 1
-    l[arrow.Arrow(2010, 1, 28)] = 0
-    l[arrow.Arrow(2010, 1, 31)] = 1
-    l[arrow.Arrow(2010, 2, 5)] = 0
-
-    for time, value in l:
-        print time.naive.isoformat(), 0.1 * value + 1.1
-
-    print ''
-
-    start = arrow.Arrow(2010, 1, 1)
-    end = arrow.Arrow(2010, 2, 5)
-    unit = {'hours': 25}
-    for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), l.mean(start_time, end_time)
-
-    print ''
-
-    for start_time, end_time in span_range(start, end, unit):
-        print start_time.naive.isoformat(), -0.2
-        print start_time.naive.isoformat(), 1.2

@@ -9,6 +9,16 @@ nose
 # performance
 cprofilev
 
+# from cookiecutter
+pip==8.1.2
+bumpversion==0.5.3
+wheel==0.29.0
+flake8==2.6.0
+tox==2.3.1
+coverage==4.1
+cryptography==1.4
+PyYAML==3.11
+
 # install these on a local machine, tests fail in Travis
 # if included in this file
 numpy
