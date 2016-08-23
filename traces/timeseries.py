@@ -888,3 +888,6 @@ class TimeSeries(object):
 
     def __eq__(self, other):
         return self.items() == other.items()
+
+    def __ne__(self, other):
+        return not(self == other)

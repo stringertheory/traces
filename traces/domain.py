@@ -313,6 +313,9 @@ class Domain(object):
 
         return True
 
+    def __ne__(self, other):
+        return not(self == other)
+
     def __or__(self, other):
         """Allow a | b syntax"""
         return self.union(other)
