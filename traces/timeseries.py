@@ -118,7 +118,8 @@ class TimeSeries(object):
         if len(self) == 0:
             raise ValueError("There is no data in the TimeSeries.")
         else:
-            return self.d.values()[0] if self.default_values is None else self.default_values
+            return self.d.values()[0] if self.default_values is None \
+                else self.default_values
 
     def get(self, time):
         """Get the value of the time series, even in-between measured values.
@@ -136,7 +137,8 @@ class TimeSeries(object):
             return self.default()
         else:
             raise ValueError(
-                "self.d.bisect_right(time) returns a negative value. This is not expected.")
+                "self.d.bisect_right(time) returns a negative value. "
+                "This is not expected.")
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
@@ -156,11 +158,13 @@ class TimeSeries(object):
             raise ValueError("({}, {}) is outside of the domain."
                              .format(time, value))
 
-        if (len(self) == 0) or (not compact) or (compact and self.get(time) != value):
+        if (len(self) == 0) or (not compact) or \
+                (compact and self.get(time) != value):
             self.d[time] = value
 
     def update(self, data, compact=False):
-        """Set the values of TimeSeries using a list. Compact it if necessary."""
+        """Set the values of TimeSeries using a list.
+        Compact it if necessary."""
 
         if not self.is_data_in_domain(data):
             raise ValueError("Data are not in the domain.")
@@ -243,14 +247,16 @@ class TimeSeries(object):
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
-                raise ValueError('Start time of the domain is negative infinity.'
-                                 ' Specify a start time in iterperiods.')
+                msg = 'Start time of the domain is negative infinity.' \
+                      ' Specify a start time in iterperiods.'
+                raise ValueError(msg)
 
         if end_time is None:
             end_time = self.domain.end()
             if start_time == inf:
-                raise ValueError('End time of the domain is infinity.'
-                                 ' Specify a start time in iterperiods.')
+                msg = 'End time of the domain is negative infinity.' \
+                      ' Specify a start time in iterperiods.'
+                raise ValueError(msg)
 
         if start_time == -inf or end_time == inf:
             raise ValueError('Start/end time cannot be infinity.')
@@ -283,8 +289,11 @@ class TimeSeries(object):
 
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
-        iter_time = sorted(list({int_t1 for int_t1 in self.d.islice(start_index, end_index)} | {
-                           begin for begin, end in self.domain.intervals() if begin > start_time}))
+        iter_time = sorted(list({int_t1 for int_t1
+                                 in self.d.islice(start_index, end_index)} |
+                                {begin for begin, end
+                                 in self.domain.intervals()
+                                 if begin > start_time}))
 
         int_t0, int_value = start_time, start_value
 
@@ -356,19 +365,22 @@ class TimeSeries(object):
         """
         if self.domain.n_intervals() > 1:
             raise NotImplementedError(
-                'Cannot calculate moving average when Domain is not connected.')
+                'Cannot calculate moving average '
+                'when Domain is not connected.')
 
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
-                raise ValueError('Start time of the domain is negative infinity.'
-                                 ' Cannot regularize without specifying a start time.')
+                msg = 'Start time of the domain is negative infinity.' \
+                      ' Cannot regularize without specifying a start time.'
+                raise ValueError(msg)
 
         if end_time is None:
             end_time = self.domain.end()
             if start_time == inf:
-                raise ValueError('End time of the domain is infinity.'
-                                 ' Cannot regularize without specifying an end time.')
+                msg = 'End time of the domain is infinity.' \
+                      ' Cannot regularize without specifying an end time.'
+                raise ValueError(msg)
 
         if start_time == -inf or end_time == inf:
             raise ValueError('Start/end time cannot be infinity.')
@@ -395,7 +407,8 @@ class TimeSeries(object):
 
         if sampling_period > utils.duration_to_number(end_time - start_time):
             msg = "Can't regularize a Timeseries when sampling_period " \
-                  "is greater than the duration between start_time and end_time."
+                  "is greater than the duration between " \
+                  "start_time and end_time."
             raise ValueError(msg)
 
         if isinstance(start_time, datetime.datetime):
@@ -420,7 +433,8 @@ class TimeSeries(object):
             current_time += period_time
         return result
 
-    def moving_average(self, window_size, sampling_period, start_time=None, end_time=None):
+    def moving_average(self, window_size, sampling_period,
+                       start_time=None, end_time=None):
         """Averaging over regular intervals
 
         Output: Dict that can be converted into pandas.Series
@@ -430,14 +444,18 @@ class TimeSeries(object):
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
-                raise ValueError('Start time of the domain is negative infinity.'
-                                 ' Cannot calculate moving average without specifying a start time.')
+                raise ValueError('Start time of the domain '
+                                 'is negative infinity.'
+                                 ' Cannot calculate moving average '
+                                 'without specifying a start time.')
 
         if end_time is None:
             end_time = self.domain.end()
             if start_time == inf:
-                raise ValueError('End time of the domain is infinity.'
-                                 ' Cannot calculate moving average without specifying an end time.')
+                raise ValueError('End time of the domain '
+                                 'is infinity.'
+                                 ' Cannot calculate moving average '
+                                 'without specifying an end time.')
 
         if start_time == -inf or end_time == inf:
             raise ValueError('Start/end time cannot be infinity.')
@@ -462,7 +480,8 @@ class TimeSeries(object):
 
         if self.domain.n_intervals() > 1:
             raise NotImplementedError(
-                'Cannot calculate moving average when Domain is not connected.')
+                'Cannot calculate moving average '
+                'when Domain is not connected.')
 
         if (window_size <= 0) or (sampling_period <= 0):
             msg = "Can't calculate moving average of a Timeseries " \
@@ -512,14 +531,18 @@ class TimeSeries(object):
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
-                raise ValueError('Start time of the domain is negative infinity.'
-                                 ' Cannot calculate mean without specifying a start time.')
+                raise ValueError('Start time of the domain '
+                                 'is negative infinity.'
+                                 ' Cannot calculate mean without '
+                                 'specifying a start time.')
 
         if end_time is None:
             end_time = self.domain.end()
             if start_time == inf:
-                raise ValueError('End time of the domain is infinity.'
-                                 ' Cannot calculate mean without specifying an end time.')
+                raise ValueError('End time of the domain '
+                                 'is infinity.'
+                                 ' Cannot calculate mean without '
+                                 'specifying an end time.')
 
         if start_time == -inf or end_time == inf:
             raise ValueError('Start/end time cannot be infinity.')
@@ -570,14 +593,18 @@ class TimeSeries(object):
         if start_time is None:
             start_time = self.domain.start()
             if start_time == -inf:
-                raise ValueError('Start time of the domain is negative infinity.'
-                                 ' Cannot calculate distribution without specifying a start time.')
+                raise ValueError('Start time of the domain '
+                                 'is negative infinity.'
+                                 ' Cannot calculate distribution '
+                                 'without specifying a start time.')
 
         if end_time is None:
             end_time = self.domain.end()
             if start_time == inf:
-                raise ValueError('End time of the domain is infinity.'
-                                 ' Cannot calculate distribution without specifying an end time.')
+                raise ValueError('End time of the domain '
+                                 'is infinity.'
+                                 ' Cannot calculate distribution '
+                                 'without specifying an end time.')
 
         if start_time == -inf or end_time == inf:
             raise ValueError('Start/end time cannot be infinity.')

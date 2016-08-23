@@ -35,7 +35,8 @@ def convert_args_to_list(args):
         # Domain([(1, 4)])
         # Domain([(1, 4), (5, 8)])
         # Domain([[1, 4], [5, 8]])
-        if len(args) == 1 and any(isinstance(arg, (list, tuple)) for arg in args[0]):
+        if len(args) == 1 and \
+                any(isinstance(arg, (list, tuple)) for arg in args[0]):
             for item in args[0]:
                 list_of_pairs.append(list(item))
         else:

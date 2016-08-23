@@ -50,9 +50,11 @@ class Domain(object):
 
                 else:
                     first_item = list_of_pairs[0]
-                    if any(isinstance(item, datetime.datetime) for item in first_item):
+                    if any(isinstance(item, datetime.datetime)
+                           for item in first_item):
                         data_type = datetime.datetime
-                    elif any(isinstance(item,  (int, float)) for item in first_item):
+                    elif any(isinstance(item,  (int, float))
+                             for item in first_item):
                         data_type = float
                     else:
                         msg = "Can't create a Domain with {}.".format(
@@ -61,8 +63,12 @@ class Domain(object):
 
                     if data_type == datetime.datetime:
                         for start, end in list_of_pairs:
-                            if (isinstance(start, (datetime.datetime)) or start == -inf or start is None) and \
-                                    (isinstance(end, (datetime.datetime, inf)) or end == inf or end is None):
+                            if (isinstance(start, (datetime.datetime)) or
+                                start == -inf or
+                                start is None) and \
+                                (isinstance(end, (datetime.datetime, inf)) or
+                                 end == inf or
+                                 end is None):
                                 temp_interval_list.append(
                                     intervals.DateTimeInterval([start, end]))
                             else:
@@ -70,8 +76,12 @@ class Domain(object):
                                 raise TypeError(msg)
                     elif data_type == float:
                         for start, end in list_of_pairs:
-                            if (isinstance(start, (int, float)) or start == -inf or start is None) and \
-                                    (isinstance(end, (int, float)) or end == inf or end is None):
+                            if (isinstance(start, (int, float)) or
+                                start == -inf or
+                                start is None) and \
+                                    (isinstance(end, (int, float)) or
+                                     end == inf or
+                                     end is None):
                                 temp_interval_list.append(
                                     intervals.FloatInterval([start, end]))
                             else:
@@ -82,7 +92,8 @@ class Domain(object):
 
     def __repr__(self):
         output = '\n'.join('{}'.format(
-            [interval.lower, interval.upper]) for interval in self._interval_list)
+            [interval.lower, interval.upper])
+                           for interval in self._interval_list)
         return '<Domain>\n{}\n</Domain>'.format(output)
 
     def n_intervals(self):
@@ -92,7 +103,8 @@ class Domain(object):
     @staticmethod
     def sort_intervals(interval_list):
         """Sort intervals"""
-        return sorted(interval_list, key=lambda interval: (interval.lower, interval.upper))
+        return sorted(interval_list,
+                      key=lambda interval: (interval.lower, interval.upper))
 
     @staticmethod
     def union_intervals(interval_list):
@@ -293,7 +305,8 @@ class Domain(object):
         if len(self._interval_list) != len(other._interval_list):
             return False
         else:
-            for self_interval, other_interval in zip(self._interval_list, other._interval_list):
+            for self_interval, other_interval \
+                    in zip(self._interval_list, other._interval_list):
                 if not ((self_interval.lower == other_interval.lower) and
                         (self_interval.upper == other_interval.upper)):
                     return False
