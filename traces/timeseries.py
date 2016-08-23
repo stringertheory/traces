@@ -135,7 +135,8 @@ class TimeSeries(object):
         elif index == 0:
             return self.default()
         else:
-            raise ValueError("self.d.bisect_right(time) returns a negative value. This is not expected.")
+            raise ValueError(
+                "self.d.bisect_right(time) returns a negative value. This is not expected.")
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
@@ -274,14 +275,16 @@ class TimeSeries(object):
         # if start_time < self.domain.start():
         #     start_time = self.domain.start()
         start_index = self.d.bisect_right(start_time)
-        start_value = self.d[self.d.iloc[start_index-1]] if start_index is not 0 else self.default()
+        start_value = self.d[self.d.iloc[start_index - 1]
+                             ] if start_index is not 0 else self.default()
 
         # get last measurement before end of time span
         end_index = self.d.bisect_right(end_time)
 
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
-        iter_time = sorted(list({int_t1 for int_t1 in self.d.islice(start_index, end_index)} | {begin for begin, end in self.domain.intervals() if begin > start_time}))
+        iter_time = sorted(list({int_t1 for int_t1 in self.d.islice(start_index, end_index)} | {
+                           begin for begin, end in self.domain.intervals() if begin > start_time}))
 
         int_t0, int_value = start_time, start_value
 
@@ -320,11 +323,11 @@ class TimeSeries(object):
 
         if start_time > self.domain.end() or end_time < self.domain.start():
             message = (
-                          "Can't slice a Timeseries when end_time and "
-                          "start_time are outside of the domain. "
-                          "Received start_time={} and end_time={}. "
-                          "Domain is {}."
-                      ).format(start_time, end_time, self.get_domain())
+                "Can't slice a Timeseries when end_time and "
+                "start_time are outside of the domain. "
+                "Received start_time={} and end_time={}. "
+                "Domain is {}."
+            ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
 
         result = TimeSeries()
@@ -352,7 +355,8 @@ class TimeSeries(object):
 
         """
         if self.domain.n_intervals() > 1:
-            raise NotImplementedError('Cannot calculate moving average when Domain is not connected.')
+            raise NotImplementedError(
+                'Cannot calculate moving average when Domain is not connected.')
 
         if start_time is None:
             start_time = self.domain.start()
@@ -378,18 +382,18 @@ class TimeSeries(object):
 
         if start_time < self.domain.start() or end_time > self.domain.end():
             message = (
-                          "Can't regularize a Timeseries when end_time or "
-                          "start_time is outside of the domain. "
-                          "Received start_time={} and end_time={}. "
-                          "Domain is {}."
-                      ).format(start_time, end_time, self.get_domain())
+                "Can't regularize a Timeseries when end_time or "
+                "start_time is outside of the domain. "
+                "Received start_time={} and end_time={}. "
+                "Domain is {}."
+            ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
 
         if sampling_period <= 0:
             msg = "Can't regularize a Timeseries when sampling_period <= 0."
             raise ValueError(msg)
 
-        if sampling_period > utils.duration_to_number(end_time-start_time):
+        if sampling_period > utils.duration_to_number(end_time - start_time):
             msg = "Can't regularize a Timeseries when sampling_period " \
                   "is greater than the duration between start_time and end_time."
             raise ValueError(msg)
@@ -448,23 +452,24 @@ class TimeSeries(object):
 
         if start_time < self.domain.start() or end_time > self.domain.end():
             message = (
-                          "Can't calculate moving average of "
-                          "a Timeseries when end_time or "
-                          "start_time is outside of the domain. "
-                          "Received start_time={} and end_time={}. "
-                          "Domain is {}."
-                      ).format(start_time, end_time, self.get_domain())
+                "Can't calculate moving average of "
+                "a Timeseries when end_time or "
+                "start_time is outside of the domain. "
+                "Received start_time={} and end_time={}. "
+                "Domain is {}."
+            ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
 
         if self.domain.n_intervals() > 1:
-            raise NotImplementedError('Cannot calculate moving average when Domain is not connected.')
+            raise NotImplementedError(
+                'Cannot calculate moving average when Domain is not connected.')
 
         if (window_size <= 0) or (sampling_period <= 0):
             msg = "Can't calculate moving average of a Timeseries " \
                   "when window_size <= 0 or sampling_period <= 0."
             raise ValueError(msg)
 
-        if sampling_period > utils.duration_to_number(end_time-start_time):
+        if sampling_period > utils.duration_to_number(end_time - start_time):
             msg = "Can't calculate moving average of a Timeseries " \
                   "when sampling_period is greater than " \
                   "the duration between start_time and end_time."
@@ -486,7 +491,8 @@ class TimeSeries(object):
             period_time = sampling_period
 
         temp = deepcopy(self)
-        temp.domain = Domain(self.domain.start() - buffer_time, self.domain.end() + buffer_time)
+        temp.domain = Domain(self.domain.start() - buffer_time,
+                             self.domain.end() + buffer_time)
 
         result = {}
         current_time = start_time
@@ -528,16 +534,17 @@ class TimeSeries(object):
 
         if start_time < self.domain.start() or end_time > self.domain.end():
             message = (
-                          "Can't calculate mean of a Timeseries "
-                          "when end_time or "
-                          "start_time is outside of the domain. "
-                          "Received start_time={} and end_time={}. "
-                          "Domain is {}."
-                      ).format(start_time, end_time, self.get_domain())
+                "Can't calculate mean of a Timeseries "
+                "when end_time or "
+                "start_time is outside of the domain. "
+                "Received start_time={} and end_time={}. "
+                "Domain is {}."
+            ).format(start_time, end_time, self.get_domain())
             raise ValueError(message)
 
         if self.domain.n_intervals() > 1:
-            raise NotImplementedError('Cannot calculate mean when Domain is not connected.')
+            raise NotImplementedError(
+                'Cannot calculate mean when Domain is not connected.')
 
         total_seconds = utils.duration_to_number(end_time - start_time)
 
@@ -667,14 +674,16 @@ class TimeSeries(object):
         """
 
         if len(timeseries_list) == 0:
-            raise ValueError("timeseries_list is empty. There is nothing to merge.")
+            raise ValueError(
+                "timeseries_list is empty. There is nothing to merge.")
 
         domain = timeseries_list[0].domain
         for ts in timeseries_list:
             if len(ts) == 0:
                 raise ValueError("Can't merge empty TimeSeries.")
             if not domain == ts.domain:
-                raise ValueError("The domains of the TimeSeries are not the same.")
+                raise ValueError(
+                    "The domains of the TimeSeries are not the same.")
 
         # This function mostly wraps _iter_merge, the main point of
         # this is to deal with the case of tied times, where we only
@@ -852,4 +861,3 @@ class TimeSeries(object):
 
     def __eq__(self, other):
         return self.items() == other.items()
-

@@ -31,6 +31,7 @@ class Domain(object):
     For example,  Domain(-inf, 3) means a domain from -inf to 3 inclusive.
 
     """
+
     def __init__(self, *args):
 
         temp_interval_list = []
@@ -44,7 +45,8 @@ class Domain(object):
                 list_of_pairs = convert_args_to_list(args)
 
                 if list_of_pairs[0] == [-inf, inf]:
-                    temp_interval_list.append(intervals.FloatInterval([-inf, inf]))
+                    temp_interval_list.append(
+                        intervals.FloatInterval([-inf, inf]))
 
                 else:
                     first_item = list_of_pairs[0]
@@ -53,14 +55,16 @@ class Domain(object):
                     elif any(isinstance(item,  (int, float)) for item in first_item):
                         data_type = float
                     else:
-                        msg = "Can't create a Domain with {}.".format(type(first_item))
+                        msg = "Can't create a Domain with {}.".format(
+                            type(first_item))
                         raise TypeError(msg)
 
                     if data_type == datetime.datetime:
                         for start, end in list_of_pairs:
                             if (isinstance(start, (datetime.datetime)) or start == -inf or start is None) and \
                                     (isinstance(end, (datetime.datetime, inf)) or end == inf or end is None):
-                                temp_interval_list.append(intervals.DateTimeInterval([start, end]))
+                                temp_interval_list.append(
+                                    intervals.DateTimeInterval([start, end]))
                             else:
                                 msg = "Can't create a Domain with mixed types."
                                 raise TypeError(msg)
@@ -68,7 +72,8 @@ class Domain(object):
                         for start, end in list_of_pairs:
                             if (isinstance(start, (int, float)) or start == -inf or start is None) and \
                                     (isinstance(end, (int, float)) or end == inf or end is None):
-                                temp_interval_list.append(intervals.FloatInterval([start, end]))
+                                temp_interval_list.append(
+                                    intervals.FloatInterval([start, end]))
                             else:
                                 msg = "Can't create a Domain with mixed types."
                                 raise TypeError(msg)
@@ -76,7 +81,8 @@ class Domain(object):
         self._interval_list = self.union_intervals(temp_interval_list)
 
     def __repr__(self):
-        output = '\n'.join('{}'.format([interval.lower, interval.upper]) for interval in self._interval_list)
+        output = '\n'.join('{}'.format(
+            [interval.lower, interval.upper]) for interval in self._interval_list)
         return '<Domain>\n{}\n</Domain>'.format(output)
 
     def n_intervals(self):
@@ -224,10 +230,12 @@ class Domain(object):
             raise ValueError(message)
 
         if start_time > self.end():
-            raise ValueError("Start time is larger than the end of the Domain.")
+            raise ValueError(
+                "Start time is larger than the end of the Domain.")
 
         if end_time < self.start():
-            raise ValueError("End time is smaller than the start of the Domain.")
+            raise ValueError(
+                "End time is smaller than the start of the Domain.")
 
         results = []
         for interval in self._interval_list:
@@ -264,7 +272,8 @@ class Domain(object):
 
         sliced_domain = self.slice(start, end)
 
-        duration = datetime.timedelta(0) if isinstance(start, datetime.datetime) else 0
+        duration = datetime.timedelta(0) if isinstance(
+            start, datetime.datetime) else 0
         for interval in sliced_domain._interval_list:
             duration += interval.upper - interval.lower
 
@@ -298,4 +307,3 @@ class Domain(object):
     def __and__(self, other):
         """Allow a & b syntax"""
         return self.intersection(other)
-
