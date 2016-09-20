@@ -9,8 +9,8 @@ dependencies:
 
 test:
   override:
+    - pep8 traces/
     - nosetests --with-coverage --cover-package=traces --with-xunit
     - tox
-    - pep8 traces/
     - mkdocs build
 
