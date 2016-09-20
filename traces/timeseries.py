@@ -30,9 +30,7 @@ from . import utils
 from .domain import Domain, inf
 
 
-# TODO: Good name? Traces vs time series vs others
 class TimeSeries(object):
-
     """A class to help manipulate and analyze time series that are the
     result of taking measurements at irregular points in time. For
     example, here would be a simple time series that starts at 8am and
@@ -58,8 +56,7 @@ class TimeSeries(object):
     series: sums, difference, logical operators and such.
 
     """
-
-    def __init__(self, data=None, domain=None, default_values=None):
+    def __init__(self, data=None, domain=None, default_value=None):
 
         if domain is None:
             self.domain = Domain(domain)
@@ -73,7 +70,7 @@ class TimeSeries(object):
             else:
                 raise ValueError("Data given are not in domain.")
 
-        self.default_values = default_values
+        self.default_value = default_value
 
     def set_domain(self, domain):
         """Create domain for a TimeSeries."""
@@ -118,8 +115,8 @@ class TimeSeries(object):
         if len(self) == 0:
             raise ValueError("There is no data in the TimeSeries.")
         else:
-            return self.d.values()[0] if self.default_values is None \
-                else self.default_values
+            return self.d.values()[0] if self.default_value is None \
+                else self.default_value
 
     def get(self, time):
         """Get the value of the time series, even in-between measured values.
