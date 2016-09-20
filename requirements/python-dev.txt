@@ -1,5 +1,6 @@
 -r python.txt
 -r python-doc.txt
+-r python-test.txt
 
 # needed to run the tests
 pep8
