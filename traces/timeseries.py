@@ -60,13 +60,13 @@ class TimeSeries(object):
 
         if domain is None:
             self.domain = Domain(domain)
-            self.d = sortedcontainers.SortedDict(data)
+            self._d = sortedcontainers.SortedDict(data)
         else:
             self.domain = None
             self.set_domain(domain)
 
             if self.is_data_in_domain(data):
-                self.d = sortedcontainers.SortedDict(data)
+                self._d = sortedcontainers.SortedDict(data)
             else:
                 raise ValueError("Data given are not in domain.")
 
@@ -84,8 +84,8 @@ class TimeSeries(object):
             else:
                 dom = Domain(domain)
 
-            if hasattr(self, 'd'):
-                if not self.is_data_in_domain(self.d, domain=dom):
+            if hasattr(self, '_d'):
+                if not self.is_data_in_domain(self._d, domain=dom):
                     raise ValueError("Data are not in the domain.")
 
         self.domain = dom
@@ -108,14 +108,14 @@ class TimeSeries(object):
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
-        return iteritems(self.d)
+        return iteritems(self._d)
 
     def default(self):
         """Return the default value of the time series."""
         if len(self) == 0:
             raise ValueError("There is no data in the TimeSeries.")
         else:
-            return self.d.values()[0] if self.default_value is None \
+            return self._d.values()[0] if self.default_value is None \
                 else self.default_value
 
     def get(self, time):
@@ -126,21 +126,21 @@ class TimeSeries(object):
             raise ValueError("{} is outside of the domain."
                              .format(time))
 
-        index = self.d.bisect_right(time)
+        index = self._d.bisect_right(time)
         if index > 0:
-            previous_measurement_time = self.d.iloc[index - 1]
-            return self.d[previous_measurement_time]
+            previous_measurement_time = self._d.iloc[index - 1]
+            return self._d[previous_measurement_time]
         elif index == 0:
             return self.default()
         else:
             raise ValueError(
-                "self.d.bisect_right(time) returns a negative value. "
+                "self._d.bisect_right(time) returns a negative value. "
                 "This is not expected.")
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
-        t = self.d.iloc[index]
-        return t, self.d[t]
+        t = self._d.iloc[index]
+        return t, self._d[t]
 
     def last(self):
         """Returns the last (time, value) pair of the time series."""
@@ -157,7 +157,7 @@ class TimeSeries(object):
 
         if (len(self) == 0) or (not compact) or \
                 (compact and self.get(time) != value):
-            self.d[time] = value
+            self._d[time] = value
 
     def update(self, data, compact=False):
         """Set the values of TimeSeries using a list.
@@ -166,7 +166,7 @@ class TimeSeries(object):
         if not self.is_data_in_domain(data):
             raise ValueError("Data are not in the domain.")
 
-        self.d.update(data)
+        self._d.update(data)
         if compact:
             self.compact()
 
@@ -177,7 +177,7 @@ class TimeSeries(object):
         """
         previous_value = None
         remove_item = []
-        for time, value in self.d.items():
+        for time, value in self._d.items():
             if value == previous_value:
                 remove_item.append(time)
             previous_value = value
@@ -186,7 +186,7 @@ class TimeSeries(object):
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
-        return listitems(self.d)  # Python 3 returns itemView instead of a list
+        return listitems(self._d)  # Python 3 returns itemView instead of a list
 
     def remove(self, time):
         """Allow removal of measurements from the time series. This throws an
@@ -194,13 +194,13 @@ class TimeSeries(object):
 
         """
         try:
-            del self.d[time]
+            del self._d[time]
         except KeyError:
             raise KeyError('no measurement at %s' % time)
 
     def n_measurements(self):
         """Return the number of measurements in the time series."""
-        return len(self.d)
+        return len(self._d)
 
     def __len__(self):
         """Should this return the length of time in seconds that the time
@@ -212,7 +212,7 @@ class TimeSeries(object):
 
     def __repr__(self):
         return '<TimeSeries>\n%s\n</TimeSeries>' % \
-            pprint.pformat(self.d)
+            pprint.pformat(self._d)
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
@@ -277,17 +277,17 @@ class TimeSeries(object):
         # get start index and value
         # if start_time < self.domain.start():
         #     start_time = self.domain.start()
-        start_index = self.d.bisect_right(start_time)
-        start_value = self.d[self.d.iloc[start_index - 1]
+        start_index = self._d.bisect_right(start_time)
+        start_value = self._d[self._d.iloc[start_index - 1]
                              ] if start_index is not 0 else self.default()
 
         # get last measurement before end of time span
-        end_index = self.d.bisect_right(end_time)
+        end_index = self._d.bisect_right(end_time)
 
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
         iter_time = sorted(list({int_t1 for int_t1
-                                 in self.d.islice(start_index, end_index)} |
+                                 in self._d.islice(start_index, end_index)} |
                                 {begin for begin, end
                                  in self.domain.intervals()
                                  if begin > start_time}))

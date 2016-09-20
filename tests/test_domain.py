@@ -334,6 +334,7 @@ def test_set_domain():
     assert ts.domain == Domain([2, 5], [9, 10])
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
+
     nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
     nose.tools.assert_raises(ValueError, ts.set_domain, [0, 7])
     nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 9])
@@ -396,11 +397,11 @@ def test_ts_slice():
 
     new = ts.slice(1.5, 8.5)
     assert new.domain == Domain(1.5, 8.5)
-    assert new.d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1), (8, 4)]).d
+    assert new._d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1), (8, 4)])._d
 
     new = ts.slice(1.5, 8.5, slice_domain=False)
     assert new.domain == Domain(-inf, inf)
-    assert new.d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1), (8, 4)]).d
+    assert new._d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1), (8, 4)])._d
 
     ts.set_domain([0, 8.5])
     nose.tools.assert_raises(ValueError, ts.slice, -1, -.5)
@@ -408,16 +409,16 @@ def test_ts_slice():
 
     new = ts.slice(1.5, 8.5)
     assert new.domain == Domain(1.5, 8.5)
-    assert new.d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1), (8, 4)]).d
+    assert new._d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1), (8, 4)])._d
 
     new = ts.slice(-1, 9)
     assert new.domain == Domain(0, 8.5)
-    assert new.d == TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)]).d
+    assert new._d == TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])._d
 
     ts.set_domain([[0, 1.5], [2, 5], [5.5, 7], [8, 9]])
     new = ts.slice(1.5, 6)
     assert new.domain == Domain([[1.5, 1.5], [2, 5], [5.5, 6]])
-    assert new.d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1)]).d
+    assert new._d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1)])._d
 
 
 def test_get_duration():
