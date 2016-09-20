@@ -7,24 +7,4 @@ Traces makes it easy to analyze timeseries data at irregular intervals.
 
 ![image](https://camo.githubusercontent.com/4a7cf94aedbd23c13cc2d75fdc3b2af5c816c208/687474703a2f2f7374617469632e646967672e636f6d2f7374617469632f696d616765732f6469676765722e676966)
 
-* Free software: MIT license
 * Documentation: https://traces.readthedocs.io.
-
-
-<!--Features-->
-<!------------>
-
-<!--* TODO-->
-
-History
--------
-
-* 0.0.7 (2016-04-01) - First release on PyPI.
-
-Credits
--------
-
-This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [audreyr/cookiecutter-pypackage](https://github.com/audreyr/cookiecutter-pypackage) project template.
-
-
-
