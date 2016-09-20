@@ -743,28 +743,6 @@ class TimeSeries(object):
             result.set(t, value, compact=compact)
         return result
 
-    @classmethod
-    def from_many_sum(cls, timeseries_list, compact=False):
-        """Efficiently create a new time series that is the sum of many
-        TimeSeries.
-
-        """
-        result = cls()
-        for t, merged in cls.iter_merge(timeseries_list):
-            result.set(t, sum(merged), compact=compact)
-        return result
-
-    @classmethod
-    def from_many_union(cls, timeseries_list, compact=False):
-        """Efficiently create a new time series that is the sum of many
-        TimeSeries.
-
-        """
-        result = cls()
-        for t, merged in cls.iter_merge(timeseries_list):
-            result.set(t, set.union(*merged), compact=compact)
-        return result
-
     def operation(self, other, function):
         """Calculate "elementwise" operation either between this TimeSeries
         and another one, i.e.
@@ -813,7 +791,7 @@ class TimeSeries(object):
 
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
-        return TimeSeries.from_many_sum([self, other])
+        return TimeSeries.merge([self, other], operation=sum)
 
     def difference(self, other):
         """difference(x, y) = x(t) - y(t)."""

@@ -58,7 +58,7 @@ def test_sum():
     c.set(datetime.datetime(2015, 3, 1, 18), 1)
     c.set(datetime.datetime(2015, 3, 5), 0)
 
-    ts_sum = TimeSeries.from_many_sum([a, b, c])
+    ts_sum = TimeSeries.merge([a, b, c], operation=sum)
 
     # test before domain, should give default value
     assert ts_sum[datetime.datetime(2015, 2, 24)] == 1
@@ -78,17 +78,6 @@ def test_sum():
 
     # test after domain, should give last value
     assert ts_sum[datetime.datetime(2015, 3, 6)] == 0
-
-    # baseline = 0
-    # for ts in [a, b, c]:
-    #     for i, j in ts:
-    #         print i.isoformat(), j + baseline
-    #     print ''
-    #     baseline += 1.2
-
-    # ts_sum = TimeSeries.from_many_sum([a, b, c])
-    # for i, j in ts_sum:
-    #     print i.isoformat(), j + baseline
 
     assert 0 + a + b == a + b
 
@@ -243,6 +232,6 @@ def example_sum():
     # for dt, i in sum([a, b, c]):
     #     print dt.isoformat(), i
     # print ''
-    for dt, i in TimeSeries.from_many_sum([a, b, c]):
+    for dt, i in TimeSeries.merge([a, b, c], operation=sum):
         print(dt.isoformat(), i)
 
