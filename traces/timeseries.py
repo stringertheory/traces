@@ -146,6 +146,10 @@ class TimeSeries(object):
         """Returns the last (time, value) pair of the time series."""
         return self.get_by_index(-1)
 
+    def first(self):
+        """Returns the first (time, value) pair of the time series."""
+        return self.get_by_index(0)
+    
     def set(self, time, value, compact=False):
         """Set the value for the time series. If compact is True, only set the
         value if it's different from what it would be anyway.
