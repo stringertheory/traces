@@ -1,6 +1,5 @@
 -r python.txt
 -r python-doc.txt
--r python-test.txt
 
 # needed to run the tests
 pep8
@@ -24,3 +23,4 @@ PyYAML==3.11
 # if included in this file
 numpy
 scipy
+pandas
