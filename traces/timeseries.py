@@ -56,6 +56,7 @@ class TimeSeries(object):
     series: sums, difference, logical operators and such.
 
     """
+
     def __init__(self, data=None, domain=None, default_value=None):
 
         if domain is None:
@@ -149,7 +150,7 @@ class TimeSeries(object):
     def first(self):
         """Returns the first (time, value) pair of the time series."""
         return self.get_by_index(0)
-    
+
     def set(self, time, value, compact=False):
         """Set the value for the time series. If compact is True, only set the
         value if it's different from what it would be anyway.
@@ -190,7 +191,7 @@ class TimeSeries(object):
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
-        return listitems(self._d)  # Python 3 returns itemView instead of a list
+        return listitems(self._d)
 
     def remove(self, time):
         """Allow removal of measurements from the time series. This throws an
@@ -283,7 +284,7 @@ class TimeSeries(object):
         #     start_time = self.domain.start()
         start_index = self._d.bisect_right(start_time)
         start_value = self._d[self._d.iloc[start_index - 1]
-                             ] if start_index is not 0 else self.default()
+                              ] if start_index is not 0 else self.default()
 
         # get last measurement before end of time span
         end_index = self._d.bisect_right(end_time)
