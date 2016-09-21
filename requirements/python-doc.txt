@@ -1,6 +1,6 @@
 -r python.txt
 
 Sphinx
-sphinxcontrib-napoleon
+sphinxcontrib-napoleon==0.5.3
 recommonmark
 sphinx-autobuild
