@@ -8,4 +8,4 @@ nose
 # reference implementations
 numpy
 scipy
-pandas
+pandas==0.18.1
