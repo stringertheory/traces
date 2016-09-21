@@ -3,4 +3,4 @@
 Sphinx
 sphinxcontrib-napoleon
 recommonmark
-sphinx-autobuild
+sphinx-autobuild==0.6.0
