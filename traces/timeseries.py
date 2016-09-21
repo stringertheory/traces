@@ -1,14 +1,9 @@
-"""A class for manipulating [time series based on measurements at
-unevenly-spaced
-times](http://en.wikipedia.org/wiki/Unevenly_spaced_time_series).
+"""A class for manipulating time series based on measurements at
+unevenly-spaced times, see:
 
-For an discussion of visualizing this type of thing, see [Representing
-Unevenly-Spaced Time Series Data for Visualization and Interactive
-Exploration](http://hcil2.cs.umd.edu/trs/2005-01/2005-01.pdf#healthycakes)
-by Aleks Aris and others.
+http://en.wikipedia.org/wiki/Unevenly_spaced_time_series
 
 """
-
 # standard library
 import datetime
 import pprint
@@ -36,21 +31,21 @@ class TimeSeries(object):
     example, here would be a simple time series that starts at 8am and
     goes to 9:59am:
 
-    ts = TimeSeries()
-    ts['8:00am'] = 0
-    ts['8:47am'] = 1
-    ts['8:51am'] = 0
-    ts['9:15am'] = 1
-    ts['9:59am'] = 0
+    >>> ts = TimeSeries()
+    >>> ts['8:00am'] = 0
+    >>> ts['8:47am'] = 1
+    >>> ts['8:51am'] = 0
+    >>> ts['9:15am'] = 1
+    >>> ts['9:59am'] = 0
 
     The value of the time series is the last recorded measurement: for
     example, at 8:05am the value is 0 and at 8:48am the value is 1. So:
 
-    ts['8:05am']
-    >> 0
+    >>> ts['8:05am']
+    0
 
-    ts['8:48am']
-    >> 1
+    >>> ts['8:48am']
+    1
 
     There are also a bunch of things for operating on another time
     series: sums, difference, logical operators and such.
@@ -589,48 +584,26 @@ class TimeSeries(object):
     def distribution(self, start_time=None, end_time=None,
                      normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
-        `start_time` to `end_time`.
+        `start_time` to `end_time`. Returns a `Histogram`_.
 
         """
         if start_time is None:
             start_time = self.domain.start()
-            if start_time == -inf:
-                raise ValueError('Start time of the domain '
-                                 'is negative infinity.'
-                                 ' Cannot calculate distribution '
-                                 'without specifying a start time.')
 
         if end_time is None:
             end_time = self.domain.end()
-            if start_time == inf:
-                raise ValueError('End time of the domain '
-                                 'is infinity.'
-                                 ' Cannot calculate distribution '
-                                 'without specifying an end time.')
 
-        if start_time == -inf or end_time == inf:
-            raise ValueError('Start/end time cannot be infinity.')
-
-        if start_time > end_time:
-            msg = (
-                "Can't calculate distribution of a Timeseries "
-                "when end_time <= start_time. "
-                "Received start_time={} and end_time={}."
-            ).format(start_time, end_time)
-            raise ValueError(msg)
+        distribution_mask = Domain([start_time, end_time])
+        if mask:
+            distribution_mask &= mask
 
         counter = histogram.Histogram()
-        if mask:
-            new_ts = self.slice(mask.start(), mask.end())
-            new_ts.domain &= mask
-        else:
-            new_ts = self
-
-        for t0, duration, value in new_ts.iterperiods(start_time, end_time):
-            counter[value] += utils.duration_to_number(
-                duration,
-                units='seconds',
-            )
+        for start_time, end_time in distribution_mask.intervals():
+            for t0, duration, value in self.iterperiods(start_time, end_time):
+                counter[value] += utils.duration_to_number(
+                    duration,
+                    units='seconds',
+                )
 
         # divide by total duration if result needs to be normalized
         if normalized:

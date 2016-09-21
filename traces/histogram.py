@@ -135,9 +135,13 @@ class Histogram(sortedcontainers.SortedDict):
 
         return function
 
+    def median(self, alpha=0.5, smallest_count=None):
+        return self.quantile(0.5, alpha=alpha, smallest_count=smallest_count)
+
     def quantiles(self, q_list, alpha=0.5, smallest_count=None):
         f = self._quantile_function(alpha=alpha, smallest_count=smallest_count)
         return [f(q) for q in q_list]
 
     def quantile(self, q, alpha=0.5, smallest_count=None):
-        return self.quantiles([q], alpha=alpha)[0]
+        return \
+            self.quantiles([q], alpha=alpha, smallest_count=smallest_count)[0]

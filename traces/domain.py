@@ -2,33 +2,27 @@ import datetime
 from infinity import inf
 from collections import Iterable
 
-# Third party
 import intervals
 
-# Local
 from .utils import convert_args_to_list
-
-# Define infinity for traces
-inf = inf
 
 
 class Domain(object):
-    """
-    initialize with:
-    Domain(1, 4)
-    Domain([1, 4])
-    Domain((1, 4))
-    Domain([[1, 4]])
-    Domain([(1, 4)])
+    """Initialize with:
 
-    Domain((1, 4), (5, 8))
-    Domain([1, 4], [5, 8])
-    Domain([(1, 4), (5, 8)])
-    Domain([[1, 4], [5, 8]])
-    ...
+    >>> Domain(1, 4)
+    >>> Domain([1, 4])
+    >>> Domain((1, 4))
+    >>> Domain([[1, 4]])
+    >>> Domain([(1, 4)])
+    >>> Domain((1, 4), (5, 8))
+    >>> Domain([1, 4], [5, 8])
+    >>> Domain([(1, 4), (5, 8)])
+    >>> Domain([[1, 4], [5, 8]])
 
-    Domain has to be closed intervals. It can be open toward -inf or inf.
-    For example,  Domain(-inf, 3) means a domain from -inf to 3 inclusive.
+    Domain has to be closed intervals. It can be open toward -inf or
+    inf.  For example, Domain(-inf, 3) means a domain from -inf to 3
+    inclusive.
 
     """
 
@@ -93,7 +87,7 @@ class Domain(object):
     def __repr__(self):
         output = '\n'.join('{}'.format(
             [interval.lower, interval.upper])
-                           for interval in self._interval_list)
+            for interval in self._interval_list)
         return '<Domain>\n{}\n</Domain>'.format(output)
 
     def n_intervals(self):
