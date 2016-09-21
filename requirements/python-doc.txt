@@ -1,3 +1,4 @@
 -r python.txt
 
 Sphinx
+sphinxcontrib-napoleon

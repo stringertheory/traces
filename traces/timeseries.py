@@ -69,8 +69,12 @@ class TimeSeries(object):
         self.default_value = default_value
 
     def set_domain(self, domain):
-        """Create domain for a TimeSeries."""
+        """Set the domain for this TimeSeries.
 
+        Args:
+            domain (:ref:`Domain <domain>`): the new domain.
+
+        """
         if domain is None:
             dom = Domain(-inf, inf)
 
