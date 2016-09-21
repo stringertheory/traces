@@ -20,7 +20,7 @@ def read_init(key):
     if result is None:
         raise ValueError('must define %s in %s' % (key, filename))
 
-    return author
+    return result
 
 
 def read_author():
