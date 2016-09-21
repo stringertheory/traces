@@ -6,6 +6,6 @@ coveralls
 nose
 
 # reference implementations
-numpy
+numpy==1.11.1
 scipy
 pandas
