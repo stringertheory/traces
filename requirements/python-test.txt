@@ -7,5 +7,5 @@ nose
 
 # reference implementations
 numpy
-scipy
+scipy==0.18.1
 pandas
