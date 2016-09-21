@@ -48,7 +48,7 @@ coverage.xml
 *.log
 
 # mkdocs
-site/*
+docs/_build
 
 # PyBuilder
 target/

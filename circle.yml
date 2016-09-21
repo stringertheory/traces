@@ -12,5 +12,4 @@ test:
     - pep8 traces/
     - nosetests --with-coverage --cover-package=traces
     - tox
-    - mkdocs build
-
+    - cd docs && make html && cd -
