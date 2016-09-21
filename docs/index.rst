@@ -151,14 +151,10 @@ More info
    examples
    api_reference
 
-Project info
-------------
+Contributing
+-------------
 
-.. toctree::
-   :maxdepth: 1
-
-   changelog
-   authors
-   contributing
-
-   
+Contributions are welcome and greatly appreciated! Please visit `the
+repository
+<https://github.com/datascopeanalytics/traces/blob/master/CONTRIBUTING.md>`_
+for more info.
