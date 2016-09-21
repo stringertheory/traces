@@ -60,7 +60,7 @@ class Domain(object):
                             if (isinstance(start, (datetime.datetime)) or
                                 start == -inf or
                                 start is None) and \
-                                (isinstance(end, (datetime.datetime, inf)) or
+                                (isinstance(end, (datetime.datetime)) or
                                  end == inf or
                                  end is None):
                                 temp_interval_list.append(
@@ -284,6 +284,21 @@ class Domain(object):
             duration += interval.upper - interval.lower
 
         return duration
+
+    def get_interval(self, item):
+        """Return the interval that contains the item."""
+
+        interval_list = self._interval_list
+        if self._interval_list is None:
+            interval_list = []
+
+        found = False
+        for interval in interval_list:
+            if interval.lower <= item <= interval.upper:
+                return (interval.lower, interval.upper)
+
+        msg = 'No interval contains {}'.format(item)
+        raise KeyError(msg)
 
     def __contains__(self, item):
         if (self._interval_list is None) or (len(self._interval_list) == 0):

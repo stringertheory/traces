@@ -441,30 +441,31 @@ def test_get_duration():
 
 
 def test_iterperiods():
-    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
+    ts = TimeSeries(
+        [[1, 2], [2, 3], [6, 1], [8, 4]],
+        domain=Domain([1, 2], [3, 5], [6, 8])
+    )
 
     answers = [
-        (1, 1, 2),
-        (2, 0, 3),
-        (3, 2, 3),
-        (6, 2, 1)
+        (1, 2, 2),
+        (3, 5, 3),
+        (6, 8, 1)
     ]
     i = 0
-    for time, duration, value in ts.iterperiods():
-        assert (time, duration, value) == answers[i]
+    for t0, t1, value in ts.iterperiods():
+        match = (t0, t1, value) == answers[i]
+        assert match
         i += 1
 
     answers = [
-        (0, 0, 2),
-        (1, 1, 2),
-        (2, 0, 3),
-        (3, 2, 3),
-        (6, 2, 1),
-        (8, 0, 4)
+        (1, 2, 2),
+        (3, 5, 3),
+        (6, 8, 1)
     ]
     i = 0
-    for time, duration, value in ts.iterperiods(0, 9):
-        assert (time, duration, value) == answers[i]
+    for t0, t1, value in ts.iterperiods(0, 9):
+        match = (t0, t1, value) == answers[i]
+        assert match
         i += 1
 
 

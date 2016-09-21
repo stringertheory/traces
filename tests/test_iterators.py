@@ -22,55 +22,53 @@ def test_iterintervals():
         result.append((v0, v1))
     assert answer == result
 
-    # answer = [(1, 0), (1, 2)]
-    # result = []
-    # for (t0, v0), (t1, v1) in ts.iterintervals(value=1):
-    #     result.append((v0, v1))
-    # assert answer == result
-    #
-    # def filter(args):
-    #     (t0, v0), (t1, v1) = args
-    #     return True if not v0 else False
-    #
-    # answer = [(0, 1)]
-    # result = []
-    # for (t0, v0), (t1, v1) in ts.iterintervals(value=filter):
-    #     result.append((v0, v1))
-    # assert answer == result
-
 
 def test_iterperiods():
+
     ts = TimeSeries()
     ts.set(datetime.datetime(2015, 3, 1), 1)
     ts.set(datetime.datetime(2015, 3, 2), 0)
     ts.set(datetime.datetime(2015, 3, 3), 1)
     ts.set(datetime.datetime(2015, 3, 4), 2)
 
-    answer = [(datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 2) - datetime.datetime(2015, 3, 1), 1),
-              (datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3) - datetime.datetime(2015, 3, 2), 0),
-              (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4) - datetime.datetime(2015, 3, 3), 1)]
+    answer = [
+        (datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 2), 1),
+        (datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3), 0),
+        (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4), 1)]
     result = []
-    for (t0, dur0, v0) in ts.iterperiods(start_time=datetime.datetime(2015, 3, 1), end_time=datetime.datetime(2015, 3, 4)):
-        result.append((t0, dur0, v0))
+    for (t0, t1, v0) in ts.iterperiods(
+            start_time=datetime.datetime(2015, 3, 1),
+            end_time=datetime.datetime(2015, 3, 4)
+    ):
+        result.append((t0, t1, v0))
     assert answer == result
 
-    answer = [(datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 2) - datetime.datetime(2015, 3, 1), 1),
-              (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4) - datetime.datetime(2015, 3, 3), 1)]
+    answer = [
+        (datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 2), 1),
+        (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4), 1),
+    ]
     result = []
-    for (t0, dur0, v0) in ts.iterperiods(start_time=datetime.datetime(2015, 3, 1),
-                                         end_time=datetime.datetime(2015, 3, 4), value=1):
-        result.append((t0, dur0, v0))
+    for (t0, t1, v0) in ts.iterperiods(
+            start_time=datetime.datetime(2015, 3, 1),
+            end_time=datetime.datetime(2015, 3, 4),
+            value=1,
+    ):
+        result.append((t0, t1, v0))
     assert answer == result
 
-    def filter(args):
-        (t0, dur0, v0) = args
-        return True if not v0 else False
+    def filter(t0, t1, value):
+        return True if not value else False
 
-    answer = [(datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3) - datetime.datetime(2015, 3, 2), 0)]
+    answer = [
+        (datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3), 0),
+    ]
     result = []
-    for (t0, dur0, v0) in ts.iterperiods(start_time=datetime.datetime(2015, 3, 1),
-                                         end_time=datetime.datetime(2015, 3, 4), value=filter):
-        result.append((t0, dur0, v0))
+    for (t0, t1, v0) in ts.iterperiods(
+            start_time=datetime.datetime(2015, 3, 1),
+            end_time=datetime.datetime(2015, 3, 4),
+            value=filter,
+    ):
+        result.append((t0, t1, v0))
     assert answer == result
 
 
@@ -115,7 +113,7 @@ def test_merge():
 
         method_a = list(TimeSeries.merge(ts_list))
         method_b = list(TimeSeries.iter_merge(ts_list))
-        
+
         msg = '%s != %s' % (pprint.pformat(method_a), pprint.pformat(method_b))
         assert method_a == method_b, msg
 
@@ -130,11 +128,11 @@ def test_single_merges():
     ts_a = TimeSeries()
     ts_b = TimeSeries()
     nose.tools.assert_raises(ValueError, TimeSeries.merge, [ts_a, ts_b])
-    
+
     # test a single time series with only one measurement
     ts = TimeSeries()
     ts[21] = 42
-    
+
     merged = TimeSeries.merge([ts])
 
     assert merged.items() == [(21, [42])]
@@ -156,9 +154,9 @@ def test_single_merges():
     ts_b[20] = 1
     ts_b[22] = 2
     ts_b[24] = 3
-    
+
     merged = TimeSeries.merge([ts_a, ts_b])
-    
+
     assert merged.items() == [
         (20, [42, 1]),
         (21, [42, 1]),
@@ -166,4 +164,3 @@ def test_single_merges():
         (23, [40, 2]),
         (24, [40, 3]),
     ]
-

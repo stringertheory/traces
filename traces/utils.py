@@ -1,6 +1,7 @@
 import datetime
 from past.builtins import long
 from collections import Iterable
+from infinity import inf
 
 
 def duration_to_number(duration, units='seconds'):
@@ -19,6 +20,9 @@ def duration_to_number(duration, units='seconds'):
         else:
             msg = 'unit "%s" is not supported' % units
             raise NotImplementedError(msg)
+    elif duration == inf or duration == -inf:
+        msg = "Can't convert infinite duration to number"
+        raise ValueError(msg)
     else:
         msg = 'duration is an unknown type (%s)' % duration
         raise TypeError(msg)

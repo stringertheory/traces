@@ -39,13 +39,16 @@ def test_default_values():
     a.set(datetime.datetime(2015, 3, 3), 1)
     a.set(datetime.datetime(2015, 3, 4), 0)
 
-    # not normalized
+    # can't 
     nose.tools.assert_raises(ValueError, a.distribution)
-    # distribution = a.distribution()
-    #
-    # total = 24 * 60 * 60 * 3
-    # assert distribution[0] == 24 * 60 * 60 * 1 / float(total)
-    # assert distribution[1] == 24 * 60 * 60 * 2 / float(total)
+
+    start_time = datetime.datetime(2015, 3, 1)
+    end_time = datetime.datetime(2015, 3, 4)
+    distribution = a.distribution(start_time=start_time, end_time=end_time)
+    
+    total = (end_time - start_time).total_seconds()
+    assert distribution[0] == 1.0 / 3
+    assert distribution[1] == 2.0 / 3
 
 
 def test_mask():

@@ -244,67 +244,64 @@ class TimeSeries(object):
         Duration only account for the time that's within the domain.
 
         """
-
         if start_time is None:
             start_time = self.domain.start()
-            if start_time == -inf:
-                msg = 'Start time of the domain is negative infinity.' \
-                      ' Specify a start time in iterperiods.'
-                raise ValueError(msg)
 
         if end_time is None:
             end_time = self.domain.end()
-            if start_time == inf:
-                msg = 'End time of the domain is negative infinity.' \
-                      ' Specify a start time in iterperiods.'
-                raise ValueError(msg)
 
-        if start_time == -inf or end_time == inf:
-            raise ValueError('Start/end time cannot be infinity.')
-
-        # if value is None, don't filter intervals
+        # if value is None, don't filter
         if value is None:
-            def value_function(x):
+            def value_function(t0_, t1_, value_):
                 return True
 
-        # if it's a function, use that to filter
+        # if value is a function, use the function to filter
         elif callable(value):
             value_function = value
 
-        # if value isn't a function but it's a value other than None,
-        # then make it one that returns true if the the argument
-        # matches value
+        # if value is a constant other than None, then filter to
+        # return only the intervals where the value equals the
+        # constant
         else:
-            def value_function(x):
-                return x[2] == value
+            def value_function(t0_, t1_, value_):
+                return value_ == value
 
         # get start index and value
-        # if start_time < self.domain.start():
-        #     start_time = self.domain.start()
         start_index = self._d.bisect_right(start_time)
-        start_value = self._d[self._d.iloc[start_index - 1]
-                              ] if start_index is not 0 else self.default()
+        if start_index:
+            start_value = self._d[self._d.iloc[start_index - 1]]
+        else:
+            start_value = self.default()
 
         # get last measurement before end of time span
         end_index = self._d.bisect_right(end_time)
 
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
-        iter_time = sorted(list({int_t1 for int_t1
-                                 in self._d.islice(start_index, end_index)} |
-                                {begin for begin, end
-                                 in self.domain.intervals()
-                                 if begin > start_time}))
+        ts_interval_closes = set(self._d.islice(start_index, end_index))
+        domain_interval_opens = set(
+            b for (b, e) in self.domain.intervals() if b > start_time)
+        iter_time = sorted(
+            list(ts_interval_closes.union(domain_interval_opens)))
 
         int_t0, int_value = start_time, start_value
 
         for int_t1 in iter_time:
 
-            duration = self.domain.get_duration(int_t0, int_t1)
+            try:
+                domain_t0, domain_t1 = self.domain.get_interval(int_t0)
+            except KeyError:
+                pass
+            else:
+                if domain_t1 < int_t1:
+                    clipped_t1 = domain_t1
+                else:
+                    clipped_t1 = int_t1
 
-            # yield the time, duration, and value of the period
-            if value_function([int_t0, duration, int_value]):
-                yield int_t0, duration, int_value
+                # yield the time, duration, and value of the period
+                nonzero = (clipped_t1 != int_t0)
+                if nonzero and value_function(int_t0, clipped_t1, int_value):
+                    yield int_t0, clipped_t1, int_value
 
             # set start point to the end of this interval for next
             # iteration
@@ -313,10 +310,18 @@ class TimeSeries(object):
 
         # yield the time, duration, and value of the final period
         if int_t0 < end_time:
-            duration = self.domain.get_duration(int_t0, end_time)
 
-            if value_function([int_t0, duration, int_value]):
-                yield int_t0, duration, int_value
+            try:
+                domain_t0, domain_t1 = self.domain.get_interval(int_t0)
+            except KeyError:
+                pass
+            else:
+                if domain_t1 < end_time:
+                    end_time = domain_t1
+
+                nonzero = (end_time != int_t0)
+                if nonzero and value_function(int_t0, end_time, int_value):
+                    yield int_t0, end_time, int_value
 
     def slice(self, start_time, end_time, slice_domain=True):
         """Return a slice of the time series that has a first reading at
@@ -362,6 +367,13 @@ class TimeSeries(object):
 
         Output: Dict that can be converted into pandas.Series
         directly by calling pandas.Series(Dict)
+
+        :param arg1: description
+        :param arg2: description
+        :type arg1: type description
+        :type arg1: type description
+        :return: return description
+        :rtype: the return type description
 
         """
         if self.domain.n_intervals() > 1:
@@ -573,11 +585,11 @@ class TimeSeries(object):
         total_seconds = utils.duration_to_number(end_time - start_time)
 
         mean = 0.0
-        for (t0, duration, value) in self.iterperiods(start_time, end_time):
+        for (t0, t1, value) in self.iterperiods(start_time, end_time):
             # calculate contribution to weighted average for this
             # interval
             try:
-                mean += (utils.duration_to_number(duration) * value)
+                mean += (utils.duration_to_number(t1 - t0) * value)
             except TypeError:
                 msg = "Can't take mean of non-numeric type (%s)" % type(value)
                 raise TypeError(msg)
@@ -588,7 +600,38 @@ class TimeSeries(object):
     def distribution(self, start_time=None, end_time=None,
                      normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
-        `start_time` to `end_time`. Returns a `Histogram`_.
+        `start_time` to `end_time`.
+
+        Args:
+
+            start_time (orderable, optional): The lower time bound of
+                when to calculate the distribution. By default, the
+                start of the domain will be used.
+
+            end_time (orderable, optional): The upper time bound of
+                when to calculate the distribution. By default, the
+                end of the domain will be used.
+
+            normalized (bool): If True, distribution will sum to
+                one. If False and the time values of the TimeSeries
+                are datetimes, the units will be seconds.
+
+            mask (:obj:`Domain` or :obj:`TimeSeries`, optional): A
+                Domain on which to calculate the distribution. This
+                Domain is combined with a logical and with either the
+                (start, end) time domain, if given, or the domain of
+                the TimeSeries.
+
+        Returns:
+
+            :obj:`Histogram` with the results.
+
+        Examples:
+
+            TODO: need some examples.
+
+        >>> print([i for i in example_generator(4)])
+        [0, 1, 2, 3]
 
         """
         if start_time is None:
@@ -597,15 +640,20 @@ class TimeSeries(object):
         if end_time is None:
             end_time = self.domain.end()
 
+        # if a TimeSeries is given as mask, convert to a domain
+        if isinstance(mask, TimeSeries):
+            mask = mask.to_domain()
+
+        # logical and with start, end time domain
         distribution_mask = Domain([start_time, end_time])
         if mask:
             distribution_mask &= mask
 
         counter = histogram.Histogram()
         for start_time, end_time in distribution_mask.intervals():
-            for t0, duration, value in self.iterperiods(start_time, end_time):
+            for t0, t1, value in self.iterperiods(start_time, end_time):
                 counter[value] += utils.duration_to_number(
-                    duration,
+                    t1 - t0,
                     units='seconds',
                 )
 
@@ -751,6 +799,15 @@ class TimeSeries(object):
             for time, value in self:
                 result[time] = function(value, other)
         return result
+
+    def to_domain(self, start_time=None, end_time=None):
+        """"""
+        intervals = []
+        iterator = self.iterperiods(start_time=start_time, end_time=end_time)
+        for t0, t1, value in iterator:
+            if value:
+                intervals.append((t0, t1))
+        return Domain(intervals)
 
     def to_bool(self, invert=False):
         """Return the truth value of each element."""
