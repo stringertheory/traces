@@ -1,4 +1,4 @@
 sortedcontainers
-arrow
+arrow==0.8.0
 future
 intervals
