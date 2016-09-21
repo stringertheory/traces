@@ -10,5 +10,5 @@ wheel==0.29.0
 flake8==2.6.0
 tox==2.3.1
 coverage==4.1
-cryptography==1.4
+cryptography==1.5
 PyYAML==3.11
