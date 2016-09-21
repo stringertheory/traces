@@ -2,5 +2,5 @@
 
 Sphinx
 sphinxcontrib-napoleon
-recommonmark
+recommonmark==0.4.0
 sphinx-autobuild
