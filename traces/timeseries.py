@@ -239,9 +239,10 @@ class TimeSeries(object):
 
     def iterperiods(self, start_time=None, end_time=None, value=None):
         """This iterates over the periods (optionally, within a given time
-        span) and yields (time, duration, value) tuples.
+        span) and yields (interval start, interval end, value) tuples.
 
-        Duration only account for the time that's within the domain.
+        Will only yield time intervals that are not length 0 that are
+        within the domain.
 
         """
         if start_time is None:
