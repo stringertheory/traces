@@ -1,2 +1,3 @@
 mkdocs
 python-markdown-math
+Sphinx
