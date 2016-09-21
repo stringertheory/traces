@@ -1,7 +1,11 @@
+-r python-dev.txt
+
+# testing
 pep8
 coveralls
 nose
 
+# reference implementations
 numpy
 scipy
 pandas
