@@ -1,7 +1,7 @@
 -r python-dev.txt
 
 # testing
-pep8
+pep8==1.7.0
 coveralls
 nose==1.3.7
 
