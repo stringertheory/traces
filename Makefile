@@ -51,25 +51,22 @@ lint: ## check style with flake8
 	flake8 traces tests
 
 test: ## run tests quickly with the default Python
-	
 		python setup.py test
 
 test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	
 		coverage run --source traces setup.py test
-	
 		coverage report -m
 		coverage html
 		$(BROWSER) htmlcov/index.html
 
 docs: ## generate HTML documentation
-	mkdocs build
+	cd docs && make html
 
 servedocs: ## compile the docs watching for changes
-	mkdocs serve
+	sphinx-autobuild -z traces/ docs docs/_build/html
 
 release: clean ## package and upload a release
 	python setup.py sdist upload
