@@ -12,19 +12,19 @@ Why?
 ----
 
 Taking measurements at irregular intervals is common, but most tools
-for analyzing data over time are designed for regularly-spaced
-measurements. It's a shame, because `unevenly-spaced data is actually
-pretty great, particularly for sensor data analysis
+are primarily designed for evenly-spaced measurements. Also, in the
+real world, time series have missing observations or you may have
+multiple series with different frequencies: it's can be useful to
+model these as unevenly-spaced.
+
+.. include:: goals.rst
+
+Traces was designed by the team at `Datascope
+<https://datascopeanalytics.com/>`__ based on several practical
+applications in different domains, because it turns out
+`unevenly-spaced data is actually pretty great, particularly for
+sensor data analysis
 <https://datascopeanalytics.com/blog/unevenly-spaced-time-series/>`_.
-
-Traces aims to make it simple to:
-
--  read, write, and manipulate unevenly-spaced time series data
--  perform basic analyses of unevenly-spaced time series data without
-   making an awkward / lossy transformation to evenly-spaced
-   representations
--  gracefully transform unevenly-spaced times series data to
-   evenly-spaced representations
 
 Installation
 ------------
@@ -51,11 +51,11 @@ you create just like a dictionary, adding the five measurements at
 .. code:: python
 
     >>> time_series = traces.TimeSeries()
-    >>> time_series[datetime(2042, 2, 1,  6,  0,  0)] = 0
-    >>> time_series[datetime(2042, 2, 1,  7, 45, 56)] = 1
-    >>> time_series[datetime(2042, 2, 1,  8, 51, 42)] = 0
-    >>> time_series[datetime(2042, 2, 1, 12,  3, 56)] = 1
-    >>> time_series[datetime(2042, 2, 1, 12,  7, 13)] = 0
+    >>> time_series[datetime(2042, 2, 1,  6,  0,  0)] = 0 #  6:00:00am
+    >>> time_series[datetime(2042, 2, 1,  7, 45, 56)] = 1 #  7:45:56am
+    >>> time_series[datetime(2042, 2, 1,  8, 51, 42)] = 0 #  8:51:42am
+    >>> time_series[datetime(2042, 2, 1, 12,  3, 56)] = 1 # 12:03:56am
+    >>> time_series[datetime(2042, 2, 1, 12,  7, 13)] = 0 # 12:07:13am
 
 What if you want to know if the light was on at 11am? Unlike a
 python dictionary, you can look up the value at any time even if it's
@@ -63,7 +63,7 @@ not one of the measurement times.
 
 .. code:: python
 
-    >>> time_series[datetime(2042, 2, 1, 11,  0, 0)]
+    >>> time_series[datetime(2042, 2, 1, 11,  0, 0)] # 11:00am
     0
 
 The ``distribution`` function gives you the fraction of time that the
@@ -72,8 +72,8 @@ The ``distribution`` function gives you the fraction of time that the
 .. code:: python
 
     >>> time_series.distribution(
-    >>>   start_time=datetime(2042, 2, 1,  6,  0,  0),
-    >>>   end_time=datetime(2042, 2, 1,  13,  0,  0)
+    >>>   start_time=datetime(2042, 2, 1,  6,  0,  0), # 6:00am
+    >>>   end_time=datetime(2042, 2, 1,  13,  0,  0)   # 1:00pm
     >>> )
     Histogram({0: 0.8355952380952381, 1: 0.16440476190476191})
 
@@ -109,8 +109,8 @@ from 8am to 6pm?
 .. code:: python
 
     >>> histogram = count.distribution(
-    >>>   start_time=datetime(2042, 2, 1,  8,  0,  0),
-    >>>   end_time=datetime(2042, 2, 1,  12 + 6,  0,  0)
+    >>>   start_time=datetime(2042, 2, 1,  8,  0,  0),   # 8:00am
+    >>>   end_time=datetime(2042, 2, 1,  12 + 6,  0,  0) # 6:00pm
     >>> )
     >>> histogram.median()
     17
@@ -130,18 +130,14 @@ of a grocery basket by the number of minutes within a shopping trip.
 .. code:: python
 
     >>> time_series = traces.TimeSeries()
-    >>> time_series[1.2] = set(['broccoli'])
-    >>> time_series[1.4] = set(['broccoli', 'orange'])
-    >>> time_series[1.7] = set(['broccoli', 'orange', 'banana'])
-    >>> time_series[2.2] = set(['orange', 'banana'])
-    >>> time_series[3.5] = set(['orange', 'banana', 'beets'])
+    >>> time_series[1.2] = {'broccoli'}
+    >>> time_series[1.7] = {'broccoli', 'apple'}
+    >>> time_series[2.2] = {'apple'}          # puts broccoli back
+    >>> time_series[3.5] = {'apple', 'beets'} # mmm, beets
 
-This is just a few things that traces can do -- it's been designed to
-by the team at `Datascope <https://datascopeanalytics.com/>`__ based on
-several use cases in different application domains. To learn more,
-check the :ref:`examples <examples>` and the detailed :ref:`reference
-<api>`.
-
+To learn more, check the :ref:`examples <examples>` and the detailed
+:ref:`reference <api>`.
+     
 More info
 ---------
 

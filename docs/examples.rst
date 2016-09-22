@@ -3,14 +3,7 @@
 Examples
 ========
 
-Traces aims to make it simple to:
-
--  read, write, and manipulate unevenly-spaced time series data
--  perform basic analyses of unevenly-spaced time series data without
-   making an awkward / lossy transformation to evenly-spaced
-   representations
--  gracefully transform unevenly-spaced times series data to
-   evenly-spaced representations
+.. include:: goals.rst
 
 This section has a few examples of how to do these things.
    
