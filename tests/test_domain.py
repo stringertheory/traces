@@ -152,24 +152,14 @@ def test_slice():
 
 
 def test_is_data_in_domain():
-    ts = TimeSeries(domain=[0, 8])
     data1 = [(1, 2), (2, 3), (6, 1), (7, 4)]
-    data2 = [(-1, 2), (1, 2), (2, 3)]
-    data3 = [(1, 2), (2, 3), (6, 1), (9, 4)]
+    ts = TimeSeries(data=data1)
 
-    assert ts.is_data_in_domain(data1) == True
-    assert ts.is_data_in_domain(data2) == False
-    assert ts.is_data_in_domain(data3) == False
+    # this shouldn't work
+    nose.tools.assert_raises(ValueError, setattr, ts, 'domain', [3, 4])
 
-    ts_domain = Domain([1, 7])
-    assert ts.is_data_in_domain(data1, ts_domain) == True
-    assert ts.is_data_in_domain(data2, ts_domain) == False
-    assert ts.is_data_in_domain(data3, ts_domain) == False
-
-    ts_domain = Domain(-inf, inf)
-    assert ts.is_data_in_domain(data1, ts_domain) == True
-    assert ts.is_data_in_domain(data2, ts_domain) == True
-    assert ts.is_data_in_domain(data3, ts_domain) == True
+    # this should work
+    ts.domain = [0, 8]
 
 
 def test_set_domain():
@@ -177,67 +167,68 @@ def test_set_domain():
     ts = TimeSeries()
     assert ts.domain == Domain([-inf, inf])
 
-    ts.set_domain(None)
+    ts.domain = None
     assert ts.domain == Domain([-inf, inf])
 
-    ts.set_domain([-inf, 5])
+    ts.domain = [-inf, 5]
     assert ts.domain == Domain([-inf, 5])
 
-    ts.set_domain([5, inf])
+    ts.domain = [5, inf]
     assert ts.domain == Domain([5, inf])
 
-    ts.set_domain([-inf, inf])
+    ts.domain = [-inf, inf]
     assert ts.domain == Domain([-inf, inf])
 
-    ts.set_domain([2, 5])
+    ts.domain = [2, 5]
     assert ts.domain == Domain([2, 5])
 
-    ts.set_domain([[2, 5], [9, 10]])
+    ts.domain = [[2, 5], [9, 10]]
     assert ts.domain == Domain([2, 5], [9, 10])
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
 
-    nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 7])
-    nose.tools.assert_raises(ValueError, ts.set_domain, [0, 7])
-    nose.tools.assert_raises(ValueError, ts.set_domain, [1.5, 9])
+    nose.tools.assert_raises(ValueError, setattr, ts, 'domain', [1.5, 7])
+    nose.tools.assert_raises(ValueError, setattr, ts, 'domain', [0, 7])
+    nose.tools.assert_raises(ValueError, setattr, ts, 'domain', [1.5, 9])
 
 
-def test_get_domain():
+def test_domain():
+
     ts = TimeSeries()
-    assert ts.get_domain() == Domain([-inf, inf])
+    assert ts.domain == Domain([-inf, inf])
 
-    ts.set_domain(None)
-    assert ts.get_domain() == Domain([-inf, inf])
+    ts.domain = None
+    assert ts.domain == Domain([-inf, inf])
 
-    ts.set_domain([-inf, 5])
-    assert ts.get_domain() == Domain([-inf, 5])
+    ts.domain = [-inf, 5]
+    assert ts.domain == Domain([-inf, 5])
 
-    ts.set_domain([5, inf])
-    assert ts.get_domain() == Domain([5, inf])
+    ts.domain = [5, inf]
+    assert ts.domain == Domain([5, inf])
 
-    ts.set_domain([-inf, inf])
-    assert ts.get_domain() == Domain(-inf, inf)
+    ts.domain = [-inf, inf]
+    assert ts.domain == Domain(-inf, inf)
 
-    ts.set_domain([2, 5])
-    assert ts.get_domain() == Domain([2, 5])
+    ts.domain = [2, 5]
+    assert ts.domain == Domain([2, 5])
 
-    ts.set_domain([[2, 5], [9, 10]])
-    assert ts.get_domain() == Domain([[2, 5], [9, 10]])
+    ts.domain = [[2, 5], [9, 10]]
+    assert ts.domain == Domain([[2, 5], [9, 10]])
 
-    ts.set_domain([[-inf, 1], [2, 5], [9, 10]])
-    assert ts.get_domain() == Domain([[-inf, 1], [2, 5], [9, 10]])
+    ts.domain = [[-inf, 1], [2, 5], [9, 10]]
+    assert ts.domain == Domain([[-inf, 1], [2, 5], [9, 10]])
 
-    ts.set_domain([[2, 5], [9, 10], [11, inf]])
-    assert ts.get_domain() == Domain([[2, 5], [9, 10], [11, inf]])
+    ts.domain = [[2, 5], [9, 10], [11, inf]]
+    assert ts.domain == Domain([[2, 5], [9, 10], [11, inf]])
 
-    ts.set_domain([[-inf, 1], [2, 5], [9, 10], [11, inf]])
-    assert ts.get_domain() == Domain([[-inf, 1], [2, 5], [9, 10], [11, inf]])
+    ts.domain = [[-inf, 1], [2, 5], [9, 10], [11, inf]]
+    assert ts.domain == Domain([[-inf, 1], [2, 5], [9, 10], [11, inf]])
 
 
 def test_time_series():
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
-    ts.set_domain([1, 8.5])
+    ts.domain = [1, 8.5]
     nose.tools.assert_raises(KeyError, ts.get, 0)
     assert ts[1.5] == 2
     assert ts[2.4] == 3
@@ -249,7 +240,7 @@ def test_time_series():
     nose.tools.assert_raises(KeyError, ts.set, 9, 10)
     nose.tools.assert_raises(KeyError, ts.set, 0, 10)
 
-    nose.tools.assert_raises(KeyError, TimeSeries,
+    nose.tools.assert_raises(ValueError, TimeSeries,
                              data=[(1, 2), (2, 3), (6, 1), (8, 4)],
                              domain=[1.5, 7])
 
@@ -265,7 +256,7 @@ def test_ts_slice():
     assert new.domain == Domain(-inf, inf)
     assert new._d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1), (8, 4)])._d
 
-    ts.set_domain([0, 8.5])
+    ts.domain = [0, 8.5]
     nose.tools.assert_raises(ValueError, ts.slice, -1, -.5)
     nose.tools.assert_raises(ValueError, ts.slice, 8.8, 9)
 
@@ -278,7 +269,7 @@ def test_ts_slice():
     assert new._d == TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])._d
 
     args = [[0, 1.5], [2, 5], [5.5, 7], [8, 9]]
-    ts.set_domain(args)
+    ts.domain = args
     new = ts.slice(1.1, 6)
     assert new.domain == Domain([[1.1, 1.5], [2, 5], [5.5, 6]])
     assert new._d == TimeSeries(data=[(1.1, 2), (2, 3), (6, 1)])._d

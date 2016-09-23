@@ -27,6 +27,7 @@ from . import histogram
 from . import utils
 from .domain import Domain
 
+EXTEND_BACK = object()
 
 class TimeSeries(object):
     """A class to help manipulate and analyze time series that are the
@@ -54,75 +55,62 @@ class TimeSeries(object):
     series: sums, difference, logical operators and such.
 
     """
+    def __init__(self, data=None, domain=None, default=EXTEND_BACK):
+        self._d = sortedcontainers.SortedDict(data)
+        self.default = default
+        self.domain = domain
 
-    def __init__(self, data=None, domain=None, default_value=None):
+    @property
+    def domain(self):
+        """Return the domain"""
+        return self._domain
 
-        self.default_value = default_value
-
-        self._d = sortedcontainers.SortedDict()
-        
-        if domain is None:
-            self.domain = None
-        else:
-            self.domain = Domain(domain)
-            for t, v in data:
-                self.set(t, v)
-
-
-    def set_domain(self, domain):
+    @domain.setter
+    def domain(self, domain):
         """Set the domain for this TimeSeries.
 
         Args:
             domain (:ref:`Domain <domain>`): the new domain.
 
         """
-        
-        if domain is None:
-            dom = Domain(-inf, inf)
-
+        if isinstance(domain, Domain):
+            self._domain = domain
         else:
-            if isinstance(domain, Domain):
-                dom = domain
-            else:
-                dom = Domain(domain)
+            self._domain = Domain(domain)
 
-            if hasattr(self, '_d'):
-                if not self.is_data_in_domain(self._d, domain=dom):
-                    raise ValueError("Data are not in the domain.")
+        self._check_data()
 
-        self.domain = dom
-
-    def get_domain(self):
-        """Return the domain"""
-        return self.domain
-
-    def is_data_in_domain(self, data, domain=None):
+    def _check_data(self):
         """Check if data (sorteddict/dict) is inside the domain"""
-        if domain is None:
-            domain = self.domain
+        for t, v in self:
+            baddies = []
+            if t not in self.domain:
+                baddies.append(t)
+            if baddies:
+                msg = '{} times are not in the domain'.format(len(baddies))
+                raise ValueError(msg)
             
-        temp = sortedcontainers.SortedDict(data)
-        for key in temp.keys():
-            if key not in domain:
-                return False
-
-        return True
-
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return iteritems(self._d)
 
+    @property
     def default(self):
         """Return the default value of the time series."""
-        if self.default_value is None and self.n_measurements() == 0:
-            msg = "can't get value without a default value or measurements"
+        if self._default == EXTEND_BACK and self.n_measurements() == 0:
+            msg = "can't get value without a measurement (or a default)"
             raise KeyError(msg)
         else:
-            if self.default_value is None:
+            if self._default == EXTEND_BACK:
                 return self.first()[1]
             else:
-                return self.default_value
+                return self._default
 
+    @default.setter
+    def default(self, value):
+        """Set the default value of the time series."""
+        self._default = value
+            
     def get(self, time):
         """Get the value of the time series, even in-between measured values.
 
@@ -136,7 +124,7 @@ class TimeSeries(object):
             previous_measurement_time = self._d.iloc[index - 1]
             return self._d[previous_measurement_time]
         elif index == 0:
-            return self.default()
+            return self.default
         else:
             msg = (
                 'self._d.bisect_right({}) returned a negative value. '
@@ -162,37 +150,26 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
-        # if time not in self.domain:
-        #     raise KeyError("{} is outside of the domain.".format(time))
+        if time not in self.domain:
+            raise KeyError("{} is outside of the domain.".format(time))
 
         if (len(self) == 0) or (not compact) or \
                 (compact and self.get(time) != value):
             self._d[time] = value
-
-    def update(self, data, compact=False):
-        """Set the values of TimeSeries using a list.
-        Compact it if necessary."""
-
-        if not self.is_data_in_domain(data):
-            raise KeyError("Data are not in the domain.")
-
-        self._d.update(data)
-        if compact:
-            self.compact()
 
     def compact(self):
         """Convert this instance to a compact version: the value will be the
         same at all times, but repeated measurements are discarded.
 
         """
-        previous_value = None
-        remove_item = []
-        for time, value in self._d.items():
+        previous_value = object()
+        redundant = []
+        for time, value in self:
             if value == previous_value:
-                remove_item.append(time)
+                redundant.append(time)
             previous_value = value
-        for item in remove_item:
-            del self[item]
+        for time in redundant:
+            del self[time]
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
@@ -278,7 +255,7 @@ class TimeSeries(object):
         if start_index:
             start_value = self._d[self._d.iloc[start_index - 1]]
         else:
-            start_value = self.default()
+            start_value = self.default
 
         # get last measurement before end of time span
         end_index = self._d.bisect_right(end_time)
@@ -349,7 +326,7 @@ class TimeSeries(object):
                 "start_time are outside of the domain. "
                 "Received start_time={} and end_time={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.get_domain())
+            ).format(start_time, end_time, self.domain)
             raise ValueError(message)
 
         result = TimeSeries()
@@ -363,10 +340,7 @@ class TimeSeries(object):
                 break
 
         if slice_domain:
-            new_domain = self.domain.slice(start_time, end_time)
-            result.set_domain(new_domain)
-        else:
-            result.set_domain(self.domain)
+            result.domain = self.domain.slice(start_time, end_time)
 
         return result
 
@@ -419,7 +393,7 @@ class TimeSeries(object):
                 "start_time is outside of the domain. "
                 "Received start_time={} and end_time={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.get_domain())
+            ).format(start_time, end_time, self.domain)
             raise ValueError(message)
 
         if sampling_period <= 0:
@@ -496,7 +470,7 @@ class TimeSeries(object):
                 "start_time is outside of the domain. "
                 "Received start_time={} and end_time={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.get_domain())
+            ).format(start_time, end_time, self.domain)
             raise ValueError(message)
 
         if self.domain.n_intervals() > 1:
@@ -583,7 +557,7 @@ class TimeSeries(object):
                 "start_time is outside of the domain. "
                 "Received start_time={} and end_time={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.get_domain())
+            ).format(start_time, end_time, self.domain)
             raise ValueError(message)
 
         if self.domain.n_intervals() > 1:
@@ -708,7 +682,7 @@ class TimeSeries(object):
         # `state` keeps track of the value of the merged
         # TimeSeries. It starts with the default. It starts as a list
         # of the default value for each individual TimeSeries.
-        state = [ts.default() for ts in timeseries_list]
+        state = [ts.default for ts in timeseries_list]
         while not queue.empty():
 
             # get the next time with a measurement from queue
