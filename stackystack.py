@@ -1,7 +1,32 @@
 import traces
 import random
 import datetime
+from infinity import inf
 
+d = traces.Domain()#[1,3], [2,4])
+d = traces.Domain(None)
+d = traces.Domain(-inf, inf)
+# d = traces.Domain(-inf, 0)
+d = traces.Domain(1, 2) 
+d = traces.Domain([1, 2])
+d = traces.Domain([1, 2], [3, 4])
+d = traces.Domain([(1, 2), (3, 4)])
+d = traces.Domain([(2, 5), (3, 4)])
+# d = traces.Domain(datetime.datetime(2001, 2, 3), datetime.datetime(2002, 3, 4))
+# d = traces.Domain(1)
+# d = traces.Domain(1, 2, 3)
+# d = traces.Domain([1, 2, 3])
+# d = traces.Domain([(1, 2), (3, 4, 5)])
+# d = traces.Domain([])
+# d = traces.Domain([1, 2, (3, 4)])
+# d = traces.Domain(2, 1)
+# d = traces.Domain(2, 2)
+# d = traces.Domain([(1, 2), (2, 2)])
+
+dom1 = traces.Domain(1, 2)
+dom2 = traces.Domain(3, 4)
+print dom1.union(dom2)
+raise 'STOP'
 
 def average(values):
     sum_ = 0
@@ -37,8 +62,8 @@ def xmprint(ts):
 
 def generate_ts(n_days):
     start_time = datetime.datetime(2016, 1, 1)
-    state = 0
-    ts = Test(default_value=None)
+    state = 1
+    ts = Test(default_value=0)
     ts[start_time] = state
     for offset in range(24 * 60 * n_days):
         if random.random() < 0.1:
@@ -48,9 +73,8 @@ def generate_ts(n_days):
                 state -= 1
             t = start_time + datetime.timedelta(minutes=offset)
             ts.set(t, state % 5, compact=True)
-
+    ts[start_time + datetime.timedelta(days=n_days)] = 0
     return ts
-
 
 def hour_mask(n_days, hours):
     start_time = datetime.datetime(2016, 1, 1)
@@ -61,8 +85,19 @@ def hour_mask(n_days, hours):
         intervals.append([start, end])
     return traces.Domain(intervals)
 
-n_days = 21
+n_days = 5
 ts = generate_ts(n_days)
+
+# for t0, t1 in ts.to_domain().intervals():
+#     print t0.isoformat(), -1
+#     print t1.isoformat(), -1
+
+# print ''
+
+# for t, v in ts:
+#     print t.isoformat(), v
+# raise 'STOP'
+
 
 start_times = []
 start_time = datetime.datetime(2016, 1, 1)

@@ -36,7 +36,7 @@ def test_init_data():
 
 def test_get():
     ts = TimeSeries()
-    nose.tools.assert_raises(ValueError, ts.get, 0)
+    nose.tools.assert_raises(KeyError, ts.get, 0)
 
     ts[1.2] = 1
     ts[3] = 0

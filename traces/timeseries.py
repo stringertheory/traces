@@ -8,6 +8,7 @@ http://en.wikipedia.org/wiki/Unevenly_spaced_time_series
 import datetime
 import pprint
 from itertools import tee
+import csv
 try:
     import itertools.izip as zip
 except ImportError:
@@ -18,11 +19,13 @@ from future.utils import listitems, iteritems
 
 # 3rd party
 import sortedcontainers
+from dateutil.parser import parse as date_parse
+from infinity import inf
 
 # local
 from . import histogram
 from . import utils
-from .domain import Domain, inf
+from .domain import Domain
 
 
 class TimeSeries(object):
@@ -54,19 +57,17 @@ class TimeSeries(object):
 
     def __init__(self, data=None, domain=None, default_value=None):
 
-        if domain is None:
-            self.domain = Domain(domain)
-            self._d = sortedcontainers.SortedDict(data)
-        else:
-            self.domain = None
-            self.set_domain(domain)
-
-            if self.is_data_in_domain(data):
-                self._d = sortedcontainers.SortedDict(data)
-            else:
-                raise ValueError("Data given are not in domain.")
-
         self.default_value = default_value
+
+        self._d = sortedcontainers.SortedDict()
+        
+        if domain is None:
+            self.domain = None
+        else:
+            self.domain = Domain(domain)
+            for t, v in data:
+                self.set(t, v)
+
 
     def set_domain(self, domain):
         """Set the domain for this TimeSeries.
@@ -75,6 +76,7 @@ class TimeSeries(object):
             domain (:ref:`Domain <domain>`): the new domain.
 
         """
+        
         if domain is None:
             dom = Domain(-inf, inf)
 
@@ -98,7 +100,7 @@ class TimeSeries(object):
         """Check if data (sorteddict/dict) is inside the domain"""
         if domain is None:
             domain = self.domain
-
+            
         temp = sortedcontainers.SortedDict(data)
         for key in temp.keys():
             if key not in domain:
@@ -112,19 +114,22 @@ class TimeSeries(object):
 
     def default(self):
         """Return the default value of the time series."""
-        if len(self) == 0:
-            raise ValueError("There is no data in the TimeSeries.")
+        if self.default_value is None and self.n_measurements() == 0:
+            msg = "can't get value without a default value or measurements"
+            raise KeyError(msg)
         else:
-            return self._d.values()[0] if self.default_value is None \
-                else self.default_value
+            if self.default_value is None:
+                return self.first()[1]
+            else:
+                return self.default_value
 
     def get(self, time):
         """Get the value of the time series, even in-between measured values.
 
         """
         if time not in self.domain:
-            raise ValueError("{} is outside of the domain."
-                             .format(time))
+            msg = "{} is outside of the domain.".format(time)
+            raise KeyError(msg)
 
         index = self._d.bisect_right(time)
         if index > 0:
@@ -133,14 +138,16 @@ class TimeSeries(object):
         elif index == 0:
             return self.default()
         else:
-            raise ValueError(
-                "self._d.bisect_right(time) returns a negative value. "
-                "This is not expected.")
+            msg = (
+                'self._d.bisect_right({}) returned a negative value. '
+                """This "can't" happen: please file an issue at """
+                'https://github.com/datascopeanalytics/traces/issues'
+            ).format(time)
+            raise ValueError(msg)
 
     def get_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
-        t = self._d.iloc[index]
-        return t, self._d[t]
+        return self._d.peekitem(index)
 
     def last(self):
         """Returns the last (time, value) pair of the time series."""
@@ -155,9 +162,8 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
-        if time not in self.domain:
-            raise ValueError("({}, {}) is outside of the domain."
-                             .format(time, value))
+        # if time not in self.domain:
+        #     raise KeyError("{} is outside of the domain.".format(time))
 
         if (len(self) == 0) or (not compact) or \
                 (compact and self.get(time) != value):
@@ -168,7 +174,7 @@ class TimeSeries(object):
         Compact it if necessary."""
 
         if not self.is_data_in_domain(data):
-            raise ValueError("Data are not in the domain.")
+            raise KeyError("Data are not in the domain.")
 
         self._d.update(data)
         if compact:
@@ -357,7 +363,8 @@ class TimeSeries(object):
                 break
 
         if slice_domain:
-            result.set_domain(self.domain.slice(start_time, end_time))
+            new_domain = self.domain.slice(start_time, end_time)
+            result.set_domain(new_domain)
         else:
             result.set_domain(self.domain)
 
@@ -756,7 +763,7 @@ class TimeSeries(object):
             yield previous_t, previous_state
 
     @classmethod
-    def merge(cls, ts_list, compact=False, operation=None):
+    def merge(cls, ts_list, compact=True, operation=None):
         """Iterate through several time series in order, yielding (time,
         `value`) where `value` is the either the list of each
         individual TimeSeries in the list at time t (in the same order
@@ -774,6 +781,37 @@ class TimeSeries(object):
             result.set(t, value, compact=compact)
         return result
 
+    @staticmethod
+    def csv_time_transform(raw):
+        return date_parse(raw)
+
+    @staticmethod
+    def csv_value_transform(raw):
+        return str(raw)
+    
+    @classmethod
+    def from_csv(cls, filename, time_column, value_column,
+                 time_transform=None,
+                 value_transform=None,
+                 skip_header=True):
+
+        # use default on class if not given
+        if time_transform is None:
+            time_transform = cls.csv_time_transform
+        if value_transform is None:
+            value_transform = cls.csv_value_transform
+
+        result = cls()
+        with open(filename) as infile:
+            reader = csv.reader(infile)
+            if skip_header:
+                reader.next()
+            for row in reader:
+                time = time_transform(row[time_column])
+                value = value_transform(row[value_column])
+                result[time] = value
+        return result
+    
     def operation(self, other, function):
         """Calculate "elementwise" operation either between this TimeSeries
         and another one, i.e.

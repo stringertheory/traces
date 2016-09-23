@@ -15,7 +15,6 @@ import warnings
 
 def test_construct_domain():
     iterable_inputs = [
-        [],
         [-inf, 3],
         [1, inf],
         [1, 2],
@@ -26,13 +25,12 @@ def test_construct_domain():
     ]
 
     iterable_inputs_answers = [
-        [],
-        [FloatInterval([-inf, 3])],
-        [FloatInterval([1, inf])],
-        [FloatInterval([1, 2])],
-        [FloatInterval([1, 2]), FloatInterval([4, 5])],
-        [DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)])],
-        [DateTimeInterval([datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)])]
+        [(-inf, 3)],
+        [(1, inf)],
+        [(1, 2)],
+        [(1, 2), (4, 5)],
+        [(datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1))],
+        [(datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1))]
     ]
 
     bad_inputs = [
@@ -41,14 +39,12 @@ def test_construct_domain():
         [[datetime(2011, 1, 1, 1), datetime(2011, 1, 2, 1)], [2, 3]]
     ]
 
-    dom = Domain()
-    assert dom._interval_list == []
-
     for inputs, answers in zip(iterable_inputs, iterable_inputs_answers):
-        assert Domain(*inputs)._interval_list == answers
+        result = Domain(*inputs)._interval_list
+        assert result == answers
 
     for inputs in bad_inputs:
-        nose.tools.assert_raises(TypeError, Domain, *inputs)
+        nose.tools.assert_raises(ValueError, Domain, *inputs)
 
 
 def test_equal():
@@ -74,117 +70,14 @@ def test_contain():
     assert (4 in dom) == True
     assert (100 in dom) == True
 
-
-def test_sort_interval():
-    interval_list = [FloatInterval([1, 2]), FloatInterval([4, 5])]
-    interval_list_2 = [FloatInterval([1, 4]),
-                       FloatInterval([1, 2]),
-                       FloatInterval([6, 8]),
-                       FloatInterval([9, 10]),
-                       FloatInterval([4, 5])
-                       ]
-    interval_list_2_answer = [FloatInterval([1, 2]),
-                       FloatInterval([1, 4]),
-                       FloatInterval([4, 5]),
-                       FloatInterval([6, 8]),
-                       FloatInterval([9, 10])
-                       ]
-    dom = Domain((1, 2), (4, 5))
-    assert dom.sort_intervals(interval_list) == interval_list
-    assert dom.sort_intervals(interval_list_2) == interval_list_2_answer
-
-
-def test_union_intervals():
-    interval_list = [FloatInterval([1, 2]), FloatInterval([4, 5])]
-    interval_list_2 = [FloatInterval([1, 4]),
-                       FloatInterval([1, 2]),
-                       FloatInterval([6, 8]),
-                       FloatInterval([9, 10]),
-                       FloatInterval([4, 5])
-                       ]
-    interval_list_2_answer = [FloatInterval([1, 5]),
-                              FloatInterval([6, 8]),
-                              FloatInterval([9, 10])
-                              ]
-
-    dom = Domain((1, 2), (4, 5))
-    assert dom.union_intervals(interval_list) == interval_list
-    assert dom.union_intervals(interval_list_2) == interval_list_2_answer
-
-
-def test_intersection_intervals():
-    dom = Domain((1, 2), (4, 5))
-
-    assert dom.intersection_intervals([], []) == []
-
-    interval_list = [FloatInterval([1, 2]), FloatInterval([4, 5])]
-    interval_list_2 = [FloatInterval([1, 4]),
-                       FloatInterval([1, 2]),
-                       FloatInterval([6, 8]),
-                       FloatInterval([9, 10]),
-                       FloatInterval([4, 5])
-                       ]
-    interval_list_2_answer = [FloatInterval([1, 2]),
-                              FloatInterval([4, 5])
-                              ]
-
-    assert dom.intersection_intervals(interval_list, interval_list_2) == interval_list_2_answer
-
-    interval_list = [FloatInterval([1, 2]), FloatInterval([4, 10])]
-    interval_list_2 = [FloatInterval([6, 8]),
-                       FloatInterval([9, 10]),
-                       FloatInterval([4, 5])
-                       ]
-    interval_list_2_answer = [FloatInterval([4, 5]),
-                              FloatInterval([6, 8]),
-                              FloatInterval([9, 10])
-                              ]
-
-    assert dom.intersection_intervals(interval_list, interval_list_2) == interval_list_2_answer
-    assert dom.intersection_intervals(interval_list_2, interval_list) == interval_list_2_answer
-
-    interval_list = [FloatInterval([1, 2]), FloatInterval([4, inf])]
-    interval_list_2 = [FloatInterval([6, 8]),
-                       FloatInterval([9, 10]),
-                       FloatInterval([-inf, 5])
-                       ]
-    interval_list_2_answer = [FloatInterval([1, 2]),
-                              FloatInterval([4, 5]),
-                              FloatInterval([6, 8]),
-                              FloatInterval([9, 10])
-                              ]
-
-    assert dom.intersection_intervals(interval_list, interval_list_2) == interval_list_2_answer
-    assert dom.intersection_intervals(interval_list_2, interval_list) == interval_list_2_answer
-
-    interval_list = [FloatInterval([1, 2])]
-    interval_list_2 = [FloatInterval([6, 8]),
-                       FloatInterval([9, 10]),
-                       FloatInterval([4, 5])
-                       ]
-    interval_list_2_answer = []
-
-    assert dom.intersection_intervals(interval_list, interval_list_2) == interval_list_2_answer
-    assert dom.intersection_intervals(interval_list_2, interval_list) == interval_list_2_answer
-
-
+    
 def test_union():
     dom1 = Domain(1, 2)
     dom2 = Domain(3, 4)
-    assert dom1.union(dom2)._interval_list == [
-        FloatInterval([1, 2]),
-        FloatInterval([3, 4])
-    ]
-    assert dom1._interval_list == [
-        FloatInterval([1, 2])
-    ]
-    assert dom2._interval_list == [
-        FloatInterval([3, 4])
-    ]
-    assert (dom1 | dom2)._interval_list == [
-        FloatInterval([1, 2]),
-        FloatInterval([3, 4])
-    ]
+    assert dom1.union(dom2)._interval_list == [(1, 2), (3, 4)]
+    assert dom1._interval_list == [(1, 2)]
+    assert dom2._interval_list == [(3, 4)]
+    assert (dom1 | dom2)._interval_list == [(1, 2), (3, 4)]
 
     dom_list = [
         Domain(1, 2),
@@ -192,66 +85,35 @@ def test_union():
         Domain(2, 5),
         Domain([1, 2], [9, 10])
     ]
-    assert dom_list[0].union(*dom_list[1:])._interval_list == [
-        FloatInterval([1, 5]),
-        FloatInterval([9, 10])
-    ]
-    assert (dom_list[0] | dom_list[1] | dom_list[2] | dom_list[3])._interval_list == [
-        FloatInterval([1, 5]),
-        FloatInterval([9, 10])
-    ]
-    assert dom_list[0]._interval_list == [
-        FloatInterval([1, 2])
-    ]
-    assert dom_list[1]._interval_list == [
-        FloatInterval([3, 4])
-    ]
-    assert dom_list[2]._interval_list == [
-        FloatInterval([2, 5])
-    ]
-    assert dom_list[3]._interval_list == [
-        FloatInterval([1, 2]),
-        FloatInterval([9, 10])
-    ]
+    assert dom_list[0].union(*dom_list[1:])._interval_list == [(1, 5), (9, 10)]
+    assert (dom_list[0] | dom_list[1] | dom_list[2] | dom_list[3])._interval_list == [(1, 5), (9, 10)]
+    assert dom_list[0]._interval_list == [(1, 2)]
+    assert dom_list[1]._interval_list == [(3, 4)]
+    assert dom_list[2]._interval_list == [(2, 5)]
+    assert dom_list[3]._interval_list == [(1, 2), (9, 10)]
 
 
 def test_intersection():
+
     dom1 = Domain(1, 2)
     dom2 = Domain(3, 4)
     assert dom1.intersection(dom2)._interval_list == []
-    assert dom1._interval_list == [
-        FloatInterval([1, 2])
-    ]
-    assert dom2._interval_list == [
-        FloatInterval([3, 4])
-    ]
     assert (dom1 & dom2)._interval_list == []
 
-    dom_list = [
-        Domain(1, 2),
-        Domain(2, 5),
-        Domain([1, 2], [9, 10])
-    ]
-    assert dom_list[0].intersection(*dom_list[1:])._interval_list == [
-        FloatInterval([2, 2])
-    ]
-    assert (dom_list[1] & dom_list[2] & dom_list[0])._interval_list == [
-        FloatInterval([2, 2])
-    ]
-    assert dom_list[0]._interval_list == [
-        FloatInterval([1, 2])
-    ]
-    assert dom_list[1]._interval_list == [
-        FloatInterval([2, 5])
-    ]
-    assert dom_list[2]._interval_list == [
-        FloatInterval([1, 2]),
-        FloatInterval([9, 10])
-    ]
+    dom1 = Domain(1, 2)
+    dom2 = Domain(2, 5)
+    dom3 = Domain(6, 10)
+    assert dom1.intersection(dom2, dom3)._interval_list == []
+    assert (dom1 & dom2 & dom3)._interval_list == []
 
+    dom1 = Domain(1, 3)
+    dom2 = Domain(2, 4)
+    assert dom1.intersection(dom2)._interval_list == [(2, 3)]
+    assert (dom1 & dom2)._interval_list == [(2, 3)]
+    
 
 def test_start_end():
-    dom = Domain([])
+    dom = Domain()
     assert dom.start() == -inf
     assert dom.end() == inf
 
@@ -269,14 +131,14 @@ def test_start_end():
 
 
 def test_intervals():
-    dom = Domain([])
-    assert dom.intervals() == [(-inf, inf)]
+    dom = Domain()
+    assert list(dom.intervals()) == [(-inf, inf)]
 
     dom = Domain([-inf, 2], [6, inf])
-    assert dom.intervals() == [(-inf, 2), (6, inf)]
+    assert list(dom.intervals()) == [(-inf, 2), (6, inf)]
 
     dom = Domain([-1, 2], [4, 5], [6, 10])
-    assert dom.intervals() == [(-1, 2), (4, 5), (6, 10)]
+    assert list(dom.intervals()) == [(-1, 2), (4, 5), (6, 10)]
 
 
 def test_slice():
@@ -365,29 +227,29 @@ def test_get_domain():
     ts.set_domain([[-inf, 1], [2, 5], [9, 10]])
     assert ts.get_domain() == Domain([[-inf, 1], [2, 5], [9, 10]])
 
-    ts.set_domain([[2, 5], [9, 10], [11, None]])
-    assert ts.get_domain() == Domain([[2, 5], [9, 10], [11, None]])
+    ts.set_domain([[2, 5], [9, 10], [11, inf]])
+    assert ts.get_domain() == Domain([[2, 5], [9, 10], [11, inf]])
 
-    ts.set_domain([[None, 1], [2, 5], [9, 10], [11, None]])
-    assert ts.get_domain() == Domain([[None, 1], [2, 5], [9, 10], [11, None]])
+    ts.set_domain([[-inf, 1], [2, 5], [9, 10], [11, inf]])
+    assert ts.get_domain() == Domain([[-inf, 1], [2, 5], [9, 10], [11, inf]])
 
 
 def test_time_series():
 
     ts = TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])
     ts.set_domain([1, 8.5])
-    nose.tools.assert_raises(ValueError, ts.get, 0)
+    nose.tools.assert_raises(KeyError, ts.get, 0)
     assert ts[1.5] == 2
     assert ts[2.4] == 3
     assert ts[6] == 1
     assert ts[8.5] == 4
-    nose.tools.assert_raises(ValueError, ts.get, 9)
+    nose.tools.assert_raises(KeyError, ts.get, 9)
 
     ts[5] = 7
-    nose.tools.assert_raises(ValueError, ts.set, 9, 10)
-    nose.tools.assert_raises(ValueError, ts.set, 0, 10)
+    nose.tools.assert_raises(KeyError, ts.set, 9, 10)
+    nose.tools.assert_raises(KeyError, ts.set, 0, 10)
 
-    nose.tools.assert_raises(ValueError, TimeSeries,
+    nose.tools.assert_raises(KeyError, TimeSeries,
                              data=[(1, 2), (2, 3), (6, 1), (8, 4)],
                              domain=[1.5, 7])
 
@@ -415,29 +277,11 @@ def test_ts_slice():
     assert new.domain == Domain(0, 8.5)
     assert new._d == TimeSeries(data=[(1, 2), (2, 3), (6, 1), (8, 4)])._d
 
-    ts.set_domain([[0, 1.5], [2, 5], [5.5, 7], [8, 9]])
-    new = ts.slice(1.5, 6)
-    assert new.domain == Domain([[1.5, 1.5], [2, 5], [5.5, 6]])
-    assert new._d == TimeSeries(data=[(1.5, 2), (2, 3), (6, 1)])._d
-
-
-def test_get_duration():
-    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
-    assert ts.domain.get_duration(0, 9) == 5
-    assert ts.domain.get_duration(1, 8) == 5
-    assert ts.domain.get_duration(1, 2.5) == 1
-    assert ts.domain.get_duration(1.5, 7.5) == 4
-
-    assert ts.domain.get_duration() == 5
-
-    dom = Domain(-inf, inf)
-    assert dom.get_duration() == inf
-
-    dom = Domain(-inf, 4)
-    assert dom.get_duration() == -inf
-
-    dom = Domain(-3, inf)
-    assert dom.get_duration() == inf
+    args = [[0, 1.5], [2, 5], [5.5, 7], [8, 9]]
+    ts.set_domain(args)
+    new = ts.slice(1.1, 6)
+    assert new.domain == Domain([[1.1, 1.5], [2, 5], [5.5, 6]])
+    assert new._d == TimeSeries(data=[(1.1, 2), (2, 3), (6, 1)])._d
 
 
 def test_iterperiods():

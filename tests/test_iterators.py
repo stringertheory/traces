@@ -111,7 +111,7 @@ def test_merge():
         for i in range(random.randint(1, 5)):
             ts_list.append(make_random_timeseries())
 
-        method_a = list(TimeSeries.merge(ts_list))
+        method_a = list(TimeSeries.merge(ts_list, compact=False))
         method_b = list(TimeSeries.iter_merge(ts_list))
 
         msg = '%s != %s' % (pprint.pformat(method_a), pprint.pformat(method_b))
@@ -156,10 +156,9 @@ def test_single_merges():
     ts_b[24] = 3
 
     merged = TimeSeries.merge([ts_a, ts_b])
-
+    
     assert merged.items() == [
         (20, [42, 1]),
-        (21, [42, 1]),
         (22, [41, 2]),
         (23, [40, 2]),
         (24, [40, 3]),
