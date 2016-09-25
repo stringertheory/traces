@@ -22,10 +22,12 @@ import sortedcontainers
 from dateutil.parser import parse as date_parse
 from infinity import inf
 
+
 # local
 from . import histogram
 from . import utils
 from .domain import Domain
+from . import masks
 
 EXTEND_BACK = object()
 
@@ -430,40 +432,19 @@ class TimeSeries(object):
             current_time += period_time
         return result
 
-    def moving_average(self, window_size, sampling_period,
-                       start_time=None, end_time=None):
+    def moving_average(self, sampling_period,
+                       window_size=None,
+                       placement='center',
+                       start_time=None, end_time=None,
+                       pandas=False):
         """Averaging over regular intervals
 
-        Output: Dict that can be converted into pandas.Series
-        directly by calling pandas.Series(Dict)
-
         """
-        if start_time is None:
-            start_time = self.domain.start()
-            if start_time == -inf:
-                raise ValueError('Start time of the domain '
-                                 'is negative infinity.'
-                                 ' Cannot calculate moving average '
-                                 'without specifying a start time.')
+        start_time, end_time = self._check_start_end(start_time, end_time)
 
-        if end_time is None:
-            end_time = self.domain.end()
-            if start_time == inf:
-                raise ValueError('End time of the domain '
-                                 'is infinity.'
-                                 ' Cannot calculate moving average '
-                                 'without specifying an end time.')
-
-        if start_time == -inf or end_time == inf:
-            raise ValueError('Start/end time cannot be infinity.')
-
-        if start_time > end_time:
-            msg = (
-                "Can't calculate moving average of a Timeseries "
-                "when end_time <= start_time. "
-                "Received start_time={} and end_time={}."
-            ).format(start_time, end_time)
-            raise ValueError(msg)
+        # default to sampling_period if not given
+        if window_size is None:
+            window_size = sampling_period
 
         if start_time < self.domain.start() or end_time > self.domain.end():
             message = (
@@ -491,34 +472,60 @@ class TimeSeries(object):
                   "the duration between start_time and end_time."
             raise ValueError(msg)
 
-        half = float(window_size) / 2
-
+        # convert to datetime if the times are datetimes
+        half_window = float(window_size) / 2
+        full_window = float(window_size)
         if isinstance(start_time, datetime.datetime):
-            if not isinstance(sampling_period, int):
-                msg = "Can't calculate moving average of a Timeseries " \
-                      "when the class of the time is datetime and " \
-                      "sampling_period is not an integer."
-                raise TypeError(msg)
+            sampling_period = datetime.timedelta(seconds=sampling_period)
+            half_window = datetime.timedelta(seconds=half_window)
+            full_window = datetime.timedelta(seconds=full_window)
 
-            buffer_time = datetime.timedelta(seconds=half)
-            period_time = datetime.timedelta(seconds=sampling_period)
-        else:
-            buffer_time = half
-            period_time = sampling_period
-
+        # create a copy with a domain that is wide enough to
+        # accomodate the averaging window. TODO: get rid of this copy.
         temp = deepcopy(self)
-        temp.default = EXTEND_BACK
-        temp.domain = Domain(self.domain.start() - buffer_time,
-                             self.domain.end() + buffer_time)
+        temp.default = self.default
+        temp.domain = Domain(
+            self.domain.start() - sampling_period,
+            self.domain.end() + sampling_period,
+        )
 
-        result = {}
+        result = []
         current_time = start_time
         while current_time <= end_time:
-            window_start = current_time - buffer_time
-            window_end = current_time + buffer_time
+
+            if placement == 'center':
+                window_start = current_time - half_window
+                window_end = current_time + half_window
+            elif placement == 'left':
+                window_start = current_time
+                window_end = current_time + full_window
+            elif placement == 'right':
+                window_start = current_time - full_window
+                window_end = current_time
+            else:
+                msg = 'unknown placement "{}"'.format(placement)
+                raise ValueError(msg)
+
+            # calculate mean over window and add (t, v) tuple to list
             mean = temp.mean(window_start, window_end)
-            result[current_time] = mean
-            current_time += period_time
+            result.append((current_time, mean))
+
+            current_time += sampling_period
+
+        # convert to pandas Series if pandas=True
+        if pandas:
+
+            try:
+                import pandas as pd
+            except ImportError:
+                msg = "can't have pandas=True if pandas is not installed"
+                raise ImportError(msg)
+
+            result = pd.Series(
+                [v for t, v in result],
+                index=[t for t, v in result],
+            )
+
         return result
 
     def mean(self, start_time=None, end_time=None):
@@ -921,3 +928,59 @@ class TimeSeries(object):
 
     def __ne__(self, other):
         return not(self == other)
+
+    def _check_boundary(self, value, allow_infinite, lower):
+        infinity_value, first_or_last = {
+            'lower': (-inf, 'first'),
+            'upper': (inf, 'last'),
+        }[lower]
+        if value is None:
+            if getattr(self.domain, lower) == infinity_value:
+                if allow_infinite:
+                    return infinity_value
+                else:
+                    return getattr(self, first_or_last)()[0]
+            else:
+                return getattr(self.domain, lower)
+        else:
+            return value
+
+    def _check_start_end(self, start, end, allow_infinite=False):
+
+        # replace with defaults if not given
+        start = self._check_boundary(start, allow_infinite, 'lower')
+        end = self._check_boundary(end, allow_infinite, 'upper')
+
+        if start >= end:
+            msg = ''
+            raise ValueError(msg)
+
+        return start, end
+
+    def distribution_by_hour_of_day(self,
+                                    first=0, last=23,
+                                    start=None, end=None):
+
+        start, end = self._check_start_end(start, end)
+
+        result = []
+        for hour in range(first, last + 1):
+            mask = masks.hour_of_day(start, end, hour)
+            histogram = self.distribution(mask=mask)
+            result.append((hour, histogram))
+
+        return result
+
+    def distribution_by_day_of_week(self,
+                                    first=0, last=6,
+                                    start=None, end=None):
+
+        start, end = self._check_start_end(start, end)
+
+        result = []
+        for week in range(first, last + 1):
+            mask = masks.day_of_week(start, end, week)
+            histogram = self.distribution(mask=mask)
+            result.append((week, histogram))
+
+        return result

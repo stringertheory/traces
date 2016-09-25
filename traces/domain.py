@@ -161,6 +161,14 @@ class Domain(object):
     def end(self):
         return self._end
 
+    @property
+    def lower(self):
+        return self._start
+
+    @property
+    def upper(self):
+        return self._end
+
     def intervals(self):
         for t0, t1, value in self.ts.iterperiods(value=True):
             yield t0, t1

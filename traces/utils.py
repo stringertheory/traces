@@ -62,7 +62,7 @@ def convert_args_to_list(args):
 
 
 def datetime_range(start_dt, end_dt, unit,
-                   unit_increment=1, inclusive_end=True):
+                   unit_increment=1, inclusive_end=False):
     """A range of datetimes/dates."""
 
     def done(a, b, inclusive_end):

@@ -18,10 +18,10 @@ from .domain import Domain
 def hour_of_day(start, end, hour):
 
     # start should be date, or if datetime, will use date of datetime
-    start_floor = datetime_floor(start)
+    floored = datetime_floor(start)
 
     intervals = []
-    for day_start in datetime_range(start_floor, end, 'days',
+    for day_start in datetime_range(floored, end, 'days',
                                     inclusive_end=True):
         interval_start = day_start + timedelta(hours=hour)
         interval_end = interval_start + timedelta(hours=1)
