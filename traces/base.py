@@ -11,6 +11,7 @@ import sortedcontainers
 from future.utils import iteritems, listitems
 from infinity import inf
 
+
 class Booga(object):
 
     def __init__(self, data=None, domain=None, default_value=None):
@@ -23,7 +24,7 @@ class Booga(object):
 
     def __contains__(self, key):
         return key in self._d
-    
+
     def default(self):
         """Return the default value of the time series."""
         if self.default_value is None and self.n_measurements() == 0:
@@ -260,7 +261,7 @@ class Booga(object):
         else:
             def value_function(t0_, t1_, value_):
                 return value_ == value
-            
+
         # get start index and value
         start_index = self._d.bisect_right(start_time)
         if start_index:
@@ -287,4 +288,3 @@ class Booga(object):
         if int_t0 < end_time:
             if value_function(int_t0, end_time, int_value):
                 yield int_t0, end_time, int_value
-    

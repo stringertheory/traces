@@ -29,6 +29,7 @@ from .domain import Domain
 
 EXTEND_BACK = object()
 
+
 class TimeSeries(object):
     """A class to help manipulate and analyze time series that are the
     result of taking measurements at irregular points in time. For
@@ -55,6 +56,7 @@ class TimeSeries(object):
     series: sums, difference, logical operators and such.
 
     """
+
     def __init__(self, data=None, domain=None, default=EXTEND_BACK):
         self._d = sortedcontainers.SortedDict(data)
         self.default = default
@@ -89,7 +91,7 @@ class TimeSeries(object):
             if baddies:
                 msg = '{} times are not in the domain'.format(len(baddies))
                 raise ValueError(msg)
-            
+
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return iteritems(self._d)
@@ -110,7 +112,7 @@ class TimeSeries(object):
     def default(self, value):
         """Set the default value of the time series."""
         self._default = value
-            
+
     def get(self, time):
         """Get the value of the time series, even in-between measured values.
 
@@ -763,7 +765,7 @@ class TimeSeries(object):
     @staticmethod
     def csv_value_transform(raw):
         return str(raw)
-    
+
     @classmethod
     def from_csv(cls, filename, time_column, value_column,
                  time_transform=None,
@@ -786,7 +788,7 @@ class TimeSeries(object):
                 value = value_transform(row[value_column])
                 result[time] = value
         return result
-    
+
     def operation(self, other, function):
         """Calculate "elementwise" operation either between this TimeSeries
         and another one, i.e.

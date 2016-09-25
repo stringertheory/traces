@@ -62,7 +62,7 @@ def convert_args_to_list(args):
 
 
 def datetime_range(start_dt, end_dt, unit,
-                   unit_increment=1, inclusive_end=False):
+                   unit_increment=1, inclusive_end=True):
     """A range of datetimes/dates."""
 
     def done(a, b, inclusive_end):
@@ -75,6 +75,7 @@ def datetime_range(start_dt, end_dt, unit,
     while done(current, end_dt, inclusive_end):
         yield current
         current += datetime.timedelta(**{unit: unit_increment})
+
 
 def datetime_floor(value):
     if isinstance(value, datetime.datetime):
@@ -94,7 +95,8 @@ WEEKDAY_LOOKUP = {
     'saturday': 5,
     'sunday': 6,
 }
-    
+
+
 def weekday_number(value):
 
     if isinstance(value, int):

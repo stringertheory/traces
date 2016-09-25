@@ -31,7 +31,7 @@ class Domain(object):
     def _is_empty(args):
         if len(args) == 0:
             return [(-inf, inf)]
-        
+
     @staticmethod
     def _is_none(args):
         if len(args) == 1 and args[0] is None:
@@ -41,7 +41,7 @@ class Domain(object):
     def _is_empty_list(args):
         if len(args) == 1 and args[0] == []:
             return []
-        
+
     @staticmethod
     def _hashable(value):
         try:
@@ -59,10 +59,10 @@ class Domain(object):
             return None
         else:
             return True
-                
+
     def _valid(self, value):
         return self._hashable(value) and not self._iterable(value)
-            
+
     def _is_pair(self, args):
         try:
             length = len(args)
@@ -78,18 +78,18 @@ class Domain(object):
         pair = self._is_pair(args)
         if pair:
             return [pair]
-                
+
     def _is_unpacked_pair_list(self, args):
         pair_list = [self._is_pair(arg) for arg in args]
         if all(pair_list):
             return pair_list
-                
+
     def _is_pair_list(self, args):
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
             return self._is_unpacked_pair_list(args[0])
-    
+
     def __init__(self, *args):
-        
+
         validation_function_list = [
             self._is_empty,
             self._is_none,
@@ -102,7 +102,7 @@ class Domain(object):
             interval_list = function(args)
             if interval_list is not None:
                 break
-            
+
         if not interval_list and not self._is_empty_list(args) == []:
             msg = (
                 'invalid arguments to Domain {}. Must be one of:\n'
@@ -128,13 +128,13 @@ class Domain(object):
                         "to end ({} >= {})"
                     ).format(start, end)
                     raise ValueError(msg)
-                
+
         try:
             sorted(interval_list)
         except TypeError:
             msg = "Can't mix types"
             raise ValueError(msg)
-                
+
         self._start = inf
         self._end = -inf
         ts_list = []
@@ -154,7 +154,7 @@ class Domain(object):
         else:
             self.ts = Booga()
             self.ts[-inf] = False
-        
+
     def start(self):
         return self._start
 
@@ -168,7 +168,7 @@ class Domain(object):
     @property
     def _interval_list(self):
         return list(self.intervals())
-            
+
     def get_interval(self, value):
 
         # value is on the boundary of an interval
@@ -180,13 +180,13 @@ class Domain(object):
             else:
                 right_index = self.ts._d.index(value)
                 left_index = right_index - 1
-            return self.ts._d.iloc[left_index], self.ts._d.iloc[right_index] 
+            return self.ts._d.iloc[left_index], self.ts._d.iloc[right_index]
 
         # value is inside of an interval
         elif self.ts[value]:
             right_index = self.ts._d.bisect_right(value)
             left_index = right_index - 1
-            return self.ts._d.iloc[left_index], self.ts._d.iloc[right_index] 
+            return self.ts._d.iloc[left_index], self.ts._d.iloc[right_index]
 
         # value is not in an interval
         else:
@@ -200,7 +200,7 @@ class Domain(object):
             return True
         else:
             return self.ts[value]
-    
+
     def __repr__(self):
         output = '\n'.join('{}'.format(i) for i in self.intervals())
         return '<Domain>\n{}\n</Domain>'.format(output)
@@ -224,7 +224,6 @@ class Domain(object):
         ts_list.extend([d.ts for d in others])
         on = Booga.merge(ts_list, operation=all)
         return Domain([(t0, t1) for (t0, t1, v) in on.iterperiods(value=True)])
-    
 
     def slice(self, start_time, end_time):
         """Return a segment of Domain within start and end"""
@@ -254,7 +253,6 @@ class Domain(object):
 
         return Domain(intervals)
 
-    
     def __eq__(self, other):
         return list(self.intervals()) == list(other.intervals())
 
