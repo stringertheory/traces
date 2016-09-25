@@ -342,9 +342,6 @@ def test_mean():
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
     nose.tools.assert_raises(NotImplementedError, ts.mean)
 
-    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
-    nose.tools.assert_raises(ValueError, ts.mean)
-
 
 def test_distribution():
     ts = TimeSeries([[1, 1], [2, 0], [6, 1], [8, 0]], domain=Domain([1, 2], [3, 5], [6, 8]))

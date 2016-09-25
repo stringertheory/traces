@@ -232,12 +232,8 @@ class TimeSeries(object):
         within the domain.
 
         """
-        if start is None:
-            start = self.domain.start()
-
-        if end is None:
-            end = self.domain.end()
-
+        start, end = self._check_start_end(start, end, allow_infinite=True)
+        
         # if value is None, don't filter
         if value is None:
             def value_function(t0_, t1_, value_):
@@ -316,13 +312,7 @@ class TimeSeries(object):
         `start` and a last reading at `end`.
 
         """
-
-        if end <= start:
-            message = (
-                "Can't slice a Timeseries when end <= start. "
-                "Received start={} and end={}."
-            ).format(start, end)
-            raise ValueError(message)
+        start, end = self._check_start_end(start, end, allow_infinite=True)
 
         if start > self.domain.end() or end < self.domain.start():
             message = (
@@ -348,39 +338,46 @@ class TimeSeries(object):
 
         return result
 
-    def sample(self, sampling_period, start=None, end=None):
-        """Sampling at regular time periods.
+    def _check_regularization(self, start, end, sampling_period=None):
 
-        """
-        start, end = self._check_start_end(start, end)
-        
         if self.domain.n_intervals() > 1:
-            raise NotImplementedError(
-                'Cannot calculate moving average '
-                'when Domain is not connected.')
+            raise NotImplementedError('Domain is not connected')
 
         if start < self.domain.start() or end > self.domain.end():
             message = (
-                "Can't regularize a Timeseries when end or "
-                "start is outside of the domain. "
+                "end or start is outside of the domain. "
                 "Received start={} and end={}. "
                 "Domain is {}."
             ).format(start, end, self.domain)
             raise ValueError(message)
 
-        if sampling_period <= 0:
-            msg = "Can't regularize a Timeseries when sampling_period <= 0."
-            raise ValueError(msg)
+        # only do these checks if sampling period is given
+        if sampling_period is not None:
 
-        if sampling_period > utils.duration_to_number(end - start):
-            msg = "Can't regularize a Timeseries when sampling_period " \
-                  "is greater than the duration between " \
-                  "start and end."
-            raise ValueError(msg)
+            if sampling_period <= 0:
+                msg = "sampling_period must be > 0"
+                raise ValueError(msg)
 
-        if isinstance(start, datetime.datetime):
-            sampling_period = datetime.timedelta(seconds=sampling_period)
+            if sampling_period > utils.duration_to_number(end - start):
+                msg = "sampling_period " \
+                      "is greater than the duration between " \
+                      "start and end."
+                raise ValueError(msg)
 
+            if isinstance(start, datetime.datetime):
+                sampling_period = datetime.timedelta(seconds=sampling_period)
+
+        return sampling_period
+    
+    def sample(self, sampling_period, start=None, end=None):
+        """Sampling at regular time periods.
+
+        """
+        start, end = self._check_start_end(start, end)
+
+        sampling_period = \
+            self._check_regularization(start, end, sampling_period)
+        
         result = []
         current_time = start
         while current_time <= end:
@@ -402,37 +399,13 @@ class TimeSeries(object):
         if window_size is None:
             window_size = sampling_period
 
-        if start < self.domain.start() or end > self.domain.end():
-            message = (
-                "Can't calculate moving average of "
-                "a Timeseries when end or "
-                "start is outside of the domain. "
-                "Received start={} and end={}. "
-                "Domain is {}."
-            ).format(start, end, self.domain)
-            raise ValueError(message)
-
-        if self.domain.n_intervals() > 1:
-            raise NotImplementedError(
-                'Cannot calculate moving average '
-                'when Domain is not connected.')
-
-        if (window_size <= 0) or (sampling_period <= 0):
-            msg = "Can't calculate moving average of a Timeseries " \
-                  "when window_size <= 0 or sampling_period <= 0."
-            raise ValueError(msg)
-
-        if sampling_period > utils.duration_to_number(end - start):
-            msg = "Can't calculate moving average of a Timeseries " \
-                  "when sampling_period is greater than " \
-                  "the duration between start and end."
-            raise ValueError(msg)
+        sampling_period = \
+            self._check_regularization(start, end, sampling_period)
 
         # convert to datetime if the times are datetimes
         half_window = float(window_size) / 2
         full_window = float(window_size)
         if isinstance(start, datetime.datetime):
-            sampling_period = datetime.timedelta(seconds=sampling_period)
             half_window = datetime.timedelta(seconds=half_window)
             full_window = datetime.timedelta(seconds=full_window)
 
@@ -444,7 +417,7 @@ class TimeSeries(object):
             min(start, self.domain.lower) - full_window,
             max(end, self.domain.upper) + full_window,
         )
-        
+
         result = []
         current_time = start
         while current_time <= end:
@@ -489,46 +462,9 @@ class TimeSeries(object):
         time range from `start` to `end`.
 
         """
-        if start is None:
-            start = self.domain.start()
-            if start == -inf:
-                raise ValueError('Start time of the domain '
-                                 'is negative infinity.'
-                                 ' Cannot calculate mean without '
-                                 'specifying a start time.')
+        start, end = self._check_start_end(start, end)
 
-        if end is None:
-            end = self.domain.end()
-            if start == inf:
-                raise ValueError('End time of the domain '
-                                 'is infinity.'
-                                 ' Cannot calculate mean without '
-                                 'specifying an end time.')
-
-        if start == -inf or end == inf:
-            raise ValueError('Start/end time cannot be infinity.')
-
-        if start > end:
-            msg = (
-                "Can't calculate mean of a Timeseries "
-                "when end <= start. "
-                "Received start={} and end={}."
-            ).format(start, end)
-            raise ValueError(msg)
-
-        if start < self.domain.start() or end > self.domain.end():
-            message = (
-                "Can't calculate mean of a Timeseries "
-                "when end or "
-                "start is outside of the domain. "
-                "Received start={} and end={}. "
-                "Domain is {}."
-            ).format(start, end, self.domain)
-            raise ValueError(message)
-
-        if self.domain.n_intervals() > 1:
-            raise NotImplementedError(
-                'Cannot calculate mean when Domain is not connected.')
+        self._check_regularization(start, end)
 
         total_seconds = utils.duration_to_number(end - start)
 
@@ -582,11 +518,7 @@ class TimeSeries(object):
         [0, 1, 2, 3]
 
         """
-        if start is None:
-            start = self.domain.start()
-
-        if end is None:
-            end = self.domain.end()
+        start, end = self._check_start_end(start, end)
 
         # if a TimeSeries is given as mask, convert to a domain
         if isinstance(mask, TimeSeries):
