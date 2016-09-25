@@ -510,13 +510,6 @@ class TimeSeries(object):
 
             :obj:`Histogram` with the results.
 
-        Examples:
-
-            TODO: need some examples.
-
-        >>> print([i for i in example_generator(4)])
-        [0, 1, 2, 3]
-
         """
         start, end = self._check_start_end(start, end)
 
