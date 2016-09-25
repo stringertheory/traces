@@ -320,20 +320,19 @@ def test_regularize():
 
 
 def test_moving_average():
-    # Check using int
-    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain(1, 9))
 
-    ts2 = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain(1 - 1, 9 + 1))
-    assert ts.moving_average(2, 1) == {
+    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain(1, 9))
+    ts2 = TimeSeries(
+        [[1, 2], [2, 3], [6, 1], [8, 4]],
+        domain=Domain(1 - 1, 9 + 1),
+    )
+    assert dict(ts.moving_average(1, 2)) == {
         i: ts2.mean(i - 1, i + 1) for i in range(1, 10)}
-    assert ts.moving_average(2, 0.5) == {
+    assert dict(ts.moving_average(0.5, 2)) == {
         1 + i / 2.: ts2.mean(1 + i / 2. - 1, 1 + i / 2. + 1) for i in range(0, 17)}
 
-    ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
-    nose.tools.assert_raises(ValueError, ts.moving_average, 0.5, 1)
-
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], domain=Domain([1, 2], [3, 5], [6, 8]))
-    nose.tools.assert_raises(NotImplementedError, ts.moving_average, 0.5, 1)
+    nose.tools.assert_raises(NotImplementedError, ts.moving_average, 1, 0.5)
 
 
 def test_mean():

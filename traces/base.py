@@ -238,7 +238,7 @@ class Booga(object):
         """Allow del[time] syntax."""
         return self.remove(time)
 
-    def iterperiods(self, start_time=-inf, end_time=inf, value=None):
+    def iterperiods(self, start=-inf, end=inf, value=None):
         """This iterates over the periods (optionally, within a given time
         span) and yields (interval start, interval end, value) tuples.
 
@@ -263,16 +263,16 @@ class Booga(object):
                 return value_ == value
 
         # get start index and value
-        start_index = self._d.bisect_right(start_time)
+        start_index = self._d.bisect_right(start)
         if start_index:
             start_value = self._d[self._d.iloc[start_index - 1]]
         else:
             start_value = self.default()
 
         # get last measurement before end of time span
-        end_index = self._d.bisect_right(end_time)
+        end_index = self._d.bisect_right(end)
 
-        int_t0, int_value = start_time, start_value
+        int_t0, int_value = start, start_value
 
         for int_t1 in self._d.islice(start_index, end_index):
 
@@ -285,6 +285,6 @@ class Booga(object):
             int_value = self[int_t0]
 
         # yield the time, duration, and value of the final period
-        if int_t0 < end_time:
-            if value_function(int_t0, end_time, int_value):
-                yield int_t0, end_time, int_value
+        if int_t0 < end:
+            if value_function(int_t0, end, int_value):
+                yield int_t0, end, int_value

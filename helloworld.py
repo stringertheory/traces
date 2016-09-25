@@ -41,8 +41,8 @@ n_lights = traces.TimeSeries.merge(ts_list, operation=sum)
 # use distribution to look at the distribution of number of lights on
 # over a month
 histogram = n_lights.distribution(
-    start_time=datetime(2016, 1, 1),
-    end_time=datetime(2016, 2, 1),
+    start=datetime(2016, 1, 1),
+    end=datetime(2016, 2, 1),
 )
 print(histogram.mean())
 
@@ -51,7 +51,7 @@ print(histogram.mean())
 for t in datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'days'):
     biz_start = t + timedelta(hours=8)
     biz_end = t + timedelta(hours=18)
-    histogram = n_lights.distribution(start_time=biz_start, end_time=biz_end)
+    histogram = n_lights.distribution(start=biz_start, end=biz_end)
     print(t, histogram.quantiles([0.25, 0.5, 0.75]))
 
 # use distribution with mask to look at the median/lower/upper of

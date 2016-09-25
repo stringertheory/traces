@@ -25,8 +25,11 @@ unhashable_types = {
     dict: [{'a': 1}, {'b': 2}, {'c': 3}, {}],
     set: [{1}, {1, 2}, {1, 2, 3}, set()],
 }
-all_types = dict(listitems(numeric_types) +
-                 listitems(non_numeric_hashable_types) + listitems(unhashable_types))
+all_types = dict(
+    listitems(numeric_types) +
+    listitems(non_numeric_hashable_types) +
+    listitems(unhashable_types)
+)
 
 
 def _make_ts(type_, key_list, value_list):
@@ -86,12 +89,16 @@ def test_regularize():
     assert ts.regularize(2, time_list[0], time_list[-1]) == {
         curr_time(i): ts[curr_time(i)] for i in range(2, 11, 2)}
 
-    nose.tools.assert_raises(TypeError, ts.regularize, 1.4, time_list[0], time_list[-1])
-    nose.tools.assert_raises(ValueError, ts.regularize, -1, time_list[0], time_list[-1])
-    nose.tools.assert_raises(ValueError, ts.regularize, 20, time_list[0], time_list[-1])
+    nose.tools.assert_raises(TypeError, ts.regularize,
+                             1.4, time_list[0], time_list[-1])
+    nose.tools.assert_raises(
+        ValueError, ts.regularize, -1, time_list[0], time_list[-1])
+    nose.tools.assert_raises(ValueError, ts.regularize,
+                             20, time_list[0], time_list[-1])
 
     # Check second and third arguments
-    nose.tools.assert_raises(ValueError, ts.regularize, 1, time_list[3], time_list[0])
+    nose.tools.assert_raises(ValueError, ts.regularize,
+                             1, time_list[3], time_list[0])
 
     assert ts.regularize(1, curr_time(5), curr_time(10)) == {
         curr_time(i): ts[curr_time(i)] for i in range(5, 11)}
@@ -107,7 +114,7 @@ def test_regularize():
     assert ts.regularize(1, 1, 8) == {
         i: ts[i] for i in range(1, 9)}
     assert ts.regularize(0.5, 1, 8) == {
-        1 + i / 2.: ts[1+i/2.] for i in range(0, 15)}
+        1 + i / 2.: ts[1 + i / 2.] for i in range(0, 15)}
     nose.tools.assert_raises(ValueError, ts.regularize, 0.5, -traces.inf, 8)
     nose.tools.assert_raises(ValueError, ts.regularize, 0.5, 1, traces.inf)
 
@@ -130,57 +137,61 @@ def test_moving_average():
         return datetime.datetime(2016, 1, 1, 1, 1, i)
 
     # Check first arguments
-    assert ts.moving_average(2, 1, time_list[0], time_list[-1]) == {
-         curr_time(i):
-         ts.mean(curr_time(i)-datetime.timedelta(seconds=1),
-                 curr_time(i)+datetime.timedelta(seconds=1)) for i in range(2, 11)}
+    assert dict(ts.moving_average(1, 2, time_list[0], time_list[-1])) == {
+        curr_time(i):
+        ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
+                curr_time(i) + datetime.timedelta(seconds=1)) for i in range(2, 11)}
 
-    assert ts.moving_average(0.2, 1, time_list[0], time_list[-1]) == {
-         curr_time(i):
-         ts.mean(curr_time(i) - datetime.timedelta(seconds=.1),
-                 curr_time(i) + datetime.timedelta(seconds=.1)) for i in range(2, 11)}
+    assert dict(ts.moving_average(1, 0.2, time_list[0], time_list[-1])) == {
+        curr_time(i):
+        ts.mean(curr_time(i) - datetime.timedelta(seconds=.1),
+                curr_time(i) + datetime.timedelta(seconds=.1)) for i in range(2, 11)}
 
-    nose.tools.assert_raises(ValueError, ts.moving_average, -1, 1, time_list[0], time_list[-1])
+    nose.tools.assert_raises(
+        ValueError, ts.moving_average, 1, -1, time_list[0], time_list[-1])
 
     # Check second arguments
-    assert ts.moving_average(1, 2, time_list[0], time_list[-1]) == {
-         curr_time(i):
-         ts.mean(curr_time(i) - datetime.timedelta(seconds=.5),
-                 curr_time(i) + datetime.timedelta(seconds=.5)) for i in range(2, 11, 2)}
+    assert dict(ts.moving_average(2, 1, time_list[0], time_list[-1])) == {
+        curr_time(i):
+        ts.mean(curr_time(i) - datetime.timedelta(seconds=.5),
+                curr_time(i) + datetime.timedelta(seconds=.5)) for i in range(2, 11, 2)}
 
-    nose.tools.assert_raises(TypeError, ts.moving_average, 1, 1.4, time_list[0], time_list[-1])
-    nose.tools.assert_raises(ValueError, ts.moving_average, 1, -1, time_list[0], time_list[-1])
-    nose.tools.assert_raises(ValueError, ts.moving_average, 1, 20, time_list[0], time_list[-1])
+    nose.tools.assert_raises(
+        ValueError, ts.moving_average, -1, 1, time_list[0], time_list[-1])
+    nose.tools.assert_raises(
+        ValueError, ts.moving_average, 20, 1, time_list[0], time_list[-1])
 
     # Check third and fourth arguments
-    nose.tools.assert_raises(ValueError, ts.moving_average, 1, 1, time_list[3], time_list[0])
+    nose.tools.assert_raises(
+        ValueError, ts.moving_average, 1, 1, time_list[3], time_list[0])
 
-    assert ts.moving_average(2, 1, curr_time(5), curr_time(10)) == {
-         curr_time(i):
-         ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
-                 curr_time(i) + datetime.timedelta(seconds=1)) for i in range(5, 11)}
+    assert dict(ts.moving_average(1, 2, curr_time(5), curr_time(10))) == {
+        curr_time(i):
+        ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
+                curr_time(i) + datetime.timedelta(seconds=1)) for i in range(5, 11)}
 
-    assert ts.moving_average(2, 1, curr_time(2), curr_time(5)) == {
-         curr_time(i):
-         ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
-                 curr_time(i) + datetime.timedelta(seconds=1)) for i in range(2, 6)}
+    assert dict(ts.moving_average(1, 2, curr_time(2), curr_time(5))) == {
+        curr_time(i):
+        ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
+                curr_time(i) + datetime.timedelta(seconds=1)) for i in range(2, 6)}
 
-    assert ts.moving_average(2, 1, curr_time(0), curr_time(13)) == {
-         curr_time(i):
-         ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
-                 curr_time(i) + datetime.timedelta(seconds=1)) for i in range(0, 14)}
+    assert dict(ts.moving_average(1, 2, curr_time(0), curr_time(13))) == {
+        curr_time(i):
+        ts.mean(curr_time(i) - datetime.timedelta(seconds=1),
+                curr_time(i) + datetime.timedelta(seconds=1)) for i in range(0, 14)}
 
     # Check using int
     ts = traces.TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
-    assert ts.moving_average(2, 1, 1, 8) == {
-         i: ts.mean(i-1, i+1) for i in range(1, 9)}
-    assert ts.moving_average(2, 0.5, 1, 8) == {
-        1+i/2.: ts.mean(1+i/2. - 1, 1+i/2. + 1) for i in range(0, 15)}
+    assert dict(ts.moving_average(1, 2, 1, 8)) == {
+        i: ts.mean(i - 1, i + 1) for i in range(1, 9)}
+    assert dict(ts.moving_average(0.5, 2, 1, 8)) == {
+        1 + i / 2.: ts.mean(1 + i / 2. - 1, 1 + i / 2. + 1) for i in range(0, 15)}
 
     # Test pandas compatibility
-    pd_ts = pd.Series(ts.moving_average(2, 1, 1, 8))
-    assert all(pd_ts.index[i-1] == i for i in range(1, 9))
-    assert all(pd_ts.values[i-1] == ts.mean(i-1, i+1) for i in range(1, 9))
+    pd_ts = pd.Series(dict(ts.moving_average(1, 2, 1, 8)))
+    assert all(pd_ts.index[i - 1] == i for i in range(1, 9))
+    assert all(pd_ts.values[i - 1] == ts.mean(i - 1, i + 1)
+               for i in range(1, 9))
 
 
 def test_to_bool():

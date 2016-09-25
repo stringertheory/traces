@@ -224,7 +224,7 @@ class TimeSeries(object):
         for intervals in zip(*streams):
             yield intervals
 
-    def iterperiods(self, start_time=None, end_time=None, value=None):
+    def iterperiods(self, start=None, end=None, value=None):
         """This iterates over the periods (optionally, within a given time
         span) and yields (interval start, interval end, value) tuples.
 
@@ -232,11 +232,11 @@ class TimeSeries(object):
         within the domain.
 
         """
-        if start_time is None:
-            start_time = self.domain.start()
+        if start is None:
+            start = self.domain.start()
 
-        if end_time is None:
-            end_time = self.domain.end()
+        if end is None:
+            end = self.domain.end()
 
         # if value is None, don't filter
         if value is None:
@@ -255,24 +255,24 @@ class TimeSeries(object):
                 return value_ == value
 
         # get start index and value
-        start_index = self._d.bisect_right(start_time)
+        start_index = self._d.bisect_right(start)
         if start_index:
             start_value = self._d[self._d.iloc[start_index - 1]]
         else:
             start_value = self.default
 
         # get last measurement before end of time span
-        end_index = self._d.bisect_right(end_time)
+        end_index = self._d.bisect_right(end)
 
         # look over each interval of time series within the
         # region. Use the region start time and value to begin
         ts_interval_closes = set(self._d.islice(start_index, end_index))
         domain_interval_opens = set(
-            b for (b, e) in self.domain.intervals() if b > start_time)
+            b for (b, e) in self.domain.intervals() if b > start)
         iter_time = sorted(
             list(ts_interval_closes.union(domain_interval_opens)))
 
-        int_t0, int_value = start_time, start_value
+        int_t0, int_value = start, start_value
 
         for int_t1 in iter_time:
 
@@ -297,58 +297,58 @@ class TimeSeries(object):
             int_value = self[int_t0]
 
         # yield the time, duration, and value of the final period
-        if int_t0 < end_time:
+        if int_t0 < end:
 
             try:
                 domain_t0, domain_t1 = self.domain.get_interval(int_t0)
             except KeyError:
                 pass
             else:
-                if domain_t1 < end_time:
-                    end_time = domain_t1
+                if domain_t1 < end:
+                    end = domain_t1
 
-                nonzero = (end_time != int_t0)
-                if nonzero and value_function(int_t0, end_time, int_value):
-                    yield int_t0, end_time, int_value
+                nonzero = (end != int_t0)
+                if nonzero and value_function(int_t0, end, int_value):
+                    yield int_t0, end, int_value
 
-    def slice(self, start_time, end_time, slice_domain=True):
+    def slice(self, start, end, slice_domain=True):
         """Return a slice of the time series that has a first reading at
-        `start_time` and a last reading at `end_time`.
+        `start` and a last reading at `end`.
 
         """
 
-        if end_time <= start_time:
+        if end <= start:
             message = (
-                "Can't slice a Timeseries when end_time <= start_time. "
-                "Received start_time={} and end_time={}."
-            ).format(start_time, end_time)
+                "Can't slice a Timeseries when end <= start. "
+                "Received start={} and end={}."
+            ).format(start, end)
             raise ValueError(message)
 
-        if start_time > self.domain.end() or end_time < self.domain.start():
+        if start > self.domain.end() or end < self.domain.start():
             message = (
-                "Can't slice a Timeseries when end_time and "
-                "start_time are outside of the domain. "
-                "Received start_time={} and end_time={}. "
+                "Can't slice a Timeseries when end and "
+                "start are outside of the domain. "
+                "Received start={} and end={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.domain)
+            ).format(start, end, self.domain)
             raise ValueError(message)
 
         result = TimeSeries()
-        if start_time in self.domain:
-            result[start_time] = self[start_time]
+        if start in self.domain:
+            result[start] = self[start]
         for time, value in self.items():
-            if (time > start_time) and (time <= end_time):
+            if (time > start) and (time <= end):
                 result[time] = value
 
-            if time > end_time:
+            if time > end:
                 break
 
         if slice_domain:
-            result.domain = self.domain.slice(start_time, end_time)
+            result.domain = self.domain.slice(start, end)
 
         return result
 
-    def regularize(self, sampling_period, start_time=None, end_time=None):
+    def regularize(self, sampling_period, start=None, end=None):
         """Sampling at regular time periods
 
         Output: Dict that can be converted into pandas.Series
@@ -367,50 +367,50 @@ class TimeSeries(object):
                 'Cannot calculate moving average '
                 'when Domain is not connected.')
 
-        if start_time is None:
-            start_time = self.domain.start()
-            if start_time == -inf:
+        if start is None:
+            start = self.domain.start()
+            if start == -inf:
                 msg = 'Start time of the domain is negative infinity.' \
                       ' Cannot regularize without specifying a start time.'
                 raise ValueError(msg)
 
-        if end_time is None:
-            end_time = self.domain.end()
-            if start_time == inf:
+        if end is None:
+            end = self.domain.end()
+            if start == inf:
                 msg = 'End time of the domain is infinity.' \
                       ' Cannot regularize without specifying an end time.'
                 raise ValueError(msg)
 
-        if start_time == -inf or end_time == inf:
+        if start == -inf or end == inf:
             raise ValueError('Start/end time cannot be infinity.')
 
-        if start_time > end_time:
+        if start > end:
             msg = (
-                "Can't regularize a Timeseries when end_time <= start_time. "
-                "Received start_time={} and end_time={}."
-            ).format(start_time, end_time)
+                "Can't regularize a Timeseries when end <= start. "
+                "Received start={} and end={}."
+            ).format(start, end)
             raise ValueError(msg)
 
-        if start_time < self.domain.start() or end_time > self.domain.end():
+        if start < self.domain.start() or end > self.domain.end():
             message = (
-                "Can't regularize a Timeseries when end_time or "
-                "start_time is outside of the domain. "
-                "Received start_time={} and end_time={}. "
+                "Can't regularize a Timeseries when end or "
+                "start is outside of the domain. "
+                "Received start={} and end={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.domain)
+            ).format(start, end, self.domain)
             raise ValueError(message)
 
         if sampling_period <= 0:
             msg = "Can't regularize a Timeseries when sampling_period <= 0."
             raise ValueError(msg)
 
-        if sampling_period > utils.duration_to_number(end_time - start_time):
+        if sampling_period > utils.duration_to_number(end - start):
             msg = "Can't regularize a Timeseries when sampling_period " \
                   "is greater than the duration between " \
-                  "start_time and end_time."
+                  "start and end."
             raise ValueError(msg)
 
-        if isinstance(start_time, datetime.datetime):
+        if isinstance(start, datetime.datetime):
             if not isinstance(sampling_period, int):
                 msg = "Can't regularize a Timeseries when " \
                       "the class of the time is datetime and " \
@@ -420,40 +420,40 @@ class TimeSeries(object):
         else:
             period_time = sampling_period
 
-        # if start_time is None:
-        #     start_time = self.get_by_index(0)[0]
-        # if end_time is None:
-        #     end_time = self.last()[0]
+        # if start is None:
+        #     start = self.get_by_index(0)[0]
+        # if end is None:
+        #     end = self.last()[0]
 
         result = {}
-        current_time = start_time
-        while current_time <= end_time:
+        current_time = start
+        while current_time <= end:
             result[current_time] = self[current_time]
             current_time += period_time
         return result
 
     def moving_average(self, sampling_period,
                        window_size=None,
+                       start=None, end=None,
                        placement='center',
-                       start_time=None, end_time=None,
                        pandas=False):
         """Averaging over regular intervals
 
         """
-        start_time, end_time = self._check_start_end(start_time, end_time)
+        start, end = self._check_start_end(start, end)
 
         # default to sampling_period if not given
         if window_size is None:
             window_size = sampling_period
 
-        if start_time < self.domain.start() or end_time > self.domain.end():
+        if start < self.domain.start() or end > self.domain.end():
             message = (
                 "Can't calculate moving average of "
-                "a Timeseries when end_time or "
-                "start_time is outside of the domain. "
-                "Received start_time={} and end_time={}. "
+                "a Timeseries when end or "
+                "start is outside of the domain. "
+                "Received start={} and end={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.domain)
+            ).format(start, end, self.domain)
             raise ValueError(message)
 
         if self.domain.n_intervals() > 1:
@@ -466,16 +466,16 @@ class TimeSeries(object):
                   "when window_size <= 0 or sampling_period <= 0."
             raise ValueError(msg)
 
-        if sampling_period > utils.duration_to_number(end_time - start_time):
+        if sampling_period > utils.duration_to_number(end - start):
             msg = "Can't calculate moving average of a Timeseries " \
                   "when sampling_period is greater than " \
-                  "the duration between start_time and end_time."
+                  "the duration between start and end."
             raise ValueError(msg)
 
         # convert to datetime if the times are datetimes
         half_window = float(window_size) / 2
         full_window = float(window_size)
-        if isinstance(start_time, datetime.datetime):
+        if isinstance(start, datetime.datetime):
             sampling_period = datetime.timedelta(seconds=sampling_period)
             half_window = datetime.timedelta(seconds=half_window)
             full_window = datetime.timedelta(seconds=full_window)
@@ -485,13 +485,13 @@ class TimeSeries(object):
         temp = deepcopy(self)
         temp.default = self.default
         temp.domain = Domain(
-            self.domain.start() - sampling_period,
-            self.domain.end() + sampling_period,
+            min(start, self.domain.lower) - full_window,
+            max(end, self.domain.upper) + full_window,
         )
-
+        
         result = []
-        current_time = start_time
-        while current_time <= end_time:
+        current_time = start
+        while current_time <= end:
 
             if placement == 'center':
                 window_start = current_time - half_window
@@ -528,56 +528,56 @@ class TimeSeries(object):
 
         return result
 
-    def mean(self, start_time=None, end_time=None):
+    def mean(self, start=None, end=None):
         """This calculated the average value of the time series over the given
-        time range from `start_time` to `end_time`.
+        time range from `start` to `end`.
 
         """
-        if start_time is None:
-            start_time = self.domain.start()
-            if start_time == -inf:
+        if start is None:
+            start = self.domain.start()
+            if start == -inf:
                 raise ValueError('Start time of the domain '
                                  'is negative infinity.'
                                  ' Cannot calculate mean without '
                                  'specifying a start time.')
 
-        if end_time is None:
-            end_time = self.domain.end()
-            if start_time == inf:
+        if end is None:
+            end = self.domain.end()
+            if start == inf:
                 raise ValueError('End time of the domain '
                                  'is infinity.'
                                  ' Cannot calculate mean without '
                                  'specifying an end time.')
 
-        if start_time == -inf or end_time == inf:
+        if start == -inf or end == inf:
             raise ValueError('Start/end time cannot be infinity.')
 
-        if start_time > end_time:
+        if start > end:
             msg = (
                 "Can't calculate mean of a Timeseries "
-                "when end_time <= start_time. "
-                "Received start_time={} and end_time={}."
-            ).format(start_time, end_time)
+                "when end <= start. "
+                "Received start={} and end={}."
+            ).format(start, end)
             raise ValueError(msg)
 
-        if start_time < self.domain.start() or end_time > self.domain.end():
+        if start < self.domain.start() or end > self.domain.end():
             message = (
                 "Can't calculate mean of a Timeseries "
-                "when end_time or "
-                "start_time is outside of the domain. "
-                "Received start_time={} and end_time={}. "
+                "when end or "
+                "start is outside of the domain. "
+                "Received start={} and end={}. "
                 "Domain is {}."
-            ).format(start_time, end_time, self.domain)
+            ).format(start, end, self.domain)
             raise ValueError(message)
 
         if self.domain.n_intervals() > 1:
             raise NotImplementedError(
                 'Cannot calculate mean when Domain is not connected.')
 
-        total_seconds = utils.duration_to_number(end_time - start_time)
+        total_seconds = utils.duration_to_number(end - start)
 
         mean = 0.0
-        for (t0, t1, value) in self.iterperiods(start_time, end_time):
+        for (t0, t1, value) in self.iterperiods(start, end):
             # calculate contribution to weighted average for this
             # interval
             try:
@@ -589,18 +589,18 @@ class TimeSeries(object):
         # return the mean value over the time period
         return mean / float(total_seconds)
 
-    def distribution(self, start_time=None, end_time=None,
+    def distribution(self, start=None, end=None,
                      normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
-        `start_time` to `end_time`.
+        `start` to `end`.
 
         Args:
 
-            start_time (orderable, optional): The lower time bound of
+            start (orderable, optional): The lower time bound of
                 when to calculate the distribution. By default, the
                 start of the domain will be used.
 
-            end_time (orderable, optional): The upper time bound of
+            end (orderable, optional): The upper time bound of
                 when to calculate the distribution. By default, the
                 end of the domain will be used.
 
@@ -626,24 +626,24 @@ class TimeSeries(object):
         [0, 1, 2, 3]
 
         """
-        if start_time is None:
-            start_time = self.domain.start()
+        if start is None:
+            start = self.domain.start()
 
-        if end_time is None:
-            end_time = self.domain.end()
+        if end is None:
+            end = self.domain.end()
 
         # if a TimeSeries is given as mask, convert to a domain
         if isinstance(mask, TimeSeries):
             mask = mask.to_domain()
 
         # logical and with start, end time domain
-        distribution_mask = Domain([start_time, end_time])
+        distribution_mask = Domain([start, end])
         if mask:
             distribution_mask &= mask
 
         counter = histogram.Histogram()
-        for start_time, end_time in distribution_mask.intervals():
-            for t0, t1, value in self.iterperiods(start_time, end_time):
+        for start, end in distribution_mask.intervals():
+            for t0, t1, value in self.iterperiods(start, end):
                 counter[value] += utils.duration_to_number(
                     t1 - t0,
                     units='seconds',
@@ -823,10 +823,10 @@ class TimeSeries(object):
                 result[time] = function(value, other)
         return result
 
-    def to_domain(self, start_time=None, end_time=None):
+    def to_domain(self, start=None, end=None):
         """"""
         intervals = []
-        iterator = self.iterperiods(start_time=start_time, end_time=end_time)
+        iterator = self.iterperiods(start=start, end=end)
         for t0, t1, value in iterator:
             if value:
                 intervals.append((t0, t1))
@@ -952,7 +952,7 @@ class TimeSeries(object):
         end = self._check_boundary(end, allow_infinite, 'upper')
 
         if start >= end:
-            msg = ''
+            msg = "start can't be >= end ({} >= {})".format(start, end)
             raise ValueError(msg)
 
         return start, end

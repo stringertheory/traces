@@ -72,8 +72,8 @@ The ``distribution`` function gives you the fraction of time that the
 .. code:: python
 
     >>> time_series.distribution(
-    >>>   start_time=datetime(2042, 2, 1,  6,  0,  0), # 6:00am
-    >>>   end_time=datetime(2042, 2, 1,  13,  0,  0)   # 1:00pm
+    >>>   start=datetime(2042, 2, 1,  6,  0,  0), # 6:00am
+    >>>   end=datetime(2042, 2, 1,  13,  0,  0)   # 1:00pm
     >>> )
     Histogram({0: 0.8355952380952381, 1: 0.16440476190476191})
 
@@ -109,8 +109,8 @@ from 8am to 6pm?
 .. code:: python
 
     >>> histogram = count.distribution(
-    >>>   start_time=datetime(2042, 2, 1,  8,  0,  0),   # 8:00am
-    >>>   end_time=datetime(2042, 2, 1,  12 + 6,  0,  0) # 6:00pm
+    >>>   start=datetime(2042, 2, 1,  8,  0,  0),   # 8:00am
+    >>>   end=datetime(2042, 2, 1,  12 + 6,  0,  0) # 6:00pm
     >>> )
     >>> histogram.median()
     17

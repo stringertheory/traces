@@ -233,28 +233,28 @@ class Domain(object):
         on = Booga.merge(ts_list, operation=all)
         return Domain([(t0, t1) for (t0, t1, v) in on.iterperiods(value=True)])
 
-    def slice(self, start_time, end_time):
+    def slice(self, start, end):
         """Return a segment of Domain within start and end"""
 
-        if end_time <= start_time:
+        if end <= start:
             message = (
-                "Can't slice a Domain when end_time <= start_time. "
-                "Received start_time={} and end_time={}."
-            ).format(start_time, end_time)
+                "Can't slice a Domain when end <= start. "
+                "Received start={} and end={}."
+            ).format(start, end)
             raise ValueError(message)
 
-        if start_time > self.end():
+        if start > self.end():
             msg = "Start time is larger than the end of the Domain."
             raise ValueError(msg)
 
-        if end_time < self.start():
+        if end < self.start():
             msg = "End time is smaller than the start of the Domain."
             raise ValueError(msg)
 
         intervals = []
         for t0, t1, value in self.ts.iterperiods(
-                start_time=start_time,
-                end_time=end_time,
+                start=start,
+                end=end,
                 value=True,
         ):
             intervals.append((t0, t1))

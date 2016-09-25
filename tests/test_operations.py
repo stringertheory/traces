@@ -139,20 +139,20 @@ def example_mean():
     print('')
 
     timestep = {'hours': 25}
-    start_time = datetime.datetime(2010, 1, 1)
-    while start_time <= datetime.datetime(2010, 2, 5):
-        end_time = start_time + datetime.timedelta(**timestep)
-        print(start_time.isoformat(), l.mean(start_time, end_time))
-        start_time = end_time
+    start = datetime.datetime(2010, 1, 1)
+    while start <= datetime.datetime(2010, 2, 5):
+        end = start + datetime.timedelta(**timestep)
+        print(start.isoformat(), l.mean(start, end))
+        start = end
 
     print('')
 
-    start_time = datetime.datetime(2010, 1, 1)
-    while start_time <= datetime.datetime(2010, 2, 5):
-        end_time = start_time + datetime.timedelta(**timestep)
-        print(start_time.isoformat(), -0.2)
-        print(start_time.isoformat(), 1.2)
-        start_time = end_time
+    start = datetime.datetime(2010, 1, 1)
+    while start <= datetime.datetime(2010, 2, 5):
+        end = start + datetime.timedelta(**timestep)
+        print(start.isoformat(), -0.2)
+        print(start.isoformat(), 1.2)
+        start = end
 
 
 def example_arrow():
@@ -178,14 +178,14 @@ def example_arrow():
     start = arrow.Arrow(2010, 1, 1)
     end = arrow.Arrow(2010, 2, 5)
     unit = {'hours': 25}
-    for start_time, end_time in span_range(start, end, unit):
-        print(start_time.naive.isoformat(), l.mean(start_time, end_time))
+    for start, end in span_range(start, end, unit):
+        print(start.naive.isoformat(), l.mean(start, end))
 
     print('')
 
-    for start_time, end_time in span_range(start, end, unit):
-        print(start_time.naive.isoformat(), -0.2)
-        print(start_time.naive.isoformat(), 1.2)
+    for start, end in span_range(start, end, unit):
+        print(start.naive.isoformat(), -0.2)
+        print(start.naive.isoformat(), 1.2)
 
 
 def example_sum():
