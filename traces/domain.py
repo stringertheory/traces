@@ -119,8 +119,8 @@ class Domain(object):
         for start, end in interval_list:
             try:
                 bad_order = (start >= end)
-            except TypeError, e:
-                raise ValueError(e)
+            except TypeError as error:
+                raise ValueError(error)
             else:
                 if bad_order:
                     msg = (
