@@ -233,7 +233,7 @@ class TimeSeries(object):
 
         """
         start, end = self._check_start_end(start, end, allow_infinite=True)
-        
+
         # if value is None, don't filter
         if value is None:
             def value_function(t0_, t1_, value_):
@@ -368,7 +368,7 @@ class TimeSeries(object):
                 sampling_period = datetime.timedelta(seconds=sampling_period)
 
         return sampling_period
-    
+
     def sample(self, sampling_period, start=None, end=None):
         """Sampling at regular time periods.
 
@@ -377,7 +377,7 @@ class TimeSeries(object):
 
         sampling_period = \
             self._check_regularization(start, end, sampling_period)
-        
+
         result = []
         current_time = start
         while current_time <= end:
