@@ -505,6 +505,7 @@ class TimeSeries(object):
             period_time = sampling_period
 
         temp = deepcopy(self)
+        temp.default = EXTEND_BACK
         temp.domain = Domain(self.domain.start() - buffer_time,
                              self.domain.end() + buffer_time)
 
