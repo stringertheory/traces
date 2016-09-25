@@ -348,48 +348,16 @@ class TimeSeries(object):
 
         return result
 
-    def regularize(self, sampling_period, start=None, end=None):
-        """Sampling at regular time periods
-
-        Output: Dict that can be converted into pandas.Series
-        directly by calling pandas.Series(Dict)
-
-        :param arg1: description
-        :param arg2: description
-        :type arg1: type description
-        :type arg1: type description
-        :return: return description
-        :rtype: the return type description
+    def sample(self, sampling_period, start=None, end=None):
+        """Sampling at regular time periods.
 
         """
+        start, end = self._check_start_end(start, end)
+        
         if self.domain.n_intervals() > 1:
             raise NotImplementedError(
                 'Cannot calculate moving average '
                 'when Domain is not connected.')
-
-        if start is None:
-            start = self.domain.start()
-            if start == -inf:
-                msg = 'Start time of the domain is negative infinity.' \
-                      ' Cannot regularize without specifying a start time.'
-                raise ValueError(msg)
-
-        if end is None:
-            end = self.domain.end()
-            if start == inf:
-                msg = 'End time of the domain is infinity.' \
-                      ' Cannot regularize without specifying an end time.'
-                raise ValueError(msg)
-
-        if start == -inf or end == inf:
-            raise ValueError('Start/end time cannot be infinity.')
-
-        if start > end:
-            msg = (
-                "Can't regularize a Timeseries when end <= start. "
-                "Received start={} and end={}."
-            ).format(start, end)
-            raise ValueError(msg)
 
         if start < self.domain.start() or end > self.domain.end():
             message = (
@@ -411,25 +379,13 @@ class TimeSeries(object):
             raise ValueError(msg)
 
         if isinstance(start, datetime.datetime):
-            if not isinstance(sampling_period, int):
-                msg = "Can't regularize a Timeseries when " \
-                      "the class of the time is datetime and " \
-                      "sampling_period is not an integer."
-                raise TypeError(msg)
-            period_time = datetime.timedelta(seconds=sampling_period)
-        else:
-            period_time = sampling_period
+            sampling_period = datetime.timedelta(seconds=sampling_period)
 
-        # if start is None:
-        #     start = self.get_by_index(0)[0]
-        # if end is None:
-        #     end = self.last()[0]
-
-        result = {}
+        result = []
         current_time = start
         while current_time <= end:
-            result[current_time] = self[current_time]
-            current_time += period_time
+            result.append((current_time, self[current_time]))
+            current_time += sampling_period
         return result
 
     def moving_average(self, sampling_period,

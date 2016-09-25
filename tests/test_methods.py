@@ -70,7 +70,7 @@ def test_mean():
                                  key_list[0], key_list[1])
 
 
-def test_regularize():
+def test_sample():
     time_list = [
         datetime.datetime(2016, 1, 1, 1, 1, 2),
         datetime.datetime(2016, 1, 1, 1, 1, 3),
@@ -83,43 +83,41 @@ def test_regularize():
         return datetime.datetime(2016, 1, 1, 1, 1, i)
 
     # Check first arguments
-    assert ts.regularize(1, time_list[0], time_list[-1]) == {
+    assert dict(ts.sample(1, time_list[0], time_list[-1])) == {
         curr_time(i): ts[curr_time(i)] for i in range(2, 11)}
 
-    assert ts.regularize(2, time_list[0], time_list[-1]) == {
+    assert dict(ts.sample(2, time_list[0], time_list[-1])) == {
         curr_time(i): ts[curr_time(i)] for i in range(2, 11, 2)}
 
-    nose.tools.assert_raises(TypeError, ts.regularize,
-                             1.4, time_list[0], time_list[-1])
     nose.tools.assert_raises(
-        ValueError, ts.regularize, -1, time_list[0], time_list[-1])
-    nose.tools.assert_raises(ValueError, ts.regularize,
+        ValueError, ts.sample, -1, time_list[0], time_list[-1])
+    nose.tools.assert_raises(ValueError, ts.sample,
                              20, time_list[0], time_list[-1])
 
     # Check second and third arguments
-    nose.tools.assert_raises(ValueError, ts.regularize,
+    nose.tools.assert_raises(ValueError, ts.sample,
                              1, time_list[3], time_list[0])
 
-    assert ts.regularize(1, curr_time(5), curr_time(10)) == {
+    assert dict(ts.sample(1, curr_time(5), curr_time(10))) == {
         curr_time(i): ts[curr_time(i)] for i in range(5, 11)}
 
-    assert ts.regularize(1, curr_time(2), curr_time(5)) == {
+    assert dict(ts.sample(1, curr_time(2), curr_time(5))) == {
         curr_time(i): ts[curr_time(i)] for i in range(2, 6)}
 
-    assert ts.regularize(1, curr_time(0), curr_time(13)) == {
+    assert dict(ts.sample(1, curr_time(0), curr_time(13))) == {
         curr_time(i): ts[curr_time(i)] for i in range(0, 14)}
 
     # Check using int
     ts = traces.TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
-    assert ts.regularize(1, 1, 8) == {
+    assert dict(ts.sample(1, 1, 8)) == {
         i: ts[i] for i in range(1, 9)}
-    assert ts.regularize(0.5, 1, 8) == {
+    assert dict(ts.sample(0.5, 1, 8)) == {
         1 + i / 2.: ts[1 + i / 2.] for i in range(0, 15)}
-    nose.tools.assert_raises(ValueError, ts.regularize, 0.5, -traces.inf, 8)
-    nose.tools.assert_raises(ValueError, ts.regularize, 0.5, 1, traces.inf)
+    nose.tools.assert_raises(ValueError, ts.sample, 0.5, -traces.inf, 8)
+    nose.tools.assert_raises(ValueError, ts.sample, 0.5, 1, traces.inf)
 
     # Test pandas compatibility
-    pd_ts = pd.Series(ts.regularize(1, 1, 8))
+    pd_ts = pd.Series(dict(ts.sample(1, 1, 8)))
     assert all(pd_ts.index[i - 1] == i for i in range(1, 9))
     assert all(pd_ts.values[i - 1] == ts[i] for i in range(1, 9))
 
