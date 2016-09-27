@@ -115,19 +115,36 @@ class TimeSeries(object):
         """Set the default value of the time series."""
         self._default = value
 
-    def get(self, time):
-        """Get the value of the time series, even in-between measured values.
+    def _get_linear_interpolate(self, time):
+        right_index = self._d.bisect_right(time)
+        left_index = right_index - 1
+        if left_index < 0:
+            return self.default
+        elif right_index == len(self._d):
+            # right of last measurement
+            return self.last()[1]
+        else:
+            left_time = self._d.iloc[left_index]
+            left_value = self._d[left_time]
+            right_time = self._d.iloc[right_index]
+            right_value = self._d[right_time]
+            dt_interval = right_time - left_time
+            dt_start = time - left_time
+            if isinstance(dt_interval, datetime.timedelta):
+                dt_interval = dt_interval.total_seconds()
+                dt_start = dt_start.total_seconds()
+            slope = float(right_value - left_value) / dt_interval
+            value = slope * dt_start + left_value
+            return value
 
-        """
-        if time not in self.domain:
-            msg = "{} is outside of the domain.".format(time)
-            raise KeyError(msg)
-
-        index = self._d.bisect_right(time)
-        if index > 0:
-            previous_measurement_time = self._d.iloc[index - 1]
-            return self._d[previous_measurement_time]
-        elif index == 0:
+    def _get_previous(self, time):
+        right_index = self._d.bisect_right(time)
+        left_index = right_index - 1
+        if right_index > 0:
+            left_time = self._d.iloc[left_index]
+            left_value = self._d[left_time]
+            return left_value
+        elif right_index == 0:
             return self.default
         else:
             msg = (
@@ -135,6 +152,22 @@ class TimeSeries(object):
                 """This "can't" happen: please file an issue at """
                 'https://github.com/datascopeanalytics/traces/issues'
             ).format(time)
+            raise ValueError(msg)
+
+    def get(self, time, interpolate=None):
+        """Get the value of the time series, even in-between measured values.
+
+        """
+        if time not in self.domain:
+            msg = "{} is outside of the domain.".format(time)
+            raise KeyError(msg)
+
+        if interpolate is None:
+            return self._get_previous(time)
+        elif interpolate == 'linear':
+            return self._get_linear_interpolate(time)
+        else:
+            msg = "unknown value '{}' for interpolate".format(interpolate)
             raise ValueError(msg)
 
     def get_by_index(self, index):
@@ -354,22 +387,33 @@ class TimeSeries(object):
         # only do these checks if sampling period is given
         if sampling_period is not None:
 
-            if sampling_period <= 0:
+            # cast to both seconds and timedelta for error checking
+            if isinstance(sampling_period, datetime.timedelta):
+                sampling_period_seconds = sampling_period.total_seconds()
+                sampling_period_timedelta = sampling_period
+            else:
+                sampling_period_seconds = sampling_period
+                sampling_period_timedelta = \
+                    datetime.timedelta(seconds=sampling_period)
+
+            if sampling_period_seconds <= 0:
                 msg = "sampling_period must be > 0"
                 raise ValueError(msg)
 
-            if sampling_period > utils.duration_to_number(end - start):
+            if sampling_period_seconds > utils.duration_to_number(end - start):
                 msg = "sampling_period " \
                       "is greater than the duration between " \
                       "start and end."
                 raise ValueError(msg)
 
             if isinstance(start, datetime.datetime):
-                sampling_period = datetime.timedelta(seconds=sampling_period)
+                sampling_period = sampling_period_timedelta
+            else:
+                sampling_period = sampling_period_seconds
 
         return sampling_period
 
-    def sample(self, sampling_period, start=None, end=None):
+    def sample(self, sampling_period, start=None, end=None, interpolate=None):
         """Sampling at regular time periods.
 
         """
@@ -381,7 +425,8 @@ class TimeSeries(object):
         result = []
         current_time = start
         while current_time <= end:
-            result.append((current_time, self[current_time]))
+            value = self.get(current_time, interpolate=interpolate)
+            result.append((current_time, value))
             current_time += sampling_period
         return result
 

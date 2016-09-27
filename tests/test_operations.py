@@ -235,3 +235,18 @@ def example_sum():
     for dt, i in TimeSeries.merge([a, b, c], operation=sum):
         print(dt.isoformat(), i)
 
+def test_interpolation():
+
+    ts = TimeSeries(data=[(0, 0), (1, 2)])
+
+    assert ts.get(0, interpolate='linear') == 0
+    assert ts.get(0.25, interpolate='linear') == 0.5
+    assert ts.get(0.5, interpolate='linear') == 1.0
+    assert ts.get(0.75, interpolate='linear') == 1.5
+    assert ts.get(1, interpolate='linear') == 2
+
+    assert ts.get(-1, interpolate='linear') == 0
+    assert ts.get(2, interpolate='linear') == 2
+    
+    nose.tools.assert_raises(ValueError, ts.get, 0.5, 'spline')
+    
