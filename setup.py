@@ -46,7 +46,7 @@ def read_dependencies(filepath):
 
 setup(
     name='traces',
-    version='0.3.0',
+    version='0.3.1',
     description="A library for unevenly-spaced time series analysis.",
     long_description="View on github: https://github.com/datascopeanalytics/traces",
     author=read_author(),
