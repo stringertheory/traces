@@ -448,9 +448,9 @@ class TimeSeries(object):
             self._check_regularization(start, end, sampling_period)
 
         # convert to datetime if the times are datetimes
-        half_window = float(window_size) / 2
-        full_window = float(window_size)
-        if isinstance(start, datetime.datetime):
+        full_window = window_size * 1.  # convert to float if int or do nothing
+        half_window = window_size / 2.  # divide by 2 and convert to float if int
+        if isinstance(start, datetime.datetime) and not isinstance(full_window, datetime.timedelta):
             half_window = datetime.timedelta(seconds=half_window)
             full_window = datetime.timedelta(seconds=full_window)
 
