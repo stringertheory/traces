@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import nose
 
 from traces import TimeSeries
@@ -52,6 +54,8 @@ def test_set_interval():
     ts = TimeSeries()
     nose.tools.assert_raises(KeyError, ts.get, 0)
 
+    nose.tools.assert_raises(KeyError, ts.set_interval, 2, 4, 5)
+
     ts[1.2] = 1
     ts[3] = 0
     ts[6] = 2
@@ -73,3 +77,15 @@ def test_set_interval():
 
     tsc.set_interval(3, 4, 4, compact=True)
     assert tsc.items() == [(1.2, 1), (2, 5), (3, 4), (5, 0), (6, 2)]
+
+
+def test_set_interval_datetime():
+    ts = TimeSeries(domain=(datetime(2012, 1, 1), datetime(2015, 2, 1)),
+                    default=400)
+    ts[datetime(2012, 1, 4, 12)] = 5
+    ts[datetime(2012, 1, 9, 18)] = 10
+    ts[datetime(2012, 1, 8):datetime(2012, 1, 10)] = 100
+
+    assert ts.items() == [(datetime(2012, 1, 4, 12, 0), 5),
+                          (datetime(2012, 1, 8, 0, 0), 100),
+                          (datetime(2012, 1, 10, 0, 0), 10)]
