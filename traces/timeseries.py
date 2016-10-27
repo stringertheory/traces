@@ -644,10 +644,10 @@ class TimeSeries(object):
         in the list at time t.
 
         """
-
-        if len(timeseries_list) == 0:
-            raise ValueError(
-                "timeseries_list is empty. There is nothing to merge.")
+        # this is the way to say "the iterator is empty" when there is
+        # nothing to iterate over (using return without an argument)
+        if not timeseries_list:
+            return
 
         domain = timeseries_list[0].domain
         for ts in timeseries_list:
