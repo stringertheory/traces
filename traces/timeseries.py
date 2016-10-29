@@ -102,7 +102,7 @@ class TimeSeries(object):
     def default(self):
         """Return the default value of the time series."""
         if self._default == EXTEND_BACK and self.n_measurements() == 0:
-            msg = "can't get value without a measurement (or a default)"
+            msg = "can't get value of empty TimeSeries with no default value"
             raise KeyError(msg)
         else:
             if self._default == EXTEND_BACK:
@@ -556,7 +556,35 @@ class TimeSeries(object):
             :obj:`Histogram` with the results.
 
         """
-        start, end = self._check_start_end(start, end)
+        if self._default == EXTEND_BACK and self.n_measurements() == 0:
+            msg = (
+                "distribution of empty TimeSeries with no default value "
+                "is undefined"
+            )
+            raise ValueError(msg)
+
+        # if no boundaries are passed in
+        if start is None and end is None:
+
+            # if there's no mask either, then try to use the first and
+            # last points in the time series as boundaries (but throw
+            # informative errors if there are 0 or 1 points)
+            if mask is None:
+
+                if self.n_measurements() < 2:
+                    msg = (
+                        "distribution of TimeSeries with less than two points "
+                        "and no boundaries or mask given is undefined"
+                    )
+                    raise ValueError(msg)
+                else:
+                    start, end = self._check_start_end(start, end)
+
+            # if only a mask is given, use just the mask (don't
+            # logical and the domain defined by the first and last
+            # points in the TimeSeries)
+            else:
+                start, end = -inf, inf
 
         # if a TimeSeries is given as mask, convert to a domain
         if isinstance(mask, TimeSeries):
@@ -644,15 +672,17 @@ class TimeSeries(object):
         in the list at time t.
 
         """
-        # this is the way to say "the iterator is empty" when there is
-        # nothing to iterate over (using return without an argument)
+        # using return without an argument is the way to say "the
+        # iterator is empty" when there is nothing to iterate over
+        # (the more you know...)
         if not timeseries_list:
             return
 
         domain = timeseries_list[0].domain
         for ts in timeseries_list:
-            if len(ts) == 0:
-                raise ValueError("Can't merge empty TimeSeries.")
+            if len(ts) == 0 and ts._default == EXTEND_BACK:
+                msg = "can't merge empty TimeSeries with no default value"
+                raise ValueError(msg)
             if not domain == ts.domain:
                 raise ValueError(
                     "The domains of the TimeSeries are not the same.")
@@ -673,7 +703,7 @@ class TimeSeries(object):
             yield previous_t, previous_state
 
     @classmethod
-    def merge(cls, ts_list, compact=True, operation=None):
+    def merge(cls, ts_list, compact=True, operation=None, default=EXTEND_BACK):
         """Iterate through several time series in order, yielding (time,
         `value`) where `value` is the either the list of each
         individual TimeSeries in the list at time t (in the same order
@@ -682,7 +712,7 @@ class TimeSeries(object):
 
         """
 
-        result = cls()
+        result = cls(default=default)
         for t, merged in cls.iter_merge(ts_list):
             if operation is None:
                 value = merged
