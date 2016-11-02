@@ -502,6 +502,40 @@ class TimeSeries(object):
 
         return result
 
+    @staticmethod
+    def rebin(binned, key_function):
+
+        result = sortedcontainers.SortedDict()
+        for start, distribution in iteritems(binned):
+            key = key_function(start)
+            grouped = result.setdefault(key, histogram.Histogram())
+            for value, seconds in iteritems(distribution):
+                grouped[value] += seconds
+
+        return result
+
+    def bin(self, unit, n_units=1, start=None, end=None, mask=None,
+            smaller=None):
+
+        # use smaller if available
+        if smaller:
+            return self.rebin(
+                smaller,
+                lambda x: utils.datetime_floor(x, unit, n_units),
+            )
+
+        start, end = self._check_start_end(start, end, mask=mask)
+
+        start = utils.datetime_floor(start, unit=unit, n_units=n_units)
+
+        result = sortedcontainers.SortedDict()
+        for bin_start, bin_end in mask.spans_between(start, end, unit,
+                                                     n_units=n_units):
+            result[bin_start] = self.distribution(bin_start, bin_end,
+                                                  mask=mask, normalized=False)
+
+        return result
+
     def mean(self, start=None, end=None):
         """This calculated the average value of the time series over the given
         time range from `start` to `end`.
@@ -563,32 +597,11 @@ class TimeSeries(object):
             )
             raise ValueError(msg)
 
-        # if no boundaries are passed in
-        if start is None and end is None:
-
-            # if there's no mask either, then try to use the first and
-            # last points in the time series as boundaries (but throw
-            # informative errors if there are 0 or 1 points)
-            if mask is None:
-
-                if self.n_measurements() < 2:
-                    msg = (
-                        "distribution of TimeSeries with less than two points "
-                        "and no boundaries or mask given is undefined"
-                    )
-                    raise ValueError(msg)
-                else:
-                    start, end = self._check_start_end(start, end)
-
-            # if only a mask is given, use just the mask (don't
-            # logical and the domain defined by the first and last
-            # points in the TimeSeries)
-            else:
-                start, end = -inf, inf
-
         # if a TimeSeries is given as mask, convert to a domain
         if isinstance(mask, TimeSeries):
             mask = mask.to_domain()
+
+        start, end = self._check_start_end(start, end, mask)
 
         # logical and with start, end time domain
         distribution_mask = Domain([start, end])
@@ -901,7 +914,28 @@ class TimeSeries(object):
         else:
             return value
 
-    def _check_start_end(self, start, end, allow_infinite=False):
+    def _check_start_end(self, start, end, mask=None, allow_infinite=False):
+
+        # if no boundaries are passed in
+        if start is None and end is None:
+
+            # if there's no mask either, then try to use the first and
+            # last points in the time series as boundaries (but throw
+            # informative errors if there are 0 or 1 points)
+            if mask is None:
+
+                if self.n_measurements() < 2:
+                    msg = (
+                        "TimeSeries has less than two points "
+                        "and no boundaries or mask given"
+                    )
+                    raise ValueError(msg)
+
+            # if only a mask is given, use the bounds of the mask
+            # (don't logical and the domain defined by the first and
+            # last points in the TimeSeries)
+            else:
+                return mask.lower, mask.upper
 
         # replace with defaults if not given
         start = self._check_boundary(start, allow_infinite, 'lower')
