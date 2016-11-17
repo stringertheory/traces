@@ -122,3 +122,11 @@ def test_quantile_interpolation():
     )
     for i, j in zip(result, answer):
         nose.tools.assert_almost_equal(i, j)
+
+def test_addition():
+
+    hist_a = traces.Histogram([1, 1, 1, 2, 3, 5])
+    hist_b = traces.Histogram([0, 0, 1, 2, 2])
+
+    together = hist_a.add(hist_b)
+    assert together.items() == [(0, 2), (1, 4), (2, 3), (3, 1), (5, 1)]
