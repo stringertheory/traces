@@ -506,16 +506,17 @@ class TimeSeries(object):
     def rebin(binned, key_function):
 
         result = sortedcontainers.SortedDict()
-        for start, distribution in iteritems(binned):
-            key = key_function(start)
-            grouped = result.setdefault(key, histogram.Histogram())
-            for value, seconds in iteritems(distribution):
-                grouped[value] += seconds
+        for bin_start, value in iteritems(binned):
+            new_bin_start = key_function(bin_start)
+            try:
+                result[new_bin_start] += value
+            except KeyError:
+                result[new_bin_start] = value
 
         return result
 
     def bin(self, unit, n_units=1, start=None, end=None, mask=None,
-            smaller=None):
+            smaller=None, transform='distribution'):
 
         # use smaller if available
         if smaller:
@@ -523,19 +524,21 @@ class TimeSeries(object):
                 smaller,
                 lambda x: utils.datetime_floor(x, unit, n_units),
             )
-
         start, end = self._check_start_end(start, end, mask=mask)
 
         start = utils.datetime_floor(start, unit=unit, n_units=n_units)
 
+        function = getattr(self, transform)
         result = sortedcontainers.SortedDict()
         for bin_start, bin_end in mask.spans_between(start, end, unit,
                                                      n_units=n_units):
-            result[bin_start] = self.distribution(bin_start, bin_end,
-                                                  mask=mask, normalized=False)
+            
+            result[bin_start] = function(bin_start, bin_end,
+                                         mask=mask, normalized=False)
 
         return result
-
+    
+    
     def mean(self, start=None, end=None):
         """This calculated the average value of the time series over the given
         time range from `start` to `end`.
@@ -622,6 +625,64 @@ class TimeSeries(object):
         else:
             return counter
 
+    def n_points(self, start=-inf, end=+inf, mask=None,
+                 include_start=True, include_end=False, normalized=False):
+        """Calculate the number of points over the given time range from
+        `start` to `end`.
+
+        Args:
+
+            start (orderable, optional): The lower time bound of
+                when to calculate the distribution. By default, the
+                start of the domain will be used.
+
+            end (orderable, optional): The upper time bound of
+                when to calculate the distribution. By default, the
+                end of the domain will be used.
+
+            mask (:obj:`Domain` or :obj:`TimeSeries`, optional): A
+                Domain on which to calculate the distribution. This
+                Domain is combined with a logical and with either the
+                (start, end) time domain, if given, or the domain of
+                the TimeSeries.
+
+        Returns:
+
+             `int` with the result
+
+        """
+        # if a TimeSeries is given as mask, convert to a domain
+        if isinstance(mask, TimeSeries):
+            mask = mask.to_domain()
+
+        start, end = self._check_start_end(start, end, mask)
+
+        # logical and with start, end time domain
+        distribution_mask = Domain([start, end])
+        if mask:
+            distribution_mask &= mask
+
+        # just return 0 if we already know it
+        if self.n_measurements() == 0:
+            return 0
+            
+        counter = 0
+        for start, end in distribution_mask.intervals():
+            if include_end:
+                end_count = self._d.bisect_right(end)
+            else:
+                end_count = self._d.bisect_left(end)
+            if include_start:
+                start_count = self._d.bisect_left(start)
+            else:
+                start_count = self._d.bisect_right(start)
+            counter += (end_count - start_count)
+
+        if normalized:
+            counter /= float(len(self._d))
+            
+        return counter
+    
     def _check_time_series(self, other):
         """Function used to check the type of the argument and raise an
         informative error message if it's not a TimeSeries.
@@ -974,3 +1035,16 @@ class TimeSeries(object):
             result.append((week, histogram))
 
         return result
+
+a = TimeSeries(default=0)
+a[datetime.datetime(2016, 1, 1, 0, 0, 0)] = 0
+a[datetime.datetime(2016, 1, 1, 0, 0, 1)] = 1
+a[datetime.datetime(2016, 1, 1, 0, 0, 2)] = 0
+a[datetime.datetime(2016, 1, 1, 0, 3, 30)] = 1
+a[datetime.datetime(2016, 1, 1, 0, 4, 50)] = 0
+
+a_mask = TimeSeries(default=0)
+a_mask[datetime.datetime(2016, 1, 1, 0, 0, 0)] = 1
+a_mask[datetime.datetime(2016, 1, 1, 0, 4, 51)] = 0
+a_mask = a_mask.to_domain()
+
