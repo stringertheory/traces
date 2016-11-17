@@ -532,13 +532,12 @@ class TimeSeries(object):
         result = sortedcontainers.SortedDict()
         for bin_start, bin_end in mask.spans_between(start, end, unit,
                                                      n_units=n_units):
-            
+
             result[bin_start] = function(bin_start, bin_end,
                                          mask=mask, normalized=False)
 
         return result
-    
-    
+
     def mean(self, start=None, end=None):
         """This calculated the average value of the time series over the given
         time range from `start` to `end`.
@@ -665,7 +664,7 @@ class TimeSeries(object):
         # just return 0 if we already know it
         if self.n_measurements() == 0:
             return 0
-            
+
         counter = 0
         for start, end in distribution_mask.intervals():
             if include_end:
@@ -680,9 +679,9 @@ class TimeSeries(object):
 
         if normalized:
             counter /= float(len(self._d))
-            
+
         return counter
-    
+
     def _check_time_series(self, other):
         """Function used to check the type of the argument and raise an
         informative error message if it's not a TimeSeries.
@@ -1047,4 +1046,3 @@ a_mask = TimeSeries(default=0)
 a_mask[datetime.datetime(2016, 1, 1, 0, 0, 0)] = 1
 a_mask[datetime.datetime(2016, 1, 1, 0, 4, 51)] = 0
 a_mask = a_mask.to_domain()
-

@@ -153,6 +153,5 @@ class Histogram(sortedcontainers.SortedDict):
         for key, value in iteritems(other):
             result[key] += value
         return result
-        
+
     __add__ = add
-    
