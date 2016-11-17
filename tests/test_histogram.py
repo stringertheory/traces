@@ -129,4 +129,4 @@ def test_addition():
     hist_b = traces.Histogram([0, 0, 1, 2, 2])
 
     together = hist_a.add(hist_b)
-    assert together.items() == [(0, 2), (1, 4), (2, 3), (3, 1), (5, 1)]
+    assert list(together.items()) == [(0, 2), (1, 4), (2, 3), (3, 1), (5, 1)]
