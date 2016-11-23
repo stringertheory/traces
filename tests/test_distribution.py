@@ -102,3 +102,36 @@ def test_distribution_set():
     time_series[3.5] = {'orange', 'banana', 'beets'}
 
     # TODO: How to convert the set into multiple ts?
+
+def test_distribution_empty():
+
+    ts = TimeSeries()
+
+    mask = TimeSeries(default=0)
+    mask[0] = 1
+    mask[2] = 0
+    
+    # distribution with default args and no default value on empty
+    # TimeSeries doesn't know what to do
+    nose.tools.assert_raises(ValueError, ts.distribution)
+
+    # distribution with start and end, but no default value on empty
+    # TimeSeries doesn't know what to do
+    nose.tools.assert_raises(ValueError, ts.distribution, 0, 10)
+
+    # no matter what is passed in to distribution, if the default
+    # value is not set on an empty TimeSeries this should be an error
+    nose.tools.assert_raises(ValueError, ts.distribution, mask=mask)
+    
+    ts = TimeSeries(default=0)
+
+    # no mask or start/end on empty TimeSeries, don't know what to do
+    nose.tools.assert_raises(ValueError, ts.distribution)
+
+    # start and end or mask given, is fine
+    distribution = ts.distribution(0, 10)
+    assert distribution[0] == 1.0
+
+    distribution = ts.distribution(mask=mask)
+    assert distribution[0] == 1.0
+    

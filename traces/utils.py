@@ -62,7 +62,7 @@ def convert_args_to_list(args):
 
 
 def datetime_range(start_dt, end_dt, unit,
-                   unit_increment=1, inclusive_end=False):
+                   n_units=1, inclusive_end=False):
     """A range of datetimes/dates."""
 
     def done(a, b, inclusive_end):
@@ -74,16 +74,61 @@ def datetime_range(start_dt, end_dt, unit,
     current = start_dt
     while done(current, end_dt, inclusive_end):
         yield current
-        current += datetime.timedelta(**{unit: unit_increment})
+        current += datetime.timedelta(**{unit: n_units})
 
 
-def datetime_floor(value):
-    if isinstance(value, datetime.datetime):
-        return datetime.datetime.combine(value.date(), datetime.time())
-    elif isinstance(value, datetime.date):
-        return datetime.datetime.combine(value, datetime.time())
+def floor_datetime(dt, unit, n_units=1):
+    """Floor a datetime to nearest n units. For example, if we want to
+    floor to nearest three months, starting with 2016-05-06-yadda, it
+    will go to 2016-04-01. Or, if starting with 2016-05-06-11:45:06
+    and rounding to nearest fifteen minutes, it will result in
+    2016-05-06-11:45:00.
+    """
+    if unit == 'years':
+        new_year = dt.year - (dt.year - 1) % n_units
+        return datetime.datetime(new_year, 1, 1, 0, 0, 0)
+    elif unit == 'months':
+        new_month = dt.month - (dt.month - 1) % n_units
+        return datetime.datetime(dt.year, new_month, 1, 0, 0, 0)
+    elif unit == 'weeks':
+        rounded_to_day = floor_datetime(dt, 'days', 1)
+        delta_from_monday = datetime.timedelta(days=rounded_to_day.weekday())
+        # days_from_sunday = (rounded_to_day.weekday() + 1) % 7
+        # delta_from_sunday = datetime.timedelta(days=days_from_sunday)
+        return rounded_to_day - delta_from_monday
+    elif unit == 'days':
+        new_day = dt.day - dt.day % n_units
+        return datetime.datetime(dt.year, dt.month, new_day, 0, 0, 0)
+    elif unit == 'hours':
+        new_hour = dt.hour - dt.hour % n_units
+        return datetime.datetime(dt.year, dt.month, dt.day, new_hour, 0, 0)
+    elif unit == 'minutes':
+        new_minute = dt.minute - dt.minute % n_units
+        return datetime.datetime(dt.year, dt.month, dt.day,
+                                 dt.hour, new_minute, 0)
+    elif unit == 'seconds':
+        new_second = dt.second - dt.second % n_units
+        return datetime.datetime(dt.year, dt.month, dt.day,
+                                 dt.hour, dt.minute, new_second)
     else:
-        msg = 'must be date or datetime, got {}'.format(value)
+        msg = 'Unknown unit type {}'.format(unit)
+        raise ValueError(msg)
+
+
+def datetime_floor(value, unit='day', n_units=1):
+
+    # if it's a date, convert to datetime at start of day
+    if type(value) is datetime.date:
+        value = datetime.datetime.combine(value, datetime.time())
+
+    if isinstance(value, datetime.datetime):
+        return floor_datetime(value, unit, n_units)
+    elif value == -inf:
+        return -inf
+    elif value == inf:
+        return inf
+    else:
+        msg = 'must be date, datetime, or inf; got {}'.format(value)
         raise ValueError(msg)
 
 WEEKDAY_LOOKUP = {

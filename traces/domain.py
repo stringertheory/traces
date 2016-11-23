@@ -135,19 +135,23 @@ class Domain(object):
             msg = "Can't mix types"
             raise ValueError(msg)
 
-        self._start = inf
-        self._end = -inf
         ts_list = []
-        for start, end in interval_list:
-            ts = Booga()
-            ts[-inf] = False
-            ts[start] = True
-            ts[end] = False
-            ts_list.append(ts)
-            if start < self._start:
-                self._start = start
-            if end > self._end:
-                self._end = end
+        if interval_list:
+            self._start = inf
+            self._end = -inf
+            for start, end in interval_list:
+                ts = Booga()
+                ts[-inf] = False
+                ts[start] = True
+                ts[end] = False
+                ts_list.append(ts)
+                if start < self._start:
+                    self._start = start
+                if end > self._end:
+                    self._end = end
+        else:
+            self._start = -inf
+            self._end = inf
 
         if ts_list:
             self.ts = Booga.merge(ts_list, operation=any)
@@ -274,3 +278,19 @@ class Domain(object):
     def __and__(self, other):
         """Allow a & b syntax"""
         return self.intersection(other)
+
+    def spans_between(self, start, end, unit, n_units=1):
+        previous_dt = None
+        for interval_start, interval_end in self.intervals():
+
+            # floor the start of the interval to start at something round
+            current_dt = \
+                utils.datetime_floor(
+                    interval_start, unit=unit, n_units=n_units)
+
+            while current_dt < interval_end:
+                next_dt = current_dt + datetime.timedelta(**{unit: n_units})
+                if not previous_dt == current_dt:
+                    yield current_dt, next_dt
+                previous_dt = current_dt
+                current_dt = next_dt

@@ -145,3 +145,13 @@ class Histogram(sortedcontainers.SortedDict):
     def quantile(self, q, alpha=0.5, smallest_count=None):
         return \
             self.quantiles([q], alpha=alpha, smallest_count=smallest_count)[0]
+
+    def add(self, other):
+        result = Histogram()
+        for key, value in iteritems(self):
+            result[key] += value
+        for key, value in iteritems(other):
+            result[key] += value
+        return result
+
+    __add__ = add
