@@ -700,7 +700,9 @@ class TimeSeries(object):
         return str(raw)
 
     @classmethod
-    def from_csv(cls, filename, time_column, value_column,
+    def from_csv(cls, filename,
+                 time_column=0,
+                 value_column=1,
                  time_transform=None,
                  value_transform=None,
                  skip_header=True):
