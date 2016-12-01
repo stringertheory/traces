@@ -87,7 +87,7 @@ class TimeSeries(object):
             raise KeyError(msg)
         else:
             if self._default == EXTEND_BACK:
-                return self.first()[1]
+                return self.first_item()[1]
             else:
                 return self._default
 
@@ -103,7 +103,7 @@ class TimeSeries(object):
             return self.default
         elif right_index == len(self._d):
             # right of last measurement
-            return self.last()[1]
+            return self.last_item()[1]
         else:
             left_time = self._d.iloc[left_index]
             left_value = self._d[left_time]
@@ -154,11 +154,11 @@ class TimeSeries(object):
         """Get the (t, value) pair of the time series by index."""
         return self._d.peekitem(index)
 
-    def last(self):
+    def last_item(self):
         """Returns the last (time, value) pair of the time series."""
         return self.get_item_by_index(-1)
 
-    def first(self):
+    def first_item(self):
         """Returns the first (time, value) pair of the time series."""
         return self.get_item_by_index(0)
 
@@ -844,10 +844,10 @@ class TimeSeries(object):
 
         if lower_or_upper == 'lower':
             infinity_value = -inf
-            method_name = 'first'
+            method_name = 'first_item'
         elif lower_or_upper == 'upper':
             infinity_value = inf
-            method_name = 'last'
+            method_name = 'last_item'
         else:
             msg = '`lower_or_upper` must be "lower" or "upper", got {}'.format(
                 lower_or_upper,
@@ -956,10 +956,10 @@ class Domain(TimeSeries):
         super(Domain, self).__init__(data, default=False)
 
     def start(self):
-        return self.first()[0]
+        return self.first_item()[0]
 
     def end(self):
-        return self.last()[0]
+        return self.last_item()[0]
 
     @property
     def lower(self):
