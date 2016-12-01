@@ -48,23 +48,23 @@ def test_remove():
     assert ts[2] == 42
 
 
-def test_last():
+def test_last_item():
 
     # v. simple time series
     ts = traces.TimeSeries()
     ts[0] = 42
     ts[1] = 43
 
-    assert ts.last() == (1, 43)
+    assert ts.last_item() == (1, 43)
 
     ts[1] = 44
 
-    assert ts.last() == (1, 44)
+    assert ts.last_item() == (1, 44)
 
     ts[5] = 1.3
 
-    assert ts.last() == (5, 1.3)
+    assert ts.last_item() == (5, 1.3)
 
     ts[4] = 5.4
 
-    assert ts.last() == (5, 1.3)
+    assert ts.last_item() == (5, 1.3)
