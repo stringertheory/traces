@@ -865,7 +865,7 @@ class TimeSeries(object):
     def _check_boundaries(self, start, end, mask=None, allow_infinite=False):
 
         # if a TimeSeries is given as mask, convert to a domain
-        if isinstance(mask, TimeSeries):
+        if type(mask) == TimeSeries:
             mask = mask.to_domain()
 
         # if no boundaries are passed in
@@ -897,10 +897,14 @@ class TimeSeries(object):
             msg = "start can't be >= end ({} >= {})".format(start, end)
             raise ValueError(msg)
 
+        start_end_mask = Domain()
+        start_end_mask[start] = True
+        start_end_mask[end] = False
+
         if mask is None:
-            mask = Domain()
-            mask[start] = True
-            mask[end] = False
+            mask = start_end_mask
+        else:
+            mask = mask & start_end_mask
 
         return start, end, mask
 
@@ -968,6 +972,25 @@ class Domain(TimeSeries):
     @property
     def upper(self):
         return self.end()
+
+    def __and__(self, other):
+
+        self_min, _ = self.first_item()
+        self_max, _ = self.last_item()
+
+        other_min, _ = other.first_item()
+        other_max, _ = other.last_item()
+
+        lower = max(self_min, other_min)
+        upper = min(self_max, other_max)
+
+        result = Domain()
+        for time, value in self.slice(lower, upper):
+            result[time] = value and other[time]
+        for time, value in other.slice(lower, upper):
+            result[time] = self[time] and value
+
+        return result
 
     def intervals(self):
         for t0, t1, value in self.iterperiods(value=True):
