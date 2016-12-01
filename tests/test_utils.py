@@ -3,7 +3,6 @@ from six import iteritems
 import nose
 
 import traces.utils as utils
-from traces.domain import Domain, inf
 
 
 timedelta_list = [

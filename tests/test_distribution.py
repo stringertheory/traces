@@ -1,4 +1,5 @@
 import datetime
+import sys
 
 import nose
 
@@ -56,12 +57,14 @@ def test_mask():
     # v. simple
     a = TimeSeries()
     a.set(start, 1)
-    a.set(datetime.datetime(2015, 3, 2), 0)
-    a.set(datetime.datetime(2015, 3, 3), 1)
-    a.set(datetime.datetime(2015, 3, 4), 0)
-    end = datetime.datetime(2015, 3, 5)
+    a.set(datetime.datetime(2015, 4, 2), 0)
+    a.set(datetime.datetime(2015, 4, 3), 1)
+    a.set(datetime.datetime(2015, 4, 4), 0)
+    end = datetime.datetime(2015, 4, 5)
 
-    mask = Domain(datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 3))
+    mask = Domain()
+    mask[datetime.datetime(2015, 4, 1)] = True
+    mask[datetime.datetime(2015, 4, 3)] = False
 
     # not normalized
     distribution = a.distribution(

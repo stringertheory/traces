@@ -12,7 +12,6 @@ month_of_year
 from datetime import datetime, date, timedelta
 
 from .utils import datetime_range, datetime_floor, weekday_number
-from .domain import Domain
 
 
 def hour_of_day(start, end, hour):

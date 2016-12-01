@@ -74,16 +74,16 @@ def test_iterperiods():
 
 def test_slice():
 
-    ts = TimeSeries(int)
+    ts = TimeSeries(default=1)
     ts[0] = 1
     ts[1] = 5
     ts[4] = 0
     ts[6] = 2
 
-    assert ts.slice(0.5, 2.5).items() == [(0.5, 1), (1, 5)]
-    assert ts.slice(1.0, 2.5).items() == [(1.0, 5)]
+    assert ts.slice(0.5, 2.5).items() == [(0.5, 1), (1, 5), (2.5, 5)]
+    assert ts.slice(1.0, 2.5).items() == [(1.0, 5), (2.5, 5)]
     assert ts.slice(-1, 1).items() == [(-1, 1), (0, 1), (1, 5)]
-    assert ts.slice(-1, 0.5).items() == [(-1, 1), (0, 1)]
+    assert ts.slice(-1, 0.5).items() == [(-1, 1), (0, 1), (0.5, 1)]
 
     nose.tools.assert_raises(ValueError, ts.slice, 2.5, 0)
 

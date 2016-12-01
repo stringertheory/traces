@@ -9,11 +9,11 @@ import datetime
 import pprint
 from itertools import tee
 import csv
+import sys
 try:
     import itertools.izip as zip
 except ImportError:
     pass
-from copy import deepcopy
 from queue import PriorityQueue
 from future.utils import listitems, iteritems
 
@@ -22,11 +22,9 @@ import sortedcontainers
 from dateutil.parser import parse as date_parse
 from infinity import inf
 
-
 # local
 from . import histogram
 from . import utils
-from .domain import Domain
 from . import masks
 
 EXTEND_BACK = object()
@@ -59,49 +57,32 @@ class TimeSeries(object):
 
     """
 
-    def __init__(self, data=None, domain=None, default=EXTEND_BACK):
+    def __init__(self, data=None, default=EXTEND_BACK):
         self._d = sortedcontainers.SortedDict(data)
         self.default = default
-        self.domain = domain
 
-    @property
-    def domain(self):
-        """Return the domain"""
-        return self._domain
-
-    @domain.setter
-    def domain(self, domain):
-        """Set the domain for this TimeSeries.
-
-        Args:
-            domain (:ref:`Domain <domain>`): the new domain.
-
-        """
-        if isinstance(domain, Domain):
-            self._domain = domain
-        else:
-            self._domain = Domain(domain)
-
-        self._check_data()
-
-    def _check_data(self):
-        """Check if data (sorteddict/dict) is inside the domain"""
-        for t, v in self:
-            baddies = []
-            if t not in self.domain:
-                baddies.append(t)
-            if baddies:
-                msg = '{} times are not in the domain'.format(len(baddies))
-                raise ValueError(msg)
+        self.getter_functions = {
+            'previous': self._get_previous,
+            'linear': self._get_linear_interpolate,
+        }
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return iteritems(self._d)
 
+    def is_floating(self):
+        """An empty TimeSeries with no specific default value is said to be
+        "floating", since the value of the TimeSeries is
+        undefined. Any operation that needs to look up the value of
+        the TimeSeries is not defined on a floating TimeSeries.
+
+        """
+        return (self._default == EXTEND_BACK and len(self) == 0)
+
     @property
     def default(self):
         """Return the default value of the time series."""
-        if self._default == EXTEND_BACK and self.n_measurements() == 0:
+        if self.is_floating():
             msg = "can't get value of empty TimeSeries with no default value"
             raise KeyError(msg)
         else:
@@ -154,42 +135,38 @@ class TimeSeries(object):
             ).format(time)
             raise ValueError(msg)
 
-    def get(self, time, interpolate=None):
+    def get(self, time, interpolate='previous'):
         """Get the value of the time series, even in-between measured values.
 
         """
-        if time not in self.domain:
-            msg = "{} is outside of the domain.".format(time)
-            raise KeyError(msg)
-
-        if interpolate is None:
-            return self._get_previous(time)
-        elif interpolate == 'linear':
-            return self._get_linear_interpolate(time)
-        else:
-            msg = "unknown value '{}' for interpolate".format(interpolate)
+        try:
+            getter = self.getter_functions[interpolate]
+        except KeyError:
+            msg = (
+                "unknown value '{}' for interpolate, "
+                "valid values are in [{}]"
+            ).format(interpolate, ', '.join(self.getter_functions))
             raise ValueError(msg)
+        else:
+            return getter(time)
 
-    def get_by_index(self, index):
+    def get_item_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
         return self._d.peekitem(index)
 
     def last(self):
         """Returns the last (time, value) pair of the time series."""
-        return self.get_by_index(-1)
+        return self.get_item_by_index(-1)
 
     def first(self):
         """Returns the first (time, value) pair of the time series."""
-        return self.get_by_index(0)
+        return self.get_item_by_index(0)
 
     def set(self, time, value, compact=False):
         """Set the value for the time series. If compact is True, only set the
         value if it's different from what it would be anyway.
 
         """
-        if time not in self.domain:
-            raise KeyError("{} is outside of the domain.".format(time))
-
         if (len(self) == 0) or (not compact) or \
                 (compact and self.get(time) != value):
             self._d[time] = value
@@ -227,11 +204,7 @@ class TimeSeries(object):
         return len(self._d)
 
     def __len__(self):
-        """Should this return the length of time in seconds that the time
-        series spans, or the number of measurements in the time
-        series? For now, it's the number of measurements.
-
-        """
+        """Number of points in the TimeSeries."""
         return self.n_measurements()
 
     def __repr__(self):
@@ -240,32 +213,31 @@ class TimeSeries(object):
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
-        time series, optionally only the groups where the starting
-        value of the time series matches `value`.
+        time series.
 
         """
         # tee the original iterator into n identical iterators
         streams = tee(iter(self), n)
 
         # advance the "cursor" on each iterator by an increasing
-        # offset
+        # offset, e.g. if n=3:
+        #
+        #                   [a, b, c, d, e, f, ..., w, x, y, z]
+        #  first cursor -->  *
+        # second cursor -->     *
+        #  third cursor -->        *
         for stream_index, stream in enumerate(streams):
             for i in range(stream_index):
                 next(stream)
 
-        # now, zip the offset streams back together to yield tuples
+        # now, zip the offset streams back together to yield tuples,
+        # in the n=3 example it would yield:
+        # (a, b, c), (b, c, d), ..., (w, x, y), (x, y, z)
         for intervals in zip(*streams):
             yield intervals
 
-    def iterperiods(self, start=None, end=None, value=None):
-        """This iterates over the periods (optionally, within a given time
-        span) and yields (interval start, interval end, value) tuples.
-
-        Will only yield time intervals that are not length 0 that are
-        within the domain.
-
-        """
-        start, end = self._check_start_end(start, end, allow_infinite=True)
+    @staticmethod
+    def _value_function(value):
 
         # if value is None, don't filter
         if value is None:
@@ -283,6 +255,20 @@ class TimeSeries(object):
             def value_function(t0_, t1_, value_):
                 return value_ == value
 
+        return value_function
+
+    def iterperiods(self, start=None, end=None, value=None):
+        """This iterates over the periods (optionally, within a given time
+        span) and yields (interval start, interval end, value) tuples.
+
+        TODO: add mask argument here.
+
+        """
+        start, end, mask = \
+            self._check_boundaries(start, end, allow_infinite=True)
+
+        value_function = self._value_function(value)
+
         # get start index and value
         start_index = self._d.bisect_right(start)
         if start_index:
@@ -290,99 +276,43 @@ class TimeSeries(object):
         else:
             start_value = self.default
 
-        # get last measurement before end of time span
+        # get last index before end of time span
         end_index = self._d.bisect_right(end)
 
-        # look over each interval of time series within the
-        # region. Use the region start time and value to begin
-        ts_interval_closes = set(self._d.islice(start_index, end_index))
-        domain_interval_opens = set(
-            b for (b, e) in self.domain.intervals() if b > start)
-        iter_time = sorted(
-            list(ts_interval_closes.union(domain_interval_opens)))
+        interval_t0, interval_value = start, start_value
 
-        int_t0, int_value = start, start_value
+        for interval_t1 in self._d.islice(start_index, end_index):
 
-        for int_t1 in iter_time:
-
-            try:
-                domain_t0, domain_t1 = self.domain.get_interval(int_t0)
-            except KeyError:
-                pass
-            else:
-                if domain_t1 < int_t1:
-                    clipped_t1 = domain_t1
-                else:
-                    clipped_t1 = int_t1
-
-                # yield the time, duration, and value of the period
-                nonzero = (clipped_t1 != int_t0)
-                if nonzero and value_function(int_t0, clipped_t1, int_value):
-                    yield int_t0, clipped_t1, int_value
+            if value_function(interval_t0, interval_t1, interval_value):
+                yield interval_t0, interval_t1, interval_value
 
             # set start point to the end of this interval for next
             # iteration
-            int_t0 = int_t1
-            int_value = self[int_t0]
+            interval_t0 = interval_t1
+            interval_value = self[interval_t0]
 
         # yield the time, duration, and value of the final period
-        if int_t0 < end:
+        if interval_t0 < end:
+            if value_function(interval_t0, end, interval_value):
+                yield interval_t0, end, interval_value
 
-            try:
-                domain_t0, domain_t1 = self.domain.get_interval(int_t0)
-            except KeyError:
-                pass
-            else:
-                if domain_t1 < end:
-                    end = domain_t1
-
-                nonzero = (end != int_t0)
-                if nonzero and value_function(int_t0, end, int_value):
-                    yield int_t0, end, int_value
-
-    def slice(self, start, end, slice_domain=True):
-        """Return a slice of the time series that has a first reading at
-        `start` and a last reading at `end`.
+    def slice(self, start, end):
+        """Return an equivalent TimeSeries that only has points between
+        `start` and `end` (always starting at `start`)
 
         """
-        start, end = self._check_start_end(start, end, allow_infinite=True)
+        start, end, mask = \
+            self._check_boundaries(start, end, allow_infinite=True)
 
-        if start > self.domain.end() or end < self.domain.start():
-            message = (
-                "Can't slice a Timeseries when end and "
-                "start are outside of the domain. "
-                "Received start={} and end={}. "
-                "Domain is {}."
-            ).format(start, end, self.domain)
-            raise ValueError(message)
+        result = TimeSeries(default=self.default)
+        for t0, t1, value in self.iterperiods(start, end):
+            result[t0] = value
 
-        result = TimeSeries()
-        if start in self.domain:
-            result[start] = self[start]
-        for time, value in self.items():
-            if (time > start) and (time <= end):
-                result[time] = value
-
-            if time > end:
-                break
-
-        if slice_domain:
-            result.domain = self.domain.slice(start, end)
+        result[t1] = self[t1]
 
         return result
 
     def _check_regularization(self, start, end, sampling_period=None):
-
-        if self.domain.n_intervals() > 1:
-            raise NotImplementedError('Domain is not connected')
-
-        if start < self.domain.start() or end > self.domain.end():
-            message = (
-                "end or start is outside of the domain. "
-                "Received start={} and end={}. "
-                "Domain is {}."
-            ).format(start, end, self.domain)
-            raise ValueError(message)
 
         # only do these checks if sampling period is given
         if sampling_period is not None:
@@ -413,11 +343,12 @@ class TimeSeries(object):
 
         return sampling_period
 
-    def sample(self, sampling_period, start=None, end=None, interpolate=None):
+    def sample(self, sampling_period, start=None, end=None,
+               interpolate='previous'):
         """Sampling at regular time periods.
 
         """
-        start, end = self._check_start_end(start, end)
+        start, end, mask = self._check_boundaries(start, end)
 
         sampling_period = \
             self._check_regularization(start, end, sampling_period)
@@ -438,7 +369,7 @@ class TimeSeries(object):
         """Averaging over regular intervals
 
         """
-        start, end = self._check_start_end(start, end)
+        start, end, mask = self._check_boundaries(start, end)
 
         # default to sampling_period if not given
         if window_size is None:
@@ -453,15 +384,6 @@ class TimeSeries(object):
         if isinstance(start, datetime.datetime):
             half_window = datetime.timedelta(seconds=half_window)
             full_window = datetime.timedelta(seconds=full_window)
-
-        # create a copy with a domain that is wide enough to
-        # accomodate the averaging window. TODO: get rid of this copy.
-        temp = deepcopy(self)
-        temp.default = self.default
-        temp.domain = Domain(
-            min(start, self.domain.lower) - full_window,
-            max(end, self.domain.upper) + full_window,
-        )
 
         result = []
         current_time = start
@@ -481,7 +403,7 @@ class TimeSeries(object):
                 raise ValueError(msg)
 
             # calculate mean over window and add (t, v) tuple to list
-            mean = temp.mean(window_start, window_end)
+            mean = self.mean(window_start, window_end)
             result.append((current_time, mean))
 
             current_time += sampling_period
@@ -524,7 +446,7 @@ class TimeSeries(object):
                 smaller,
                 lambda x: utils.datetime_floor(x, unit, n_units),
             )
-        start, end = self._check_start_end(start, end, mask=mask)
+        start, end, mask = self._check_boundaries(start, end, mask=mask)
 
         start = utils.datetime_floor(start, unit=unit, n_units=n_units)
 
@@ -538,32 +460,14 @@ class TimeSeries(object):
 
         return result
 
-    def mean(self, start=None, end=None):
+    def mean(self, start=None, end=None, mask=None):
         """This calculated the average value of the time series over the given
         time range from `start` to `end`.
 
         """
-        start, end = self._check_start_end(start, end)
+        return self.distribution(start=start, end=end, mask=mask).mean()
 
-        self._check_regularization(start, end)
-
-        total_seconds = utils.duration_to_number(end - start)
-
-        mean = 0.0
-        for (t0, t1, value) in self.iterperiods(start, end):
-            # calculate contribution to weighted average for this
-            # interval
-            try:
-                mean += (utils.duration_to_number(t1 - t0) * value)
-            except TypeError:
-                msg = "Can't take mean of non-numeric type (%s)" % type(value)
-                raise TypeError(msg)
-
-        # return the mean value over the time period
-        return mean / float(total_seconds)
-
-    def distribution(self, start=None, end=None,
-                     normalized=True, mask=None):
+    def distribution(self, start=None, end=None, normalized=True, mask=None):
         """Calculate the distribution of values over the given time range from
         `start` to `end`.
 
@@ -571,47 +475,35 @@ class TimeSeries(object):
 
             start (orderable, optional): The lower time bound of
                 when to calculate the distribution. By default, the
-                start of the domain will be used.
+                first time point will be used.
 
             end (orderable, optional): The upper time bound of
                 when to calculate the distribution. By default, the
-                end of the domain will be used.
+                last time point will be used.
 
             normalized (bool): If True, distribution will sum to
                 one. If False and the time values of the TimeSeries
                 are datetimes, the units will be seconds.
 
             mask (:obj:`Domain` or :obj:`TimeSeries`, optional): A
-                Domain on which to calculate the distribution. This
-                Domain is combined with a logical and with either the
-                (start, end) time domain, if given, or the domain of
-                the TimeSeries.
+                Domain on which to calculate the distribution.
 
         Returns:
 
             :obj:`Histogram` with the results.
 
         """
-        if self._default == EXTEND_BACK and self.n_measurements() == 0:
+        if self.is_floating():
             msg = (
                 "distribution of empty TimeSeries with no default value "
                 "is undefined"
             )
             raise ValueError(msg)
 
-        # if a TimeSeries is given as mask, convert to a domain
-        if isinstance(mask, TimeSeries):
-            mask = mask.to_domain()
-
-        start, end = self._check_start_end(start, end, mask)
-
-        # logical and with start, end time domain
-        distribution_mask = Domain([start, end])
-        if mask:
-            distribution_mask &= mask
+        start, end, mask = self._check_boundaries(start, end, mask=mask)
 
         counter = histogram.Histogram()
-        for start, end in distribution_mask.intervals():
+        for start, end in mask.intervals():
             for t0, t1, value in self.iterperiods(start, end):
                 counter[value] += utils.duration_to_number(
                     t1 - t0,
@@ -631,56 +523,48 @@ class TimeSeries(object):
 
         Args:
 
-            start (orderable, optional): The lower time bound of
-                when to calculate the distribution. By default, the
-                start of the domain will be used.
+            start (orderable, optional): The lower time bound of when
+                to calculate the distribution. By default, start is
+                -infinity.
 
-            end (orderable, optional): The upper time bound of
-                when to calculate the distribution. By default, the
-                end of the domain will be used.
+            end (orderable, optional): The upper time bound of when to
+                calculate the distribution. By default, the end is
+                +infinity.
 
             mask (:obj:`Domain` or :obj:`TimeSeries`, optional): A
-                Domain on which to calculate the distribution. This
-                Domain is combined with a logical and with either the
-                (start, end) time domain, if given, or the domain of
-                the TimeSeries.
+                Domain on which to calculate the distribution.
 
         Returns:
 
              `int` with the result
 
         """
-        # if a TimeSeries is given as mask, convert to a domain
-        if isinstance(mask, TimeSeries):
-            mask = mask.to_domain()
-
-        start, end = self._check_start_end(start, end, mask)
-
-        # logical and with start, end time domain
-        distribution_mask = Domain([start, end])
-        if mask:
-            distribution_mask &= mask
-
-        # just return 0 if we already know it
-        if self.n_measurements() == 0:
+        # just go ahead and return 0 if we already know it regarless
+        # of boundaries
+        if not self.n_measurements():
             return 0
 
-        counter = 0
-        for start, end in distribution_mask.intervals():
+        start, end, mask = self._check_boundaries(start, end, mask=mask)
+
+        count = 0
+        for start, end in mask.intervals():
+
             if include_end:
                 end_count = self._d.bisect_right(end)
             else:
                 end_count = self._d.bisect_left(end)
+
             if include_start:
                 start_count = self._d.bisect_left(start)
             else:
                 start_count = self._d.bisect_right(start)
-            counter += (end_count - start_count)
+
+            count += (end_count - start_count)
 
         if normalized:
-            counter /= float(len(self._d))
+            count /= float(self.n_measurements())
 
-        return counter
+        return count
 
     def _check_time_series(self, other):
         """Function used to check the type of the argument and raise an
@@ -751,14 +635,10 @@ class TimeSeries(object):
         if not timeseries_list:
             return
 
-        domain = timeseries_list[0].domain
         for ts in timeseries_list:
-            if len(ts) == 0 and ts._default == EXTEND_BACK:
+            if ts.is_floating():
                 msg = "can't merge empty TimeSeries with no default value"
                 raise ValueError(msg)
-            if not domain == ts.domain:
-                raise ValueError(
-                    "The domains of the TimeSeries are not the same.")
 
         # This function mostly wraps _iter_merge, the main point of
         # this is to deal with the case of tied times, where we only
@@ -784,7 +664,6 @@ class TimeSeries(object):
         that list of values.
 
         """
-
         result = cls(default=default)
         for t, merged in cls.iter_merge(ts_list):
             if operation is None:
@@ -856,12 +735,13 @@ class TimeSeries(object):
 
     def to_domain(self, start=None, end=None):
         """"""
-        intervals = []
-        iterator = self.iterperiods(start=start, end=end)
-        for t0, t1, value in iterator:
+        result = Domain()
+        for t0, t1, value in self.iterperiods(start=start, end=end):
             if value:
-                intervals.append((t0, t1))
-        return Domain(intervals)
+                result[t0] = True
+                result[t1] = False
+
+        return result
 
     def to_bool(self, invert=False):
         """Return the truth value of each element."""
@@ -960,23 +840,33 @@ class TimeSeries(object):
     def __ne__(self, other):
         return not(self == other)
 
-    def _check_boundary(self, value, allow_infinite, lower):
-        infinity_value, first_or_last = {
-            'lower': (-inf, 'first'),
-            'upper': (inf, 'last'),
-        }[lower]
+    def _check_boundary(self, value, allow_infinite, lower_or_upper):
+
+        if lower_or_upper == 'lower':
+            infinity_value = -inf
+            method_name = 'first'
+        elif lower_or_upper == 'upper':
+            infinity_value = inf
+            method_name = 'last'
+        else:
+            msg = '`lower_or_upper` must be "lower" or "upper", got {}'.format(
+                lower_or_upper,
+            )
+            raise ValueError(msg)
+
         if value is None:
-            if getattr(self.domain, lower) == infinity_value:
-                if allow_infinite:
-                    return infinity_value
-                else:
-                    return getattr(self, first_or_last)()[0]
+            if allow_infinite:
+                return infinity_value
             else:
-                return getattr(self.domain, lower)
+                return getattr(self, method_name)()[0]
         else:
             return value
 
-    def _check_start_end(self, start, end, mask=None, allow_infinite=False):
+    def _check_boundaries(self, start, end, mask=None, allow_infinite=False):
+
+        # if a TimeSeries is given as mask, convert to a domain
+        if isinstance(mask, TimeSeries):
+            mask = mask.to_domain()
 
         # if no boundaries are passed in
         if start is None and end is None:
@@ -997,7 +887,7 @@ class TimeSeries(object):
             # (don't logical and the domain defined by the first and
             # last points in the TimeSeries)
             else:
-                return mask.lower, mask.upper
+                return mask.lower, mask.upper, mask
 
         # replace with defaults if not given
         start = self._check_boundary(start, allow_infinite, 'lower')
@@ -1007,13 +897,18 @@ class TimeSeries(object):
             msg = "start can't be >= end ({} >= {})".format(start, end)
             raise ValueError(msg)
 
-        return start, end
+        if mask is None:
+            mask = Domain()
+            mask[start] = True
+            mask[end] = False
+
+        return start, end, mask
 
     def distribution_by_hour_of_day(self,
                                     first=0, last=23,
                                     start=None, end=None):
 
-        start, end = self._check_start_end(start, end)
+        start, end, mask = self._check_boundaries(start, end)
 
         result = []
         for hour in range(first, last + 1):
@@ -1027,7 +922,7 @@ class TimeSeries(object):
                                     first=0, last=6,
                                     start=None, end=None):
 
-        start, end = self._check_start_end(start, end)
+        start, end, mask = self._check_boundaries(start, end)
 
         result = []
         for week in range(first, last + 1):
@@ -1037,14 +932,59 @@ class TimeSeries(object):
 
         return result
 
-a = TimeSeries(default=0)
-a[datetime.datetime(2016, 1, 1, 0, 0, 0)] = 0
-a[datetime.datetime(2016, 1, 1, 0, 0, 1)] = 1
-a[datetime.datetime(2016, 1, 1, 0, 0, 2)] = 0
-a[datetime.datetime(2016, 1, 1, 0, 3, 30)] = 1
-a[datetime.datetime(2016, 1, 1, 0, 4, 50)] = 0
 
-a_mask = TimeSeries(default=0)
-a_mask[datetime.datetime(2016, 1, 1, 0, 0, 0)] = 1
-a_mask[datetime.datetime(2016, 1, 1, 0, 4, 51)] = 0
-a_mask = a_mask.to_domain()
+class Domain(TimeSeries):
+    """Initialize with:
+
+    >>> Domain(1, 4)
+    >>> Domain([1, 4])
+    >>> Domain((1, 4))
+    >>> Domain([[1, 4]])
+    >>> Domain([(1, 4)])
+    >>> Domain((1, 4), (5, 8))
+    >>> Domain([1, 4], [5, 8])
+    >>> Domain([(1, 4), (5, 8)])
+    >>> Domain([[1, 4], [5, 8]])
+
+    Domain has to be closed intervals. It can be open toward -inf or
+    inf.  For example, Domain(-inf, 3) means a domain from -inf to 3
+    inclusive.
+
+    """
+
+    def __init__(self, data=None):
+        super(Domain, self).__init__(data, default=False)
+
+    def start(self):
+        return self.first()[0]
+
+    def end(self):
+        return self.last()[0]
+
+    @property
+    def lower(self):
+        return self.start()
+
+    @property
+    def upper(self):
+        return self.end()
+
+    def intervals(self):
+        for t0, t1, value in self.iterperiods(value=True):
+            yield t0, t1
+
+    def spans_between(self, start, end, unit, n_units=1):
+        previous_dt = None
+        for interval_start, interval_end in self.intervals():
+
+            # floor the start of the interval to start at something round
+            current_dt = \
+                utils.datetime_floor(
+                    interval_start, unit=unit, n_units=n_units)
+
+            while current_dt < interval_end:
+                next_dt = current_dt + datetime.timedelta(**{unit: n_units})
+                if not previous_dt == current_dt:
+                    yield current_dt, next_dt
+                previous_dt = current_dt
+                current_dt = next_dt
