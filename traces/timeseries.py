@@ -440,12 +440,19 @@ class TimeSeries(object):
     def bin(self, unit, n_units=1, start=None, end=None, mask=None,
             smaller=None, transform='distribution'):
 
+        # return an empty sorted dictionary if there is no time span
+        if mask is not None and mask.is_empty():
+            return sortedcontainers.SortedDict()
+        elif start is not None and start == end:
+            return sortedcontainers.SortedDict()
+
         # use smaller if available
         if smaller:
             return self.rebin(
                 smaller,
                 lambda x: utils.datetime_floor(x, unit, n_units),
             )
+
         start, end, mask = self._check_boundaries(start, end, mask=mask)
 
         start = utils.datetime_floor(start, unit=unit, n_units=n_units)
@@ -498,7 +505,7 @@ class TimeSeries(object):
                 "distribution of empty TimeSeries with no default value "
                 "is undefined"
             )
-            raise ValueError(msg)
+            raise KeyError(msg)
 
         start, end, mask = self._check_boundaries(start, end, mask=mask)
 
@@ -638,7 +645,7 @@ class TimeSeries(object):
         for ts in timeseries_list:
             if ts.is_floating():
                 msg = "can't merge empty TimeSeries with no default value"
-                raise ValueError(msg)
+                raise KeyError(msg)
 
         # This function mostly wraps _iter_merge, the main point of
         # this is to deal with the case of tied times, where we only
@@ -738,8 +745,8 @@ class TimeSeries(object):
         result = Domain()
         for t0, t1, value in self.iterperiods(start=start, end=end):
             if value:
-                result[t0] = True
-                result[t1] = False
+                result.set(t0, True, compact=True)
+                result.set(t1, False, compact=True)
 
         return result
 
@@ -858,7 +865,14 @@ class TimeSeries(object):
             if allow_infinite:
                 return infinity_value
             else:
-                return getattr(self, method_name)()[0]
+                try:
+                    return getattr(self, method_name)()[0]
+                except IndexError:
+                    msg = (
+                        "can't use '{}' for default {} boundary "
+                        "of empty TimeSeries"
+                    ).format(method_name, lower_or_upper)
+                    raise KeyError(msg)
         else:
             return value
 
@@ -868,26 +882,12 @@ class TimeSeries(object):
         if type(mask) == TimeSeries:
             mask = mask.to_domain()
 
-        # if no boundaries are passed in
-        if start is None and end is None:
+        if mask is not None and mask.is_empty():
+            raise ValueError('mask can not be empty')
 
-            # if there's no mask either, then try to use the first and
-            # last points in the time series as boundaries (but throw
-            # informative errors if there are 0 or 1 points)
-            if mask is None:
-
-                if self.n_measurements() < 2:
-                    msg = (
-                        "TimeSeries has less than two points "
-                        "and no boundaries or mask given"
-                    )
-                    raise ValueError(msg)
-
-            # if only a mask is given, use the bounds of the mask
-            # (don't logical and the domain defined by the first and
-            # last points in the TimeSeries)
-            else:
-                return mask.lower, mask.upper, mask
+        # if only a mask is passed in, return mask boundaries and mask
+        if start is None and end is None and mask is not None:
+            return mask.lower, mask.upper, mask
 
         # replace with defaults if not given
         start = self._check_boundary(start, allow_infinite, 'lower')
@@ -959,11 +959,28 @@ class Domain(TimeSeries):
     def __init__(self, data=None):
         super(Domain, self).__init__(data, default=False)
 
+    def __repr__(self):
+        return '<Domain>\n%s\n</Domain>' % \
+            pprint.pformat(self._d)
+
     def start(self):
-        return self.first_item()[0]
+        try:
+            return self.first_item()[0]
+        except IndexError:
+            return -inf
 
     def end(self):
-        return self.last_item()[0]
+        try:
+            return self.last_item()[0]
+        except IndexError:
+            return +inf
+
+    def is_empty(self):
+
+        for t0, t1 in self.intervals():
+            return False
+
+        return True
 
     @property
     def lower(self):
@@ -975,22 +992,22 @@ class Domain(TimeSeries):
 
     def __and__(self, other):
 
-        self_min, _ = self.first_item()
-        self_max, _ = self.last_item()
+        lower = max(self.lower, other.lower)
+        upper = min(self.upper, other.upper)
 
-        other_min, _ = other.first_item()
-        other_max, _ = other.last_item()
+        # if there is no potential overlap, return empty Domain
+        if lower >= upper:
+            return Domain()
 
-        lower = max(self_min, other_min)
-        upper = min(self_max, other_max)
-
-        result = Domain()
-        for time, value in self.slice(lower, upper):
-            result[time] = value and other[time]
-        for time, value in other.slice(lower, upper):
-            result[time] = self[time] and value
-
-        return result
+        # otherwise, do the logical and only over the potential region
+        # of overlap
+        else:
+            result = Domain()
+            for time, value in self.slice(lower, upper):
+                result[time] = value and other[time]
+            for time, value in other.slice(lower, upper):
+                result[time] = self[time] and value
+            return result
 
     def intervals(self):
         for t0, t1, value in self.iterperiods(value=True):
