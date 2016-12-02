@@ -4,11 +4,11 @@
 cprofilev==1.0.7
 
 # from cookiecutter
-pip==8.1.2
+pip==9.0.1
 bumpversion==0.5.3
 wheel==0.29.0
-flake8==3.0.4
+flake8==3.2.1
 tox==2.4.1
 coverage==4.2
-cryptography==1.5.2
+cryptography==1.6
 PyYAML==3.12
