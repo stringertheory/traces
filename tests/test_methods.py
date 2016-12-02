@@ -204,3 +204,19 @@ def test_to_bool():
         result = ts.to_bool()
         values = [v for (k, v) in result.items()]
         assert answer[type_] == values
+
+def test_get_item_by_index():
+
+    ts = traces.TimeSeries(default=0)
+    ts[0] = 1
+    ts[2] = 3
+    ts[5] = 10
+
+    assert ts.get_item_by_index(0) == (0, 1)
+    assert ts.first_item() == (0, 1)
+
+    assert ts.get_item_by_index(1) == (2, 3)
+
+    assert ts.get_item_by_index(-1) == (5, 10)
+    assert ts.last_item() == (5, 10)
+    

@@ -3,6 +3,7 @@ import random
 import sys
 import pprint
 
+from infinity import inf
 import nose
 
 from traces import TimeSeries
@@ -25,6 +26,16 @@ def test_iterintervals():
 
 def test_iterperiods():
 
+    # timeseries with a default value and no points returns one period
+    # with the default value from -infinity to infinity, or 
+    ts = TimeSeries(default=0)
+    assert list(ts.iterperiods()) == [(-inf, inf, 0)]
+
+    # timeseries with no default value and no points raises error
+    ts = TimeSeries()
+    with nose.tools.assert_raises(KeyError):
+        list(ts.iterperiods())
+    
     ts = TimeSeries()
     ts.set(datetime.datetime(2015, 3, 1), 1)
     ts.set(datetime.datetime(2015, 3, 2), 0)
@@ -74,16 +85,16 @@ def test_iterperiods():
 
 def test_slice():
 
-    ts = TimeSeries(int)
+    ts = TimeSeries(default=1)
     ts[0] = 1
     ts[1] = 5
     ts[4] = 0
     ts[6] = 2
 
-    assert ts.slice(0.5, 2.5).items() == [(0.5, 1), (1, 5)]
-    assert ts.slice(1.0, 2.5).items() == [(1.0, 5)]
+    assert ts.slice(0.5, 2.5).items() == [(0.5, 1), (1, 5), (2.5, 5)]
+    assert ts.slice(1.0, 2.5).items() == [(1.0, 5), (2.5, 5)]
     assert ts.slice(-1, 1).items() == [(-1, 1), (0, 1), (1, 5)]
-    assert ts.slice(-1, 0.5).items() == [(-1, 1), (0, 1)]
+    assert ts.slice(-1, 0.5).items() == [(-1, 1), (0, 1), (0.5, 1)]
 
     nose.tools.assert_raises(ValueError, ts.slice, 2.5, 0)
 
@@ -122,12 +133,12 @@ def test_single_merges():
 
     # a single empty time series
     ts = TimeSeries()
-    nose.tools.assert_raises(ValueError, TimeSeries.merge, [ts])
+    nose.tools.assert_raises(KeyError, TimeSeries.merge, [ts])
 
     # multiple empty time series
     ts_a = TimeSeries()
     ts_b = TimeSeries()
-    nose.tools.assert_raises(ValueError, TimeSeries.merge, [ts_a, ts_b])
+    nose.tools.assert_raises(KeyError, TimeSeries.merge, [ts_a, ts_b])
 
     # test a single time series with only one measurement
     ts = TimeSeries()
@@ -142,7 +153,7 @@ def test_single_merges():
     ts_a[21] = 42
     ts_b = TimeSeries()
 
-    nose.tools.assert_raises(ValueError, TimeSeries.merge, [ts_a, ts_b])
+    nose.tools.assert_raises(KeyError, TimeSeries.merge, [ts_a, ts_b])
 
     # test an empty time series and a time series with one entry
     ts_a = TimeSeries()

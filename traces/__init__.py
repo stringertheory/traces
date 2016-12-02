@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from .histogram import Histogram
-from .timeseries import TimeSeries
-from .domain import Domain, inf
+from .timeseries import TimeSeries, Domain
 from .utils import datetime_range
+from infinity import inf
 
 __author__ = 'Mike Stringer'
 __email__ = 'mike.stringer@datascopeanalytics.com'
