@@ -51,7 +51,8 @@ lint: ## check style with flake8
 	flake8 traces tests
 
 test: ## run tests quickly with the default Python
-		python setup.py test
+	nosetests --with-coverage --cover-package=traces
+	pep8 traces
 
 test-all: ## run tests on every Python version with tox
 	tox
