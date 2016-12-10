@@ -32,7 +32,6 @@ def read_all(pattern='data/lightbulb-*.csv'):
         )
         ts.compact()
         result.append(ts)
-        break
     return result
 
 ts_list = read_all()

@@ -17,7 +17,7 @@ when the state changes, but some send a signal every minute. We can
 read them with this code.
 
 .. literalinclude:: ../helloworld.py
-   :lines: 13-38
+   :lines: 13-37
 
 The call to :code:`ts.compact()` will remove any redundant
 measurements. Depending on how often your data changes compared to how
