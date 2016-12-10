@@ -115,7 +115,7 @@ def floor_datetime(dt, unit, n_units=1):
         raise ValueError(msg)
 
 
-def datetime_floor(value, unit='day', n_units=1):
+def datetime_floor(value, unit='days', n_units=1):
 
     # if it's a date, convert to datetime at start of day
     if type(value) is datetime.date:

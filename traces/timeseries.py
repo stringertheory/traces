@@ -25,7 +25,6 @@ from infinity import inf
 # local
 from . import histogram
 from . import utils
-from . import masks
 
 EXTEND_BACK = object()
 
@@ -663,7 +662,7 @@ class TimeSeries(object):
             yield previous_t, previous_state
 
     @classmethod
-    def merge(cls, ts_list, compact=True, operation=None, default=EXTEND_BACK):
+    def merge(cls, ts_list, compact=True, operation=None, default=None):
         """Iterate through several time series in order, yielding (time,
         `value`) where `value` is the either the list of each
         individual TimeSeries in the list at time t (in the same order
@@ -671,6 +670,16 @@ class TimeSeries(object):
         that list of values.
 
         """
+        # If default is not given and all timeseries in `ts_list` have
+        # the same default, use that default for the
+        # result. Otherwise, if default is not given and there are
+        # multiple default, set to EXTEND_BACK
+        if default is None:
+            unique_defaults = set(ts._default for ts in ts_list)
+            default = unique_defaults.pop()
+            if unique_defaults:
+                default = EXTEND_BACK
+
         result = cls(default=default)
         for t, merged in cls.iter_merge(ts_list):
             if operation is None:
@@ -694,7 +703,8 @@ class TimeSeries(object):
                  value_column=1,
                  time_transform=None,
                  value_transform=None,
-                 skip_header=True):
+                 skip_header=True,
+                 default=EXTEND_BACK):
 
         # use default on class if not given
         if time_transform is None:
@@ -702,7 +712,7 @@ class TimeSeries(object):
         if value_transform is None:
             value_transform = cls.csv_value_transform
 
-        result = cls()
+        result = cls(default=default)
         with open(filename) as infile:
             reader = csv.reader(infile)
             if skip_header:
@@ -916,7 +926,7 @@ class TimeSeries(object):
 
         result = []
         for hour in range(first, last + 1):
-            mask = masks.hour_of_day(start, end, hour)
+            mask = hour_of_day(start, end, hour)
             histogram = self.distribution(mask=mask)
             result.append((hour, histogram))
 
@@ -930,7 +940,7 @@ class TimeSeries(object):
 
         result = []
         for week in range(first, last + 1):
-            mask = masks.day_of_week(start, end, week)
+            mask = day_of_week(start, end, week)
             histogram = self.distribution(mask=mask)
             result.append((week, histogram))
 
@@ -1028,3 +1038,48 @@ class Domain(TimeSeries):
                     yield current_dt, next_dt
                 previous_dt = current_dt
                 current_dt = next_dt
+
+
+def hour_of_day(start, end, hour):
+
+    # start should be date, or if datetime, will use date of datetime
+    floored = utils.datetime_floor(start)
+
+    domain = Domain()
+    for day_start in utils.datetime_range(floored, end, 'days',
+                                          inclusive_end=True):
+        interval_start = day_start + datetime.timedelta(hours=hour)
+        interval_end = interval_start + datetime.timedelta(hours=1)
+        domain[interval_start] = True
+        domain[interval_end] = False
+
+    result = domain.slice(start, end)
+    result[end] = False
+    return result
+
+
+def day_of_week(start, end, weekday):
+
+    # allow weekday name or number
+    number = utils.weekday_number(weekday)
+
+    # start should be date, or if datetime, will use date of datetime
+    floored = utils.datetime_floor(start)
+
+    next_week = floored + datetime.timedelta(days=7)
+    for day in utils.datetime_range(floored, next_week, 'days'):
+        if day.weekday() == number:
+            first_day = day
+            break
+
+    domain = Domain()
+    for week_start in utils.datetime_range(first_day, end, 'weeks',
+                                           inclusive_end=True):
+        interval_start = week_start
+        interval_end = interval_start + datetime.timedelta(days=1)
+        domain[interval_start] = True
+        domain[interval_end] = False
+
+    result = domain.slice(start, end)
+    result[end] = False
+    return result

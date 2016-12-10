@@ -28,6 +28,7 @@ def read_all(pattern='data/lightbulb-*.csv'):
             time_transform=parse_iso_datetime,
             value_column=1,
             value_transform=int,
+            default=0,
         )
         ts.compact()
         result.append(ts)
