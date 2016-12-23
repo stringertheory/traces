@@ -674,6 +674,9 @@ class TimeSeries(object):
         # the same default, use that default for the
         # result. Otherwise, if default is not given and there are
         # multiple default, set to EXTEND_BACK
+        if not ts_list:
+            return cls(default=default)
+
         if default is None:
             unique_defaults = set(ts._default for ts in ts_list)
             default = unique_defaults.pop()
