@@ -195,9 +195,9 @@ class TimeSeries(object):
             self._d[time] = value
 
     def set_interval(self, start, end, value, compact=False):
-        """Set the value for the time series on an interval. If compact is True, only set the
-        value if it's different from what it would be anyway.
-
+        """Set the value for the time series on an interval. 
+        If compact is True, only set the value if it's different
+        from what it would be anyway.
         """
         # for each interval to render
         for i, (s, e, v) in enumerate(list(self.iterperiods(start, end))):
@@ -242,7 +242,8 @@ class TimeSeries(object):
             raise KeyError('no measurement at %s' % time)
 
     def remove_interval(self, start, end):
-        """Allow removal of all measurements from the time series within a interval [start:end].
+        """Allow removal of all measurements from the time series 
+        within a interval [start:end].
         """
         for s, e, v in self.iterperiods(start, end):
             del self._d[s]
