@@ -195,9 +195,9 @@ class TimeSeries(object):
             self._d[time] = value
 
     def set_interval(self, start, end, value, compact=False):
-        """Set the value for the time series on an interval. If compact is True, only set the
+        """Set the value for the time series on an interval.
+        If compact is True, only set the
         value if it's different from what it would be anyway.
-
         """
         # for each interval to render
         for i, (s, e, v) in enumerate(list(self.iterperiods(start, end))):
@@ -242,7 +242,8 @@ class TimeSeries(object):
             raise KeyError('no measurement at %s' % time)
 
     def remove_interval(self, start, end):
-        """Allow removal of all measurements from the time series within a interval [start:end].
+        """Allow removal of all measurements from the time series
+        within a interval [start:end].
         """
         for s, e, v in self.iterperiods(start, end):
             del self._d[s]
@@ -455,10 +456,13 @@ class TimeSeries(object):
             current_time += sampling_period
         return result
 
-    def sample_interval(self, sampling_period, start=None, end=None, operation="mean"):
+    def sample_interval(self, sampling_period,
+                        start=None, end=None,
+                        operation="mean"):
 
         start, end = self._check_start_end(start, end)
-        sampling_period = self._check_regularization(start, end, sampling_period)
+        sampling_period = self._check_regularization(start, end,
+                                                     sampling_period)
 
         try:
             import pandas as pd
@@ -484,19 +488,23 @@ class TimeSeries(object):
         inflexion_times, inflexion_values = zip(*items_in_horizon())
         inflexion_times = pd.DatetimeIndex(inflexion_times)
 
-        # identify all inflexion intervals (by index: point i is in interval [idx[ifl_int[i]], idx[ifl_int[i]+1])
-        inflexion_intervals = inflexion_times.floor(sampling_period).map(idx.get_loc)
+        # identify all inflexion intervals
+        # by index: point i is in interval [idx[ifl_int[i]], idx[ifl_int[i]+1]
+        inflexion_intervals = inflexion_times.floor(sampling_period)\
+            .map(idx.get_loc)
 
         # convert DatetimeIndex to numpy array for faster indexation
         inflexion_times = inflexion_times.values
 
         Np1 = len(idx_list) - 1
 
-        # convert to timestamp (to make interval arithmetic faster, no need for total_seconds)
+        # convert to timestamp
+        # (to make interval arithmetic faster, no need for total_seconds)
         inflexion_times = (inflexion_times.astype("int64"))
         idx_times = (idx.astype("int64"))
 
-        # initialise init,update and finish functions depending on the aggregation operator
+        # initialise init, update and finish functions depending
+        # on the aggregation operator
         init, update, finish = {
             "mean": (
                 lambda t, v: 0.0,
@@ -521,7 +529,9 @@ class TimeSeries(object):
         agg = init(t0, v0)
 
         result = []
-        for i1, t1, v1 in zip(inflexion_intervals, inflexion_times, inflexion_values):
+        for i1, t1, v1 in zip(inflexion_intervals,
+                              inflexion_times,
+                              inflexion_values):
             if i0 != i1:
                 # change of interval
 
@@ -547,7 +557,8 @@ class TimeSeries(object):
 
             i0, t0, v0 = i1, t1, v1
 
-        return pd.DataFrame.from_records(result).set_index(0).iloc[:, 0].reindex(idx[:-1]).ffill()
+        df = pd.DataFrame.from_records(result)
+        return df.set_index(0).iloc[:, 0].reindex(idx[:-1]).ffill()
 
     def moving_average(self, sampling_period,
                        window_size=None,
@@ -555,7 +566,6 @@ class TimeSeries(object):
                        placement='center',
                        pandas=False):
         """Averaging over regular intervals
-
         """
         start, end = self._check_start_end(start, end)
 
@@ -568,8 +578,9 @@ class TimeSeries(object):
 
         # convert to datetime if the times are datetimes
         full_window = window_size * 1.  # convert to float if int or do nothing
-        half_window = window_size / 2.  # divide by 2 and convert to float if int
-        if isinstance(start, datetime.datetime) and not isinstance(full_window, datetime.timedelta):
+        half_window = full_window / 2.  # divide by 2
+        if (isinstance(start, datetime.datetime) and
+                not isinstance(full_window, datetime.timedelta)):
             half_window = datetime.timedelta(seconds=half_window)
             full_window = datetime.timedelta(seconds=full_window)
 
