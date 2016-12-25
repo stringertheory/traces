@@ -101,7 +101,6 @@ def test_sample_interval_days():
     ts[datetime(2012, 1, 19):datetime(2012, 1, 27)] = 0
 
     sr = ts.sample_interval(sampling_period=timedelta(days=1), end=datetime(2012, 2, 1))
-
     assert list(sr.iteritems()) == [(pd.Timestamp('2012-01-01 00:00:00'), 400.0),
                                     (pd.Timestamp('2012-01-02 00:00:00'), 400.0),
                                     (pd.Timestamp('2012-01-03 00:00:00'), 400.0),
@@ -144,34 +143,34 @@ def test_sample_interval_hours():
     ts[datetime(2012, 1, 7, 9):datetime(2012, 1, 10)] = 50
 
     sr = ts.sample_interval(sampling_period=timedelta(days=1))
-    assert list(sr.items()) == [(pd.Timestamp('2012-01-01 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-02 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-03 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-04 00:00:00', offset='D'), 205.0),
-                                (pd.Timestamp('2012-01-05 00:00:00', offset='D'), 10.0),
-                                (pd.Timestamp('2012-01-06 00:00:00', offset='D'), 75.0),
-                                (pd.Timestamp('2012-01-07 00:00:00', offset='D'), 181.25),
-                                (pd.Timestamp('2012-01-08 00:00:00', offset='D'), 50.0),
-                                (pd.Timestamp('2012-01-09 00:00:00', offset='D'), 50.0)]
+    assert list(sr.iteritems()) == [(pd.Timestamp('2012-01-01 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-02 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-03 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-04 00:00:00', offset='D'), 205.0),
+                                    (pd.Timestamp('2012-01-05 00:00:00', offset='D'), 10.0),
+                                    (pd.Timestamp('2012-01-06 00:00:00', offset='D'), 75.0),
+                                    (pd.Timestamp('2012-01-07 00:00:00', offset='D'), 181.25),
+                                    (pd.Timestamp('2012-01-08 00:00:00', offset='D'), 50.0),
+                                    (pd.Timestamp('2012-01-09 00:00:00', offset='D'), 50.0)]
 
     sr = ts.sample_interval(sampling_period=timedelta(days=1), operation="max")
-    assert list(sr.items()) == [(pd.Timestamp('2012-01-01 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-02 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-03 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-04 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-05 00:00:00', offset='D'), 10.0),
-                                (pd.Timestamp('2012-01-06 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-07 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-08 00:00:00', offset='D'), 50.0),
-                                (pd.Timestamp('2012-01-09 00:00:00', offset='D'), 50.0)]
+    assert list(sr.iteritems()) == [(pd.Timestamp('2012-01-01 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-02 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-03 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-04 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-05 00:00:00', offset='D'), 10.0),
+                                    (pd.Timestamp('2012-01-06 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-07 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-08 00:00:00', offset='D'), 50.0),
+                                    (pd.Timestamp('2012-01-09 00:00:00', offset='D'), 50.0)]
 
     sr = ts.sample_interval(sampling_period=timedelta(days=1), operation="min")
-    assert list(sr.items()) == [(pd.Timestamp('2012-01-01 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-02 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-03 00:00:00', offset='D'), 400.0),
-                                (pd.Timestamp('2012-01-04 00:00:00', offset='D'), 10.0),
-                                (pd.Timestamp('2012-01-05 00:00:00', offset='D'), 10.0),
-                                (pd.Timestamp('2012-01-06 00:00:00', offset='D'), 10.0),
-                                (pd.Timestamp('2012-01-07 00:00:00', offset='D'), 50.0),
-                                (pd.Timestamp('2012-01-08 00:00:00', offset='D'), 50.0),
-                                (pd.Timestamp('2012-01-09 00:00:00', offset='D'), 50.0)]
+    assert list(sr.iteritems()) == [(pd.Timestamp('2012-01-01 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-02 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-03 00:00:00', offset='D'), 400.0),
+                                    (pd.Timestamp('2012-01-04 00:00:00', offset='D'), 10.0),
+                                    (pd.Timestamp('2012-01-05 00:00:00', offset='D'), 10.0),
+                                    (pd.Timestamp('2012-01-06 00:00:00', offset='D'), 10.0),
+                                    (pd.Timestamp('2012-01-07 00:00:00', offset='D'), 50.0),
+                                    (pd.Timestamp('2012-01-08 00:00:00', offset='D'), 50.0),
+                                    (pd.Timestamp('2012-01-09 00:00:00', offset='D'), 50.0)]
