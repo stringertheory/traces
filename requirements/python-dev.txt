@@ -9,6 +9,6 @@ bumpversion==0.5.3
 wheel==0.29.0
 tox==2.5.0
 flake8==3.2.1
-coverage==4.2
+coverage==4.3
 cryptography==1.7.1
 PyYAML==3.12
