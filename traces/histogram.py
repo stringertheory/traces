@@ -2,11 +2,27 @@ import math
 import sortedcontainers
 from six import itervalues, iteritems
 
+class UnordarableElements(TypeError):
+    pass
+
+class UnhashableType(TypeError):
+    pass
 
 class Histogram(sortedcontainers.SortedDict):
 
-    def __init__(self, data=()):
-        super(Histogram, self).__init__(hash)
+    @classmethod
+    def from_dict(cls, in_dict, *args, **kwargs):
+        self = cls(*args, **kwargs)
+        for key, value in iteritems(in_dict):
+            self[key] = value
+        return self
+
+    def __init__(self, data=(), **kwargs):
+        if 'key' in kwargs:
+            super(Histogram, self).__init__(kwargs['key'])
+        else:
+            super(Histogram, self).__init__()
+
         for datum in data:
             self[datum] += 1
 
@@ -15,12 +31,30 @@ class Histogram(sortedcontainers.SortedDict):
             result = super(Histogram, self).__getitem__(key)
         except KeyError:
             result = 0
-        except TypeError:
-            msg = "Can't make histogram of unhashable type (%s)" % type(key)
-            raise TypeError(msg)
+        except TypeError as e:
+            if "'<' not supported" in str(e):
+                raise UnordarableElements(e)
+
+            if "unhashable type" in str(e):
+                msg = "Can't make histogram of unhashable type (%s)" % type(key)
+                raise UnhashableType(msg)
+
+            raise e
         return result
 
+    def __setitem__(self, key, value):
+        try:
+            result = super(Histogram, self).__setitem__(key, value)
+        except TypeError as e:
+            if "'<' not supported" in str(e):
+                raise UnordarableElements(e)
 
+            if "unhashable type" in str(e):
+                msg = "Can't make histogram of unhashable type (%s)" % type(key)
+                raise UnhashableType(msg)
+
+            raise e
+        return result
 
     def total(self):
         """Sum of values."""
@@ -50,7 +84,11 @@ class Histogram(sortedcontainers.SortedDict):
         total = self.total()
         result = Histogram()
         for value, count in iteritems(self):
-            result[value] = count / float(total)
+            try:
+                result[value] = count / float(total)
+            except UnordarableElements as e:
+                result = Histogram.from_dict(dict(result), key=hash)
+                result[value] = count / float(total)
         return result
 
     def max(self):

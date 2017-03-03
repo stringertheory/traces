@@ -151,10 +151,8 @@ def test_none_handling():
     ts = TimeSeries()
     ts[1] = (0, 1)
     ts[2] = (None, 0)
-    ts[3] = (0, 1)
+    ts[3] = (2, 0)
 
-    assert(
-        ts.distribution(normalized=False) ==  Histogram(
-            {(0, 1): 0.5,
-            (None, 0): 0.5}
-    ))
+    print(ts.distribution(normalized=False))
+    assert( ts.distribution()[(0, 1)] ==  0.5)
+    assert( ts.distribution()[(None, 0)] ==  0.5)
