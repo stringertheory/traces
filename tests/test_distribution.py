@@ -3,7 +3,7 @@ import sys
 
 import nose
 
-from traces import TimeSeries, Domain
+from traces import TimeSeries, Domain, Histogram
 
 
 def test_distribution():
@@ -45,7 +45,7 @@ def test_default_values():
     total = (end - start).total_seconds()
     default = a.distribution()
     distribution = a.distribution(start=start, end=end)
-    assert default == distribution    
+    assert default == distribution
     assert distribution[0] == 1.0 / 3
     assert distribution[1] == 2.0 / 3
 
@@ -113,7 +113,7 @@ def test_distribution_empty():
     mask = TimeSeries(default=0)
     mask[0] = 1
     mask[2] = 0
-    
+
     # distribution with default args and no default value on empty
     # TimeSeries doesn't know what to do
     nose.tools.assert_raises(KeyError, ts.distribution)
@@ -125,7 +125,7 @@ def test_distribution_empty():
     # no matter what is passed in to distribution, if the default
     # value is not set on an empty TimeSeries this should be an error
     nose.tools.assert_raises(KeyError, ts.distribution, mask=mask)
-    
+
     ts = TimeSeries(default=0)
 
     # no mask or start/end on empty TimeSeries, don't know what to do
@@ -143,7 +143,18 @@ def test_distribution_empty():
 
     with nose.tools.assert_raises(ValueError):
         ts.distribution(mask=mask)
-    
+
     with nose.tools.assert_raises(ValueError):
         ts.distribution(start=0, end=2, mask=mask)
-    
+
+def test_none_handling():
+    ts = TimeSeries()
+    ts[1] = (0, 1)
+    ts[2] = (None, 0)
+    ts[3] = (0, 1)
+
+    assert(
+        ts.distribution(normalized=False) ==  Histogram(
+            {(0, 1): 0.5,
+            (None, 0): 0.5}
+    ))

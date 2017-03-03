@@ -1,4 +1,4 @@
-from traces import TimeSeries
+from traces import TimeSeries, Histogram
 import nose
 
 

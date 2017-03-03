@@ -6,7 +6,7 @@ from six import itervalues, iteritems
 class Histogram(sortedcontainers.SortedDict):
 
     def __init__(self, data=()):
-        super(Histogram, self).__init__()
+        super(Histogram, self).__init__(hash)
         for datum in data:
             self[datum] += 1
 
@@ -19,6 +19,8 @@ class Histogram(sortedcontainers.SortedDict):
             msg = "Can't make histogram of unhashable type (%s)" % type(key)
             raise TypeError(msg)
         return result
+
+
 
     def total(self):
         """Sum of values."""

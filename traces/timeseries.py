@@ -511,10 +511,11 @@ class TimeSeries(object):
         counter = histogram.Histogram()
         for start, end in mask.intervals():
             for t0, t1, value in self.iterperiods(start, end):
-                counter[value] += utils.duration_to_number(
+                duration = utils.duration_to_number(
                     t1 - t0,
                     units='seconds',
                 )
+                counter[value] += duration
 
         # divide by total duration if result needs to be normalized
         if normalized:
