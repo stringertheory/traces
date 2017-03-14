@@ -511,10 +511,17 @@ class TimeSeries(object):
         counter = histogram.Histogram()
         for start, end in mask.intervals():
             for t0, t1, value in self.iterperiods(start, end):
-                counter[value] += utils.duration_to_number(
+                duration = utils.duration_to_number(
                     t1 - t0,
                     units='seconds',
                 )
+                try:
+                    counter[value] += duration
+                except histogram.UnordarableElements as e:
+
+                    counter = histogram.Histogram.from_dict(dict(counter), key=hash)
+                    counter[value] += duration
+
 
         # divide by total duration if result needs to be normalized
         if normalized:
@@ -600,11 +607,11 @@ class TimeSeries(object):
         for index, timeseries in enumerate(timeseries_list):
             iterator = iter(timeseries)
             try:
-                item = (next(iterator), index, iterator)
+                t, value = next(iterator)
             except StopIteration:
                 pass
             else:
-                queue.put(item)
+                queue.put((t, index, value, iterator))
 
         # `state` keeps track of the value of the merged
         # TimeSeries. It starts with the default. It starts as a list
@@ -613,7 +620,7 @@ class TimeSeries(object):
         while not queue.empty():
 
             # get the next time with a measurement from queue
-            (t, next_value), index, iterator = queue.get()
+            t, index, next_value, iterator = queue.get()
 
             # make a copy of previous state, and modify only the value
             # at the index of the TimeSeries that this item came from
@@ -624,9 +631,11 @@ class TimeSeries(object):
             # add the next measurement from the time series to the
             # queue (if there is one)
             try:
-                queue.put((next(iterator), index, iterator))
+                t, value = next(iterator)
             except StopIteration:
                 pass
+            else:
+                queue.put((t, index, value, iterator))
 
     @classmethod
     def iter_merge(cls, timeseries_list):
