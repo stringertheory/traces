@@ -98,3 +98,29 @@ def test_set_interval_datetime():
     assert ts.items() == [(datetime(2012, 1, 4, 12, 0), 5),
                           (datetime(2012, 1, 8, 0, 0), 100),
                           (datetime(2012, 1, 10, 0, 0), 10)]
+
+def test_remove_points_from_interval():
+    ts = TimeSeries(default=0)
+    ts[0] = 0
+    ts[1] = 2
+    ts[3] = 1
+    ts[4] = 0
+
+    assert ts[5] == 0
+
+    del ts[3.5:4.5]
+
+    assert ts[5] == 1
+    
+    ts[4] = 0
+
+    del ts[3:4.5]
+
+    assert ts[5] == 2
+
+    ts[3] = 1
+    ts[4] = 0
+
+    del ts[3.5:4]
+
+    assert ts[5] == 0
