@@ -2,11 +2,14 @@ import math
 import sortedcontainers
 from six import itervalues, iteritems
 
+
 class UnordarableElements(TypeError):
     pass
 
+
 class UnhashableType(TypeError):
     pass
+
 
 class Histogram(sortedcontainers.SortedDict):
 
@@ -36,7 +39,8 @@ class Histogram(sortedcontainers.SortedDict):
                 raise UnordarableElements(e)
 
             if "unhashable type" in str(e):
-                msg = "Can't make histogram of unhashable type (%s)" % type(key)
+                msg = "Can't make histogram of unhashable type (%s)" % type(
+                    key)
                 raise UnhashableType(msg)
 
             raise e
@@ -50,7 +54,8 @@ class Histogram(sortedcontainers.SortedDict):
                 raise UnordarableElements(e)
 
             if "unhashable type" in str(e):
-                msg = "Can't make histogram of unhashable type (%s)" % type(key)
+                msg = "Can't make histogram of unhashable type (%s)" % type(
+                    key)
                 raise UnhashableType(msg)
 
             raise e

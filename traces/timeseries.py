@@ -519,9 +519,9 @@ class TimeSeries(object):
                     counter[value] += duration
                 except histogram.UnordarableElements as e:
 
-                    counter = histogram.Histogram.from_dict(dict(counter), key=hash)
+                    counter = histogram.Histogram.from_dict(
+                        dict(counter), key=hash)
                     counter[value] += duration
-
 
         # divide by total duration if result needs to be normalized
         if normalized:
