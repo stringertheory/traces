@@ -3,7 +3,7 @@ import sortedcontainers
 from six import itervalues, iteritems
 
 
-class UnordarableElements(TypeError):
+class UnorderableElements(TypeError):
     pass
 
 
@@ -35,10 +35,11 @@ class Histogram(sortedcontainers.SortedDict):
         except KeyError:
             result = 0
         except TypeError as e:
-            if "'<' not supported" in str(e):
-                raise UnordarableElements(e)
 
-            if "unhashable type" in str(e):
+            if "unorderable" in str(e):
+                raise UnorderableElements(e)
+
+            if "unhashable" in str(e):
                 msg = "Can't make histogram of unhashable type (%s)" % type(
                     key)
                 raise UnhashableType(msg)
@@ -50,10 +51,11 @@ class Histogram(sortedcontainers.SortedDict):
         try:
             result = super(Histogram, self).__setitem__(key, value)
         except TypeError as e:
-            if "'<' not supported" in str(e):
-                raise UnordarableElements(e)
 
-            if "unhashable type" in str(e):
+            if "unorderable" in str(e):
+                raise UnorderableElements(e)
+
+            if "unhashable" in str(e):
                 msg = "Can't make histogram of unhashable type (%s)" % type(
                     key)
                 raise UnhashableType(msg)
@@ -91,7 +93,7 @@ class Histogram(sortedcontainers.SortedDict):
         for value, count in iteritems(self):
             try:
                 result[value] = count / float(total)
-            except UnordarableElements as e:
+            except UnorderableElements as e:
                 result = Histogram.from_dict(dict(result), key=hash)
                 result[value] = count / float(total)
         return result

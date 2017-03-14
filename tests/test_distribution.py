@@ -156,3 +156,4 @@ def test_none_handling():
     print(ts.distribution(normalized=False))
     assert( ts.distribution()[(0, 1)] ==  0.5)
     assert( ts.distribution()[(None, 0)] ==  0.5)
+    
