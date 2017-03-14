@@ -5,26 +5,27 @@ http://en.wikipedia.org/wiki/Unevenly_spaced_time_series
 
 """
 # standard library
+import csv
 import datetime
 import pprint
 from itertools import tee
-import csv
-import sys
-try:
-    import itertools.izip as zip
-except ImportError:
-    pass
 from queue import PriorityQueue
-from future.utils import listitems, iteritems
 
 # 3rd party
 import sortedcontainers
 from dateutil.parser import parse as date_parse
+from future.utils import iteritems, listitems
 from infinity import inf
 
 # local
-from . import histogram
-from . import utils
+from . import histogram, utils
+
+# python 2/3 compatibility
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass
+
 
 EXTEND_BACK = object()
 
@@ -170,6 +171,25 @@ class TimeSeries(object):
                 (compact and self.get(time) != value):
             self._d[time] = value
 
+    def set_interval(self, start, end, value, compact=False):
+        """Set the value for the time series on an interval.
+        If compact is True, only set the
+        value if it's different from what it would be anyway.
+        """
+        # for each interval to render
+        for i, (s, e, v) in enumerate(self.iterperiods(start, end)):
+            # look at all intervals included in the current interval
+            # (always at least 1)
+            if i == 0:
+                # if the first, set initial value to new value of range
+                self.set(s, value, compact)
+            else:
+                # otherwise, remove intermediate key
+                del self[s]
+
+        # finish by setting the end of the interval to the previous value
+        self.set(end, v, compact)
+
     def compact(self):
         """Convert this instance to a compact version: the value will be the
         same at all times, but repeated measurements are discarded.
@@ -198,6 +218,13 @@ class TimeSeries(object):
         except KeyError:
             raise KeyError('no measurement at %s' % time)
 
+    def remove_interval(self, start, end):
+        """Allow removal of all measurements from the time series
+        within a interval [start:end].
+        """
+        for s, e, v in self.iterperiods(start, end):
+            del self._d[s]
+
     def n_measurements(self):
         """Return the number of measurements in the time series."""
         return len(self._d)
@@ -208,7 +235,7 @@ class TimeSeries(object):
 
     def __repr__(self):
         return '<TimeSeries>\n%s\n</TimeSeries>' % \
-            pprint.pformat(self._d)
+               pprint.pformat(self._d)
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
@@ -366,7 +393,6 @@ class TimeSeries(object):
                        placement='center',
                        pandas=False):
         """Averaging over regular intervals
-
         """
         start, end, mask = self._check_boundaries(start, end)
 
@@ -378,9 +404,10 @@ class TimeSeries(object):
             self._check_regularization(start, end, sampling_period)
 
         # convert to datetime if the times are datetimes
-        half_window = float(window_size) / 2
-        full_window = float(window_size)
-        if isinstance(start, datetime.datetime):
+        full_window = window_size * 1.  # convert to float if int or do nothing
+        half_window = full_window / 2.  # divide by 2
+        if (isinstance(start, datetime.datetime) and
+                not isinstance(full_window, datetime.timedelta)):
             half_window = datetime.timedelta(seconds=half_window)
             full_window = datetime.timedelta(seconds=full_window)
 
@@ -586,7 +613,7 @@ class TimeSeries(object):
         """
         if not isinstance(other, TimeSeries):
             msg = "unsupported operand types(s) for +: %s and %s" % \
-                (type(self), type(other))
+                  (type(self), type(other))
             raise TypeError(msg)
 
     @staticmethod
@@ -775,9 +802,11 @@ class TimeSeries(object):
     def to_bool(self, invert=False):
         """Return the truth value of each element."""
         if invert:
-            def function(x, y): return False if x else True
+            def function(x, y):
+                return False if x else True
         else:
-            def function(x, y): return True if x else False
+            def function(x, y):
+                return True if x else False
         return self.operation(None, function)
 
     def threshold(self, value, inclusive=False):
@@ -786,9 +815,11 @@ class TimeSeries(object):
 
         """
         if inclusive:
-            def function(x, y): return True if x >= y else False
+            def function(x, y):
+                return True if x >= y else False
         else:
-            def function(x, y): return True if x > y else False
+            def function(x, y):
+                return True if x > y else False
         return self.operation(value, function)
 
     def sum(self, other):
@@ -816,16 +847,25 @@ class TimeSeries(object):
         return self.operation(other, lambda x, y: int(bool(x) ^ bool(y)))
 
     def __setitem__(self, time, value):
-        """Allow a[time] = value syntax."""
-        return self.set(time, value)
+        """Allow a[time] = value syntax or a a[start:end]=value."""
+        if isinstance(time, slice):
+            return self.set_interval(time.start, time.stop, value)
+        else:
+            return self.set(time, value)
 
     def __getitem__(self, time):
         """Allow a[time] syntax."""
-        return self.get(time)
+        if isinstance(time, slice):
+            raise ValueError("Syntax a[start:end] not allowed")
+        else:
+            return self.get(time)
 
     def __delitem__(self, time):
         """Allow del[time] syntax."""
-        return self.remove(time)
+        if isinstance(time, slice):
+            return self.remove_interval(time.start, time.stop)
+        else:
+            return self.remove(time)
 
     def __add__(self, other):
         """Allow a + b syntax"""
@@ -867,7 +907,7 @@ class TimeSeries(object):
         return self.items() == other.items()
 
     def __ne__(self, other):
-        return not(self == other)
+        return not (self == other)
 
     def _check_boundary(self, value, allow_infinite, lower_or_upper):
 
