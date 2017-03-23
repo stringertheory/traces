@@ -52,7 +52,7 @@ class Histogram(sortedcontainers.SortedDict):
             result = super(Histogram, self).__setitem__(key, value)
         except TypeError as e:
 
-            if "unorderable" in str(e):
+            if "unorderable" in str(e) or "'<' not supported" in str(e):
                 raise UnorderableElements(e)
 
             if "unhashable" in str(e):
