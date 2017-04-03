@@ -55,6 +55,9 @@ class Histogram(sortedcontainers.SortedDict):
             if "unorderable" in str(e):
                 raise UnorderableElements(e)
 
+            if "not supported between instances of" in str(e):
+                raise UnorderableElements(e)
+
             if "unhashable" in str(e):
                 msg = "Can't make histogram of unhashable type (%s)" % type(
                     key)

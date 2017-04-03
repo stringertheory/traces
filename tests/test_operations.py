@@ -256,7 +256,7 @@ def test_default():
     assert ts_no_default.default == 0
 
     ts_default = ts.operation(ts, lambda a, b: a + b, default=1)
-    asser ts_default.default == 1
+    assert ts_default.default == 1
 
-    ts_none = ts.operation(ts, lambda a, b: a + b default=None)
-    ts_none.default == None
+    ts_none = ts.operation(ts, lambda a, b: a + b, default=None)
+    assert ts_none.default == None
