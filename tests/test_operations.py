@@ -247,6 +247,16 @@ def test_interpolation():
 
     assert ts.get(-1, interpolate='linear') == 0
     assert ts.get(2, interpolate='linear') == 2
-    
+
     nose.tools.assert_raises(ValueError, ts.get, 0.5, 'spline')
-    
+
+def test_default():
+    ts = TimeSeries(data=[(0, 0), (1, 2)])
+    ts_no_default = ts.operation(ts, lambda a, b: a + b)
+    assert ts_no_default.default == 0
+
+    ts_default = ts.operation(ts, lambda a, b: a + b, default=1)
+    asser ts_default.default == 1
+
+    ts_none = ts.operation(ts, lambda a, b: a + b default=None)
+    ts_none.default == None

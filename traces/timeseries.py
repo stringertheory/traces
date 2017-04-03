@@ -767,7 +767,7 @@ class TimeSeries(object):
                 result[time] = value
         return result
 
-    def operation(self, other, function):
+    def operation(self, other, function, **kwargs):
         """Calculate "elementwise" operation either between this TimeSeries
         and another one, i.e.
 
@@ -783,7 +783,7 @@ class TimeSeries(object):
         constant, the measurement times will not change.
 
         """
-        result = TimeSeries()
+        result = TimeSeries(**kwargs)
         if isinstance(other, TimeSeries):
             for time, value in self:
                 result[time] = function(value, other[time])
