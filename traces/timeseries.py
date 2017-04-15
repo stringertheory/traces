@@ -496,7 +496,6 @@ class TimeSeries(object):
         df = pd.DataFrame.from_records(result)
         return df.set_index(0).iloc[:, 0].reindex(idx[:-1]).ffill()
 
-
     def moving_average(self, sampling_period,
                        window_size=None,
                        start=None, end=None,
