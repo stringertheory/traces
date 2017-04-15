@@ -392,6 +392,111 @@ class TimeSeries(object):
             current_time += sampling_period
         return result
 
+    def sample_interval(self, sampling_period,
+                        start=None, end=None,
+                        operation="mean"):
+
+        start, end, mask = self._check_boundaries(start, end)
+        sampling_period = self._check_regularization(start, end,
+                                                     sampling_period)
+
+        try:
+            import pandas as pd
+        except ImportError:
+            msg = "sample_interval need pandas to be installed"
+            raise ImportError(msg)
+
+        # create index on [start, end)
+        idx = pd.date_range(start, end, freq=sampling_period, closed=None)
+        idx_list = idx.values  # list(idx)
+
+        # create all inflexion points
+        def items_in_horizon():
+            # yields all items between start and end as well as start and end
+            yield (start, self[start])
+            for t, v in self.items():
+                if t < start:
+                    continue
+                if t > end:
+                    break
+                yield t, v
+            yield (end, self[end])
+        inflexion_times, inflexion_values = zip(*items_in_horizon())
+        inflexion_times = pd.DatetimeIndex(inflexion_times)
+
+        # identify all inflexion intervals
+        # by index: point i is in interval [idx[ifl_int[i]], idx[ifl_int[i]+1]
+        inflexion_intervals = inflexion_times.floor(sampling_period)\
+            .map(idx.get_loc)
+
+        # convert DatetimeIndex to numpy array for faster indexation
+        inflexion_times = inflexion_times.values
+
+        Np1 = len(idx_list) - 1
+
+        # convert to timestamp
+        # (to make interval arithmetic faster, no need for total_seconds)
+        inflexion_times = (inflexion_times.astype("int64"))
+        idx_times = (idx.astype("int64"))
+
+        # initialise init, update and finish functions depending
+        # on the aggregation operator
+        init, update, finish = {
+            "mean": (
+                lambda t, v: 0.0,
+                lambda agg, t0, t1, v: agg + (t1 - t0) * v,
+                lambda agg, t_start, t_end: agg / (t_end - t_start),
+            ),
+            "max": (
+                lambda t, v: v,
+                lambda agg, t0, t1, v: max(agg, v),
+                lambda agg, t_start, t_end: agg,
+            ),
+            "min": (
+                lambda t, v: v,
+                lambda agg, t0, t1, v: min(agg, v),
+                lambda agg, t_start, t_end: agg,
+            ),
+        }[operation]
+
+        # initialise first interval
+        t_start, t_end = idx_times[0:2]
+        i0, t0, v0 = 0, t_start, self[start]
+        agg = init(t0, v0)
+
+        result = []
+        for i1, t1, v1 in zip(inflexion_intervals,
+                              inflexion_times,
+                              inflexion_values):
+            if i0 != i1:
+                # change of interval
+
+                # finish previous interval
+                agg = update(agg, t0, t_end, v0)
+                agg = finish(agg, t_start, t_end)
+                result.append((idx_list[i0], agg))
+
+                # handle all intervals between t_end and t1
+                if i1 != i0 + 1:
+                    result.append((idx_list[i0 + 1], v0))
+
+                # if last_point, break
+                if i1 == Np1:
+                    break
+
+                # set up new interval
+                t_start, t_end = idx_times[i1:i1 + 2]
+                i0, t0 = i1, t_start
+                agg = init(t0, v0)
+
+            agg = update(agg, t0, t1, v0)
+
+            i0, t0, v0 = i1, t1, v1
+
+        df = pd.DataFrame.from_records(result)
+        return df.set_index(0).iloc[:, 0].reindex(idx[:-1]).ffill()
+
+
     def moving_average(self, sampling_period,
                        window_size=None,
                        start=None, end=None,
