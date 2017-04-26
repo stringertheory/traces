@@ -415,9 +415,9 @@ class TimeSeries(object):
             # yields all items between start and end as well as start and end
             yield (start, self[start])
             for t, v in self.items():
-                if t < start:
+                if t <= start:
                     continue
-                if t > end:
+                if t >= end:
                     break
                 yield t, v
             yield (end, self[end])
