@@ -426,8 +426,9 @@ class TimeSeries(object):
 
         # identify all inflexion intervals
         # by index: point i is in interval [idx[ifl_int[i]], idx[ifl_int[i]+1]
-        inflexion_intervals = inflexion_times.floor(sampling_period)\
-            .map(idx.get_loc)
+        inflexion_intervals = inflexion_times.map(
+            lambda t: idx.get_loc(t, method="ffill"))
+
 
         # convert DatetimeIndex to numpy array for faster indexation
         inflexion_times = inflexion_times.values
