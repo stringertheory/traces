@@ -397,17 +397,17 @@ class TimeSeries(object):
                         idx=None,
                         operation="mean"):
         """Sampling on intervals by using some operation (mean,max,min).
-        
-        It can be called either with sampling_period, [start], [end] 
+
+        It can be called either with sampling_period, [start], [end]
         or with a idx as a DateTimeIndex.
-        
-        The returing pandas.Series will be indexed either on 
+
+        The returing pandas.Series will be indexed either on
         pandas.date_range(start,end,freq=sampling_period) or on idx.
-        
+
         :param sampling_period: the sampling period
         :param start: the start time of the sampling
         :param end: the end time of the sampling
-        :param idx: a DateTimeIndex with the start times of the intervals 
+        :param idx: a DateTimeIndex with the start times of the intervals
         :param operation: "mean", "max" or "min"
         :return: a pandas Series with the Trace sampled
         """
