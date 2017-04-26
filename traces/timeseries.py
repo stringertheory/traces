@@ -396,12 +396,13 @@ class TimeSeries(object):
                         start=None, end=None,
                         idx=None,
                         operation="mean"):
-        """
-        Sampling on intervals by using some operation (mean,max,min).
+        """Sampling on intervals by using some operation (mean,max,min).
         
-        It can be called either with sampling_period, [start], [end] or with a idx as a DateTimeIndex.
+        It can be called either with sampling_period, [start], [end] 
+        or with a idx as a DateTimeIndex.
         
-        The returing pandas.Series will be indexed either on pandas.date_range(start,end,freq=sampling_period) or on idx.
+        The returing pandas.Series will be indexed either on 
+        pandas.date_range(start,end,freq=sampling_period) or on idx.
         
         :param sampling_period: the sampling period
         :param start: the start time of the sampling
@@ -420,7 +421,7 @@ class TimeSeries(object):
         if idx is None:
             start, end, mask = self._check_boundaries(start, end)
             sampling_period = self._check_regularization(start, end,
-                                                     sampling_period)
+                                                         sampling_period)
             # create index on [start, end)
             idx = pd.date_range(start, end, freq=sampling_period, closed=None)
         else:
@@ -445,8 +446,10 @@ class TimeSeries(object):
 
         # identify all inflexion intervals
         # by index: point i is in interval [idx[ifl_int[i]], idx[ifl_int[i]+1]
-        # TODO: look to use searchsorted as it operates more efficienly (but offset of 1 in most cases)
-        inflexion_intervals = inflexion_times.map(lambda t: idx.get_loc(t, method="ffill"))
+        # TODO: look to use searchsorted as it operates more
+        # TODO: efficienly (but offset of 1 in most cases)
+        inflexion_intervals = inflexion_times.map(
+            lambda t: idx.get_loc(t, method="ffill"))
 
         # convert DatetimeIndex to numpy array for faster indexation
         inflexion_times = inflexion_times.values
