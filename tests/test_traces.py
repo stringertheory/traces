@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import nose
+from pandas.util.testing import assert_series_equal
 
 from traces import TimeSeries, Domain
 
@@ -212,3 +213,22 @@ def test_sample_interval_hours():
                                     (pd.Timestamp('2012-01-07 00:00:00'), 50.0),
                                     (pd.Timestamp('2012-01-08 00:00:00'), 50.0),
                                     (pd.Timestamp('2012-01-09 00:00:00'), 50.0)]
+
+
+def test_sample_interval_index():
+    import pandas as pd
+
+    start = datetime(2012, 1, 1)
+    end = datetime(2012, 1, 10)
+
+    ts = Domain([(start, 400),
+                 (end, 400)])
+
+    ts[datetime(2012, 1, 4, 12):datetime(2012, 1, 6, 20)] = 10
+    ts[datetime(2012, 1, 7, 9):datetime(2012, 1, 10)] = 50
+
+    idx = pd.date_range(start, end, freq="D")
+    sr = ts.sample_interval(sampling_period=timedelta(days=1))
+    sr2 = ts.sample_interval(idx=idx)
+
+    assert_series_equal(sr, sr2)

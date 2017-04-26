@@ -401,7 +401,7 @@ class TimeSeries(object):
         
         It can be called either with sampling_period, [start], [end] or with a idx as a DateTimeIndex.
         
-        The returing pandas.Series will be indexed either on pandas.date_range(start,end,sampling_period) or on idx.
+        The returing pandas.Series will be indexed either on pandas.date_range(start,end,freq=sampling_period) or on idx.
         
         :param sampling_period: the sampling period
         :param start: the start time of the sampling
