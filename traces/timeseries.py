@@ -26,7 +26,6 @@ try:
 except ImportError:
     pass
 
-
 EXTEND_BACK = object()
 
 
@@ -301,6 +300,7 @@ class TimeSeries(object):
         value_function = self._value_function(value)
 
         # get start index and value
+
         start_index = self._d.bisect_right(start)
         if start_index:
             start_value = self._d[self._d.iloc[start_index - 1]]
@@ -392,13 +392,24 @@ class TimeSeries(object):
             current_time += sampling_period
         return result
 
-    def sample_interval(self, sampling_period,
+    def sample_interval(self, sampling_period=None,
                         start=None, end=None,
+                        idx=None,
                         operation="mean"):
-
-        start, end, mask = self._check_boundaries(start, end)
-        sampling_period = self._check_regularization(start, end,
-                                                     sampling_period)
+        """
+        Sampling on intervals by using some operation (mean,max,min).
+        
+        It can be called either with sampling_period, [start], [end] or with a idx as a DateTimeIndex.
+        
+        The returing pandas.Series will be indexed either on pandas.date_range(start,end,sampling_period) or on idx.
+        
+        :param sampling_period: the sampling period
+        :param start: the start time of the sampling
+        :param end: the end time of the sampling
+        :param idx: a DateTimeIndex with the start times of the intervals 
+        :param operation: "mean", "max" or "min"
+        :return: a pandas Series with the Trace sampled
+        """
 
         try:
             import pandas as pd
@@ -406,8 +417,15 @@ class TimeSeries(object):
             msg = "sample_interval need pandas to be installed"
             raise ImportError(msg)
 
-        # create index on [start, end)
-        idx = pd.date_range(start, end, freq=sampling_period, closed=None)
+        if idx is None:
+            start, end, mask = self._check_boundaries(start, end)
+            sampling_period = self._check_regularization(start, end,
+                                                     sampling_period)
+            # create index on [start, end)
+            idx = pd.date_range(start, end, freq=sampling_period, closed=None)
+        else:
+            start, end, mask = self._check_boundaries(idx[0], idx[-1])
+
         idx_list = idx.values  # list(idx)
 
         # create all inflexion points
@@ -421,14 +439,14 @@ class TimeSeries(object):
                     break
                 yield t, v
             yield (end, self[end])
+
         inflexion_times, inflexion_values = zip(*items_in_horizon())
         inflexion_times = pd.DatetimeIndex(inflexion_times)
 
         # identify all inflexion intervals
         # by index: point i is in interval [idx[ifl_int[i]], idx[ifl_int[i]+1]
-        inflexion_intervals = inflexion_times.map(
-            lambda t: idx.get_loc(t, method="ffill"))
-
+        # TODO: look to use searchsorted as it operates more efficienly (but offset of 1 in most cases)
+        inflexion_intervals = inflexion_times.map(lambda t: idx.get_loc(t, method="ffill"))
 
         # convert DatetimeIndex to numpy array for faster indexation
         inflexion_times = inflexion_times.values
@@ -597,7 +615,6 @@ class TimeSeries(object):
         result = sortedcontainers.SortedDict()
         for bin_start, bin_end in mask.spans_between(start, end, unit,
                                                      n_units=n_units):
-
             result[bin_start] = function(bin_start, bin_end,
                                          mask=mask, normalized=False)
 
@@ -1133,7 +1150,7 @@ class Domain(TimeSeries):
 
     def __repr__(self):
         return '<Domain>\n%s\n</Domain>' % \
-            pprint.pformat(self._d)
+               pprint.pformat(self._d)
 
     def start(self):
         try:
@@ -1203,7 +1220,6 @@ class Domain(TimeSeries):
 
 
 def hour_of_day(start, end, hour):
-
     # start should be date, or if datetime, will use date of datetime
     floored = utils.datetime_floor(start)
 
@@ -1221,7 +1237,6 @@ def hour_of_day(start, end, hour):
 
 
 def day_of_week(start, end, weekday):
-
     # allow weekday name or number
     number = utils.weekday_number(weekday)
 
