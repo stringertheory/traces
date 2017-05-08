@@ -72,7 +72,7 @@ class TimeSeries(object):
     def __getstate__(self):
         return {
             "_d": self._d,
-            "default": self.default
+            "_default": self.default
         }
 
     def __iter__(self):
