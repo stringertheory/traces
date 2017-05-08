@@ -127,7 +127,9 @@ def test_remove_points_from_interval():
     assert ts[5] == 0
 
 def test_pickle():
-    ts = TimeSeries()
-    ts[23]="blah"
-    ts[2]="foo"
-    assert pickle.dumps(ts)
+    ts = TimeSeries(default=False)
+    ts[1] = True
+    ts[2] = False
+    dump_string = pickle.dumps(ts)
+    unpickled = pickle.loads(dump_string)
+    assert unpickled == ts

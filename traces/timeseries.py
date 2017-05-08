@@ -67,10 +67,13 @@ class TimeSeries(object):
         }
 
     def __getinitargs__(self):
-        return (self.items(), self.default)
+        return ()
 
     def __getstate__(self):
-        return False
+        return {
+            "_d": self._d,
+            "default": self.default
+        }
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
