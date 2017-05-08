@@ -66,6 +66,12 @@ class TimeSeries(object):
             'linear': self._get_linear_interpolate,
         }
 
+    def __getinitargs__(self):
+        return (self.items(), self.default)
+
+    def __getstate__(self):
+        return False
+
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
         return iteritems(self._d)

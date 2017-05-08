@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pickle
 
 import nose
 from traces import Histogram, TimeSeries
@@ -59,7 +60,7 @@ def test_merge():
     assert True in ts_merge[0]
     assert None in ts_merge[0]
 
-    
+
 def test_set_interval():
     ts = TimeSeries()
     nose.tools.assert_raises(KeyError, ts.get, 0)
@@ -111,7 +112,7 @@ def test_remove_points_from_interval():
     del ts[3.5:4.5]
 
     assert ts[5] == 1
-    
+
     ts[4] = 0
 
     del ts[3:4.5]
@@ -124,3 +125,9 @@ def test_remove_points_from_interval():
     del ts[3.5:4]
 
     assert ts[5] == 0
+
+def test_pickle():
+    ts = TimeSeries()
+    ts[23]="blah"
+    ts[2]="foo"
+    assert pickle.dumps(ts)
