@@ -133,3 +133,6 @@ def test_pickle():
     dump_string = pickle.dumps(ts)
     unpickled = pickle.loads(dump_string)
     assert unpickled == ts
+
+    unpickled[3] = unpickled[1]
+    assert unpickled[3] == True
