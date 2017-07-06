@@ -794,12 +794,14 @@ class TimeSeries(object):
         """
         result = TimeSeries(**kwargs)
         if isinstance(other, TimeSeries):
+            result.default = function(self.default, other.default)
             for time, value in self:
                 result[time] = function(value, other[time])
             for time, value in other:
                 result[time] = function(self[time], value)
         else:
             for time, value in self:
+                result.default = function(self.default, other)
                 result[time] = function(value, other)
         return result
 
