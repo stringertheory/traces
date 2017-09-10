@@ -7,7 +7,7 @@ cprofilev==1.0.7
 pip==9.0.1
 bumpversion==0.5.3
 wheel==0.29.0
-tox==2.6.0
+tox==2.8.2
 flake8==3.3.0
 coverage==4.3.4
 cryptography==1.8.1
