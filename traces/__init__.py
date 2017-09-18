@@ -3,6 +3,7 @@
 from .histogram import Histogram
 from .timeseries import TimeSeries, Domain
 from .utils import datetime_range
+from .null_object import nan
 from infinity import inf
 
 __author__ = 'Mike Stringer'
