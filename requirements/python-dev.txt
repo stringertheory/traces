@@ -8,7 +8,7 @@ pip==9.0.1
 bumpversion==0.5.3
 wheel==0.29.0
 tox==2.8.1
-flake8==3.3.0
 coverage==4.4.1
 cryptography==2.0.3
+flake8==3.4.1
 PyYAML==3.12
