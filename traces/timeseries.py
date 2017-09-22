@@ -16,10 +16,10 @@ import sortedcontainers
 from dateutil.parser import parse as date_parse
 from future.utils import iteritems, listitems
 from infinity import inf
+from traces import decorators, operations
 
 # local
 from . import histogram, utils
-from traces import operations, decorators
 
 # python 2/3 compatibility
 try:
@@ -99,9 +99,9 @@ class TimeSeries(object):
         #     msg = "can't get value of empty TimeSeries with no default value"
         #     raise KeyError(msg)
         # else:
-            # if self._default == EXTEND_BACK:
-            #     return self.first_item()[1]
-            # else:
+        # if self._default == EXTEND_BACK:
+        #     return self.first_item()[1]
+        # else:
         return self._default
 
     @default.setter
@@ -239,7 +239,8 @@ class TimeSeries(object):
         return listitems(self._d)
 
     def exists(self):
-        """returns False when the timeseries has a None value, True otherwise"""
+        """returns False when the timeseries has a None value,
+        True otherwise"""
         result = TimeSeries(default=False if self.default is None else True)
         for t, v in self:
             result[t] = False if v is None else True
@@ -859,7 +860,9 @@ class TimeSeries(object):
 
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
-        return TimeSeries.merge([self, other], operation=operations.ignorant_sum)
+        return TimeSeries.merge(
+            [self, other], operation=operations.ignorant_sum
+        )
 
     def difference(self, other):
         """difference(x, y) = x(t) - y(t)."""

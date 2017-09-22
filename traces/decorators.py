@@ -1,10 +1,11 @@
+import sys
 from functools import wraps
 
-import sys
 if sys.version_info[0] > 2:
     from itertools import filterfalse
 else:
     from itertools import ifilterfalse as filterfalse
+
 
 def _is_none(obj):
     if obj is None:
@@ -12,12 +13,14 @@ def _is_none(obj):
     else:
         return False
 
+
 def ignorant(func):
     @wraps(func)
     def wrapper(iterable, *args, **kwargs):
         filtered = filterfalse(_is_none, iterable)
         return func(filtered, *args, **kwargs)
     return wrapper
+
 
 def strict(func):
     @wraps(func)
