@@ -26,17 +26,11 @@ def test_iterintervals():
 
 def test_iterperiods():
 
-    # timeseries with a default value and no points returns one period
-    # with the default value from -infinity to infinity, or 
-    ts = TimeSeries(default=0)
-    assert list(ts.iterperiods()) == [(-inf, inf, 0)]
-
-    # timeseries with no default value and no points raises error
+    # timeseries with no points raises a KeyError
     ts = TimeSeries()
     with nose.tools.assert_raises(KeyError):
-        list(ts.iterperiods())
-    
-    ts = TimeSeries()
+        next(ts.iterperiods())
+
     ts.set(datetime.datetime(2015, 3, 1), 1)
     ts.set(datetime.datetime(2015, 3, 2), 0)
     ts.set(datetime.datetime(2015, 3, 3), 1)
@@ -133,12 +127,13 @@ def test_single_merges():
 
     # a single empty time series
     ts = TimeSeries()
-    nose.tools.assert_raises(KeyError, TimeSeries.merge, [ts])
+    assert TimeSeries.merge([ts]) == TimeSeries(default=[None])
 
     # multiple empty time series
     ts_a = TimeSeries()
     ts_b = TimeSeries()
-    nose.tools.assert_raises(KeyError, TimeSeries.merge, [ts_a, ts_b])
+    assert TimeSeries.merge([ts_a, ts_b]) == \
+        TimeSeries(default=[None, None])
 
     # test a single time series with only one measurement
     ts = TimeSeries()
@@ -153,7 +148,9 @@ def test_single_merges():
     ts_a[21] = 42
     ts_b = TimeSeries()
 
-    nose.tools.assert_raises(KeyError, TimeSeries.merge, [ts_a, ts_b])
+    ts = TimeSeries.merge([ts_a, ts_b])
+    assert ts[20] == [None, None]
+    assert ts[23] == [42, None]
 
     # test an empty time series and a time series with one entry
     ts_a = TimeSeries()
@@ -167,9 +164,10 @@ def test_single_merges():
     ts_b[24] = 3
 
     merged = TimeSeries.merge([ts_a, ts_b])
-    
+
     assert merged.items() == [
-        (20, [42, 1]),
+        (20, [None, 1]),
+        (21, [42, 1]),
         (22, [41, 2]),
         (23, [40, 2]),
         (24, [40, 3]),

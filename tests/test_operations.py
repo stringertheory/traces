@@ -1,6 +1,7 @@
 import datetime
 import nose
 from traces import TimeSeries
+from traces.decorators import ignorant, strict
 
 
 def test_scalar_ops():
@@ -15,9 +16,9 @@ def test_scalar_ops():
     ts_threshold = a.threshold(value=1.1)
 
     # test before domain, should give default value
-    assert ts_half[datetime.datetime(2015, 2, 24)] == 0.5
-    assert ts_bool[datetime.datetime(2015, 2, 24)] == True
-    assert ts_threshold[datetime.datetime(2015, 2, 24)] == False
+    assert ts_half[datetime.datetime(2015, 2, 24)] == None
+    assert ts_bool[datetime.datetime(2015, 2, 24)] == None
+    assert ts_threshold[datetime.datetime(2015, 2, 24)] == None
 
     # test values throughout series
     assert ts_half[datetime.datetime(2015, 3, 1, 6)] == 0.5
@@ -33,7 +34,7 @@ def test_scalar_ops():
     assert ts_threshold[datetime.datetime(2015, 3, 3, 6)] == True
 
     # test after domain, should give last value
-    assert ts_half[datetime.datetime(2015, 3, 4, 18)] == True
+    assert ts_half[datetime.datetime(2015, 3, 4, 18)] == 1
     assert ts_bool[datetime.datetime(2015, 3, 4, 18)] == True
     assert ts_threshold[datetime.datetime(2015, 3, 4, 18)] == True
 
@@ -58,10 +59,10 @@ def test_sum():
     c.set(datetime.datetime(2015, 3, 1, 18), 1)
     c.set(datetime.datetime(2015, 3, 5), 0)
 
-    ts_sum = TimeSeries.merge([a, b, c], operation=sum)
+    ts_sum = TimeSeries.merge([a, b, c], operation=ignorant(sum))
 
     # test before domain, should give default value
-    assert ts_sum[datetime.datetime(2015, 2, 24)] == 1
+    assert ts_sum[datetime.datetime(2015, 2, 24)] == 0
 
     # test values throughout sum
     assert ts_sum[datetime.datetime(2015, 3, 1)] == 1
@@ -245,7 +246,7 @@ def test_interpolation():
     assert ts.get(0.75, interpolate='linear') == 1.5
     assert ts.get(1, interpolate='linear') == 2
 
-    assert ts.get(-1, interpolate='linear') == 0
+    assert ts.get(-1, interpolate='linear') == None
     assert ts.get(2, interpolate='linear') == 2
 
     nose.tools.assert_raises(ValueError, ts.get, 0.5, 'spline')
@@ -253,7 +254,7 @@ def test_interpolation():
 def test_default():
     ts = TimeSeries(data=[(0, 0), (1, 2)])
     ts_no_default = ts.operation(ts, lambda a, b: a + b)
-    assert ts_no_default.default == 0
+    assert ts_no_default.default == None
 
     ts_default = ts.operation(ts, lambda a, b: a + b, default=1)
     assert ts_default.default == 1

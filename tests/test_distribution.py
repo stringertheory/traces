@@ -120,11 +120,12 @@ def test_distribution_empty():
 
     # distribution with start and end, but no default value on empty
     # TimeSeries doesn't know what to do
-    nose.tools.assert_raises(KeyError, ts.distribution, 0, 10)
+    assert ts.distribution(0, 10) == Histogram.from_dict({None: 1.0})
 
     # no matter what is passed in to distribution, if the default
     # value is not set on an empty TimeSeries this should be an error
-    nose.tools.assert_raises(KeyError, ts.distribution, mask=mask)
+    ts.distribution(mask=mask) == Histogram.from_dict({None: 1.0})
+    # nose.tools.assert_raises(KeyError, ts.distribution, mask=mask)
 
     ts = TimeSeries(default=0)
 
@@ -141,10 +142,10 @@ def test_distribution_empty():
     # empty mask
     mask = TimeSeries(default=0)
 
-    with nose.tools.assert_raises(ValueError):
+    with nose.tools.assert_raises(KeyError):
         ts.distribution(mask=mask)
 
-    with nose.tools.assert_raises(ValueError):
+    with nose.tools.assert_raises(KeyError):
         ts.distribution(start=0, end=2, mask=mask)
 
 def test_none_handling():

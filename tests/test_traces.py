@@ -8,7 +8,7 @@ from traces import Histogram, TimeSeries
 def test_init_data():
     ts = TimeSeries([(1, 2), (2, 3), (6, 1), (8, 4)])
 
-    assert ts[0] == 2
+    assert ts[0] == None
     assert ts[1] == 2
     assert ts[1.5] == 2
     assert ts[6] == 1
@@ -18,7 +18,7 @@ def test_init_data():
 
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
 
-    assert ts[0] == 2
+    assert ts[0] == None
     assert ts[1] == 2
     assert ts[1.5] == 2
     assert ts[6] == 1
@@ -28,7 +28,7 @@ def test_init_data():
 
     ts = TimeSeries({1: 2, 2: 3, 6: 1, 8: 4})
 
-    assert ts[0] == 2
+    assert ts[0] == None
     assert ts[1] == 2
     assert ts[1.5] == 2
     assert ts[6] == 1
@@ -39,21 +39,33 @@ def test_init_data():
 
 def test_get():
     ts = TimeSeries()
-    nose.tools.assert_raises(KeyError, ts.get, 0)
+    # nose.tools.assert_raises(KeyError, ts.get, 0)
+    assert ts[0] is None
 
     ts[1.2] = 1
     ts[3] = 0
     ts[6] = 2
 
-    assert ts[0] == 1
+    assert ts[0] == None
     assert ts[5.5] == 0
     assert ts[7] == 2
 
 
+def test_exists():
+    ts = TimeSeries([
+        (-5, 0), (0, 23), (5, None)
+    ])
+
+    ts_exists = ts.exists()
+    assert ts_exists[-10] == False
+    assert ts_exists[-2] is True
+    assert ts_exists[3] is True
+    assert ts_exists[10] is False
+
 def test_merge():
-    ts_a = TimeSeries(default=None)
-    ts_b = TimeSeries(default=None)
-    ts_a[0] = None
+    ts_a = TimeSeries()
+    ts_b = TimeSeries()
+    # ts_a[0] = None
     ts_b[0] = True
     ts_merge = TimeSeries.merge([ts_a, ts_b])
 
@@ -63,15 +75,23 @@ def test_merge():
 
 def test_set_interval():
     ts = TimeSeries()
-    nose.tools.assert_raises(KeyError, ts.get, 0)
+    # nose.tools.assert_raises(KeyError, ts.get, 0)
+    assert ts[0] is None
 
-    nose.tools.assert_raises(KeyError, ts.set_interval, 2, 4, 5)
+    ts.set_interval(2, 4, 5)
 
+    assert ts[0] is None
+    assert ts[2] == 5
+    assert ts[3] == 5
+    assert ts[4] == None
+    assert ts[5] is None
+
+    ts = TimeSeries()
     ts[1.2] = 1
     ts[3] = 0
     ts[6] = 2
 
-    assert ts[0] == 1
+    assert ts[0] == None
     assert ts[5.5] == 0
     assert ts[7] == 2
 

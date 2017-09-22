@@ -19,6 +19,7 @@ from infinity import inf
 
 # local
 from . import histogram, utils
+from traces import operations, decorators
 
 # python 2/3 compatibility
 try:
@@ -27,7 +28,7 @@ except ImportError:
     pass
 
 
-EXTEND_BACK = object()
+# EXTEND_BACK = object()
 
 
 class TimeSeries(object):
@@ -57,7 +58,7 @@ class TimeSeries(object):
 
     """
 
-    def __init__(self, data=None, default=EXTEND_BACK):
+    def __init__(self, data=None, default=None):
         self._d = sortedcontainers.SortedDict(data)
         self.default = default
 
@@ -79,26 +80,29 @@ class TimeSeries(object):
         """Iterate over sorted (time, value) pairs."""
         return iteritems(self._d)
 
-    def is_floating(self):
-        """An empty TimeSeries with no specific default value is said to be
-        "floating", since the value of the TimeSeries is
-        undefined. Any operation that needs to look up the value of
-        the TimeSeries is not defined on a floating TimeSeries.
+    def __bool__(self):
+        return bool(self._d)
 
-        """
-        return (self._default == EXTEND_BACK and len(self) == 0)
+    # def is_floating(self):
+    #     """An empty TimeSeries with no specific default value is said to be
+    #     "floating", since the value of the TimeSeries is
+    #     undefined. Any operation that needs to look up the value of
+    #     the TimeSeries is not defined on a floating TimeSeries.
+    #
+    #     """
+    #     return (self.extend_back and len(self) == 0)
 
     @property
     def default(self):
         """Return the default value of the time series."""
-        if self.is_floating():
-            msg = "can't get value of empty TimeSeries with no default value"
-            raise KeyError(msg)
-        else:
-            if self._default == EXTEND_BACK:
-                return self.first_item()[1]
-            else:
-                return self._default
+        # if self.is_floating():
+        #     msg = "can't get value of empty TimeSeries with no default value"
+        #     raise KeyError(msg)
+        # else:
+            # if self._default == EXTEND_BACK:
+            #     return self.first_item()[1]
+            # else:
+        return self._default
 
     @default.setter
     def default(self, value):
@@ -167,9 +171,25 @@ class TimeSeries(object):
         """Returns the last (time, value) pair of the time series."""
         return self.get_item_by_index(-1)
 
+    def last_key(self):
+        """Returns the last time recorded in the time series"""
+        return self.last_item()[0]
+
+    def last_value(self):
+        """Returns the last recorded value in the time series"""
+        return self.last_item()[1]
+
     def first_item(self):
         """Returns the first (time, value) pair of the time series."""
         return self.get_item_by_index(0)
+
+    def first_key(self):
+        """Returns the first time recorded in the time series"""
+        return self.first_item()[0]
+
+    def first_value(self):
+        """Returns the first recorded value in the time series"""
+        return self.first_item()[1]
 
     def set(self, time, value, compact=False):
         """Set the value for the time series. If compact is True, only set the
@@ -217,6 +237,13 @@ class TimeSeries(object):
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
         return listitems(self._d)
+
+    def exists(self):
+        """returns False when the timeseries has a None value, True otherwise"""
+        result = TimeSeries(default=False if self.default is None else True)
+        for t, v in self:
+            result[t] = False if v is None else True
+        return result
 
     def remove(self, time):
         """Allow removal of measurements from the time series. This throws an
@@ -305,7 +332,7 @@ class TimeSeries(object):
 
         """
         start, end, mask = \
-            self._check_boundaries(start, end, allow_infinite=True)
+            self._check_boundaries(start, end, allow_infinite=False)
 
         value_function = self._value_function(value)
 
@@ -443,7 +470,13 @@ class TimeSeries(object):
                 raise ValueError(msg)
 
             # calculate mean over window and add (t, v) tuple to list
-            mean = self.mean(window_start, window_end)
+            try:
+                mean = self.mean(window_start, window_end)
+            except TypeError as e:
+                if 'NoneType' in str(e):
+                    mean = None
+                else:
+                    raise e
             result.append((current_time, mean))
 
             current_time += sampling_period
@@ -509,7 +542,7 @@ class TimeSeries(object):
 
     def mean(self, start=None, end=None, mask=None):
         """This calculated the average value of the time series over the given
-        time range from `start` to `end`.
+        time range from `start` to `end`, when `mask` is truthy.
 
         """
         return self.distribution(start=start, end=end, mask=mask).mean()
@@ -540,12 +573,6 @@ class TimeSeries(object):
             :obj:`Histogram` with the results.
 
         """
-        if self.is_floating():
-            msg = (
-                "distribution of empty TimeSeries with no default value "
-                "is undefined"
-            )
-            raise KeyError(msg)
 
         start, end, mask = self._check_boundaries(start, end, mask=mask)
 
@@ -691,10 +718,10 @@ class TimeSeries(object):
         if not timeseries_list:
             return
 
-        for ts in timeseries_list:
-            if ts.is_floating():
-                msg = "can't merge empty TimeSeries with no default value"
-                raise KeyError(msg)
+        # for ts in timeseries_list:
+        #     if ts.is_floating():
+        #         msg = "can't merge empty TimeSeries with no default value"
+        #         raise KeyError(msg)
 
         # This function mostly wraps _iter_merge, the main point of
         # this is to deal with the case of tied times, where we only
@@ -712,26 +739,20 @@ class TimeSeries(object):
             yield previous_t, previous_state
 
     @classmethod
-    def merge(cls, ts_list, compact=True, operation=None, default=None):
+    def merge(cls, ts_list, compact=True, operation=None):
         """Iterate through several time series in order, yielding (time,
         `value`) where `value` is the either the list of each
         individual TimeSeries in the list at time t (in the same order
         as in ts_list) or the result of the optional `operation` on
         that list of values.
-
         """
-        # If default is not given and all timeseries in `ts_list` have
-        # the same default, use that default for the
-        # result. Otherwise, if default is not given and there are
-        # multiple default, set to EXTEND_BACK
-        if not ts_list:
-            return cls(default=default)
-
-        if default is None:
-            unique_defaults = set(ts._default for ts in ts_list)
-            default = unique_defaults.pop()
-            if unique_defaults:
-                default = EXTEND_BACK
+        # If operation is not given then the default is the list
+        # of defaults of all time series
+        # If operation is given, then the default is the result of
+        # the operation over the list of all defaults
+        default = [ts.default for ts in ts_list]
+        if operation:
+            default = operation(default)
 
         result = cls(default=default)
         for t, merged in cls.iter_merge(ts_list):
@@ -757,7 +778,7 @@ class TimeSeries(object):
                  time_transform=None,
                  value_transform=None,
                  skip_header=True,
-                 default=EXTEND_BACK):
+                 default=None):
 
         # use default on class if not given
         if time_transform is None:
@@ -838,7 +859,7 @@ class TimeSeries(object):
 
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
-        return TimeSeries.merge([self, other], operation=sum)
+        return TimeSeries.merge([self, other], operation=operations.ignorant_sum)
 
     def difference(self, other):
         """difference(x, y) = x(t) - y(t)."""
