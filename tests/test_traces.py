@@ -1,14 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import pickle
 
-import nose
-from traces import Histogram, TimeSeries
+from traces import TimeSeries
 
 
 def test_init_data():
     ts = TimeSeries([(1, 2), (2, 3), (6, 1), (8, 4)])
 
-    assert ts[0] == None
+    assert ts[0] is None
     assert ts[1] == 2
     assert ts[1.5] == 2
     assert ts[6] == 1
@@ -18,7 +17,7 @@ def test_init_data():
 
     ts = TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
 
-    assert ts[0] == None
+    assert ts[0] is None
     assert ts[1] == 2
     assert ts[1.5] == 2
     assert ts[6] == 1
@@ -28,7 +27,7 @@ def test_init_data():
 
     ts = TimeSeries({1: 2, 2: 3, 6: 1, 8: 4})
 
-    assert ts[0] == None
+    assert ts[0] is None
     assert ts[1] == 2
     assert ts[1.5] == 2
     assert ts[6] == 1
@@ -46,7 +45,7 @@ def test_get():
     ts[3] = 0
     ts[6] = 2
 
-    assert ts[0] == None
+    assert ts[0] is None
     assert ts[5.5] == 0
     assert ts[7] == 2
 
@@ -57,10 +56,11 @@ def test_exists():
     ])
 
     ts_exists = ts.exists()
-    assert ts_exists[-10] == False
+    assert ts_exists[-10] is False
     assert ts_exists[-2] is True
     assert ts_exists[3] is True
     assert ts_exists[10] is False
+
 
 def test_merge():
     ts_a = TimeSeries()
@@ -83,7 +83,7 @@ def test_set_interval():
     assert ts[0] is None
     assert ts[2] == 5
     assert ts[3] == 5
-    assert ts[4] == None
+    assert ts[4] is None
     assert ts[5] is None
 
     ts = TimeSeries()
@@ -91,7 +91,7 @@ def test_set_interval():
     ts[3] = 0
     ts[6] = 2
 
-    assert ts[0] == None
+    assert ts[0] is None
     assert ts[5.5] == 0
     assert ts[7] == 2
 
@@ -120,6 +120,7 @@ def test_set_interval_datetime():
                           (datetime(2012, 1, 8, 0, 0), 100),
                           (datetime(2012, 1, 10, 0, 0), 10)]
 
+
 def test_remove_points_from_interval():
     ts = TimeSeries(default=0)
     ts[0] = 0
@@ -146,6 +147,7 @@ def test_remove_points_from_interval():
 
     assert ts[5] == 0
 
+
 def test_pickle():
     ts = TimeSeries(default=False)
     ts[1] = True
@@ -155,4 +157,4 @@ def test_pickle():
     assert unpickled == ts
 
     unpickled[3] = unpickled[1]
-    assert unpickled[3] == True
+    assert unpickled[3] is True
