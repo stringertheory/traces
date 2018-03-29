@@ -16,7 +16,7 @@ import sortedcontainers
 from dateutil.parser import parse as date_parse
 from future.utils import iteritems, listitems
 from infinity import inf
-from traces import decorators, operations
+from traces import operations
 
 # local
 from . import histogram, utils
@@ -82,6 +82,9 @@ class TimeSeries(object):
 
     def __bool__(self):
         return bool(self._d)
+
+    def is_empty(self):
+        return len(self) == 0
 
     # def is_floating(self):
     #     """An empty TimeSeries with no specific default value is said to be

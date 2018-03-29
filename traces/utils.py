@@ -1,6 +1,5 @@
 import datetime
 from past.builtins import long
-from collections import Iterable
 from infinity import inf
 
 
@@ -131,6 +130,7 @@ def datetime_floor(value, unit='days', n_units=1):
         msg = 'must be date, datetime, or inf; got {}'.format(value)
         raise ValueError(msg)
 
+
 WEEKDAY_LOOKUP = {
     'monday': 0,
     'tuesday': 1,
@@ -152,7 +152,7 @@ def weekday_number(value):
             raise ValueError(msg)
 
     elif isinstance(value, str):
-        result = WEEKDAY_NUMBER.get(value.lower())
+        result = WEEKDAY_LOOKUP.get(value.lower())
         if result is None:
             msg = 'must be a valid weekday, got {}'.format(value)
             raise ValueError(msg)

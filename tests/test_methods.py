@@ -242,3 +242,13 @@ def test_get_item_by_index():
 
     assert ts.get_item_by_index(-1) == (5, 10)
     assert ts.last_item() == (5, 10)
+
+def test_bin():
+    ts = traces.TimeSeries()
+    nose.tools.assert_raises(KeyError, ts.bin, 'days')
+
+    mask = traces.TimeSeries(default=False)
+    print(ts.bin('days', mask=mask))
+
+def test_rebin():
+    pass

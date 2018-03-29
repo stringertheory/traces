@@ -1,9 +1,9 @@
 import sys
 from functools import wraps
 
-if sys.version_info[0] > 2:
+try:
     from itertools import filterfalse
-else:
+except ImportError:
     from itertools import ifilterfalse as filterfalse
 
 

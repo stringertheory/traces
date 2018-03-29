@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from six import iteritems
 import nose
 
@@ -75,3 +75,39 @@ def test_convert_args_to_list():
 
     nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2, 3, 4])
     nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2])
+
+def test_datetime_range():
+    # test default options
+    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'days'))
+    assert dt_range[0] == datetime(2016, 1, 1)
+    assert dt_range[-1] == datetime(2016, 1, 31)
+    assert dt_range[10] == datetime(2016, 1, 11)
+
+    # test non-default options
+    dt_range = list(utils.datetime_range(
+        datetime(2016, 1, 2),
+        datetime(2016, 2, 1),
+        'days', n_units=2, inclusive_end=True))
+    assert dt_range[0] == datetime(2016, 1, 2)
+    assert dt_range[-1] == datetime(2016, 2, 1)
+    assert dt_range[10] == datetime(2016, 1, 22)
+
+    # test units
+    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'hours'))
+    assert dt_range[1] - dt_range[0] == timedelta(hours=1)
+    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'minutes', n_units=10))
+    assert dt_range[1] - dt_range[0] == timedelta(minutes=10)
+
+    # test end < start
+    dt_range = list(utils.datetime_range(
+        datetime(2016, 2, 1), datetime(2016, 1, 1), 'days'
+    ))
+    assert dt_range == []
+
+def test_floor_datetime():
+    assert utils.floor_datetime(datetime(2016, 5, 6, 11, 45, 6), 'months', n_units=3) == datetime(2016, 4, 1)
+    assert utils.floor_datetime(datetime(2016, 5, 6, 11, 45, 6), 'minutes', n_units=15) == datetime(2016, 5, 6, 11, 45)
+    nose.tools.assert_raises(
+        ValueError, utils.floor_datetime,
+        datetime(2016,5, 6, 11,45, 6), 'sleconds', n_units=3
+    )
