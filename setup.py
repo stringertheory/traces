@@ -63,6 +63,7 @@ setup(
     include_package_data=True,
     install_requires=read_dependencies('python.txt'),
     extras_require={
+        'pandas': ['pandas'],
         'dev': read_dependencies('python-dev.txt'),
         'doc': read_dependencies('python-doc.txt'),
         'test': read_dependencies('python-test.txt')
