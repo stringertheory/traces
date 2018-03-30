@@ -1,0 +1,67 @@
+version: 2
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-3.6
+      - test-3.5
+      - test-2.7
+jobs:
+  test-3.6: &test-template
+    docker:
+     - image: circleci/python:3.6-jessie
+    filters:
+      branches:
+        only: dev
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            python -m venv venv || virtualenv venv
+            . venv/bin/activate
+            pip install -e .[test]
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "setup.py" }}
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "setup.py" }}
+          - v1-dependencies-
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            nosetests
+
+  test-3.5:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.5-jessie
+  test-2.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:2.7-jessie
+
+
+
+
+
+
+dependencies:
+  pre:
+    - sudo apt-get update; sudo apt-get install python-numpy python-scipy
+    - pip install -r requirements/python-test.txt
+
+  override:
+    - pip install tox tox-pyenv
+    - pyenv local 2.7.14   3.4.6 3.5.3 3.6.4
+
+test:
+  override:
+    - pep8 traces/
+    - nosetests --with-coverage --cover-package=traces
+    - tox
+    - cd docs && make html && cd -

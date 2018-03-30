@@ -31,16 +31,21 @@ def read_author_email():
     return read_init('email')
 
 
-def read_dependencies(filepath):
+def read_dependencies(filename):
     """Read in the dependencies from the virtualenv requirements file.
 
     """
     dependencies = []
+    filepath = os.path.join('requirements', filename)
     with open(filepath, 'r') as stream:
         for line in stream:
             package = line.strip().split('#')[0].strip()
             if package:
-                dependencies.append(package)
+                if package.split(' ')[0] == '-r':
+                    filename = package.split(' ')[1]
+                    dependencies += read_dependencies(filename)
+                else:
+                    dependencies.append(package)
     return dependencies
 
 
@@ -48,14 +53,20 @@ setup(
     name='traces',
     version='0.3.1',
     description="A library for unevenly-spaced time series analysis.",
-    long_description="View on github: https://github.com/datascopeanalytics/traces",
+    long_description=("View on github: "  # string continuation, not a tuple
+                      "https://github.com/datascopeanalytics/traces"),
     author=read_author(),
     author_email=read_author_email(),
     url='https://github.com/datascopeanalytics/traces',
     packages=['traces'],
     package_dir={'traces': 'traces'},
     include_package_data=True,
-    install_requires=read_dependencies('requirements/python.txt'),
+    install_requires=read_dependencies('python.txt'),
+    extras_require={
+        'dev': read_dependencies('python-dev.txt'),
+        'doc': read_dependencies('python-doc.txt'),
+        'test': read_dependencies('python-test.txt')
+    },
     license="MIT license",
     zip_safe=False,
     keywords='traces',
@@ -65,8 +76,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     test_suite='nose.collector',
 )
