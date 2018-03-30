@@ -40,12 +40,8 @@ def read_dependencies(filename):
     with open(filepath, 'r') as stream:
         for line in stream:
             package = line.strip().split('#')[0].strip()
-            if package:
-                if package.split(' ')[0] == '-r':
-                    filename = package.split(' ')[1]
-                    dependencies += read_dependencies(filename)
-                else:
-                    dependencies.append(package)
+            if package and package.split(' ')[0] != '-r':
+                dependencies.append(package)
     return dependencies
 
 
@@ -63,10 +59,10 @@ setup(
     include_package_data=True,
     install_requires=read_dependencies('python.txt'),
     extras_require={
-        'pandas': ['pandas'],
-        'dev': read_dependencies('python-dev.txt'),
+        'test': read_dependencies('python-test.txt'),
         'doc': read_dependencies('python-doc.txt'),
-        'test': read_dependencies('python-test.txt')
+        'dev': read_dependencies('python-dev.txt'),
+        'pandas': ['pandas'],
     },
     license="MIT license",
     zip_safe=False,
