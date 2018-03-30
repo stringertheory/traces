@@ -4,7 +4,7 @@
 cprofilev==1.0.7
 
 # from cookiecutter
-pip==9.0.1
+pip==9.0.3
 bumpversion==0.5.3
 wheel==0.29.0
 tox==2.6.0
