@@ -6,7 +6,7 @@ cprofilev==1.0.7
 # from cookiecutter
 pip==9.0.3
 bumpversion==0.5.3
-wheel==0.30.0
+wheel==0.31.0
 tox==2.9.1
 flake8==3.5.0
 coverage==4.5.1
