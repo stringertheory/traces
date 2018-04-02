@@ -18,9 +18,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "setup.py" }}
-          - v1-dependencies-
+          key: deps1-{{ .Environment.PYTHON_VERSION }}-{{ checksum "setup.py" }}
       - run:
           name: Install dependencies
           command: |
@@ -28,9 +26,9 @@ jobs:
             . venv/bin/activate
             pip install --quiet -e .[test]
       - save_cache:
+          key: deps1-{{ .Environment.PYTHON_VERSION }}-{{ checksum "setup.py" }}
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "setup.py" }}
+            - "venv"
       - run:
           name: Run tests
           command: |
@@ -51,8 +49,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "setup.py" }}
-          - v1-dependencies-
+          - deps1-{{ .Environment.PYTHON_VERSION }}-{{ checksum "setup.py" }}
       - run:
           name: Install dependencies
           command: |
@@ -62,7 +59,7 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "setup.py" }}
+          key: deps1-{{ .Environment.PYTHON_VERSION }}-{{ checksum "setup.py" }}
       - run:
           name: Build docs
           command: |
