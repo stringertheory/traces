@@ -1,10 +1,10 @@
 site_name: traces
-repo_url: https://github.com/datascopeanalytics/traces
+repo_url: https://github.com/datascopeanalytics/traces/tree/dev
 theme: readthedocs
 site_description: Tools for unevenly-spaced time series data
 site_author: Mike Stringer
 site_favicon: http://datascopeanalytics.com/static/main/img/favicon.ico
-copyright: 
+copyright:
 extra_javascript:
     - http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 markdown_extensions:
