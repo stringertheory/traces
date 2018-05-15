@@ -6,7 +6,6 @@ workflows:
       - test-3.6
       - test-3.5
       - test-2.7
-      - doc-3.6
 jobs:
   test-3.6: &test-template
     docker:
@@ -43,25 +42,3 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:2.7-jessie
-  doc-3.6:
-    <<: *test-template
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-          - deps1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
-      - run:
-          name: Install dependencies
-          command: |
-            python -m venv venv
-            . venv/bin/activate
-            pip install -U --quiet -e .[doc]
-      - save_cache:
-          paths:
-            - ./venv
-          key: deps1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
-      - run:
-          name: Build docs
-          command: |
-            . venv/bin/activate
-            cd docs && make html && cd -
