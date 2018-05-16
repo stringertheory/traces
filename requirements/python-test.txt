@@ -2,7 +2,7 @@
 
 # testing
 pycodestyle
-coveralls-python
+coveralls
 nose
 
 # reference implementations
