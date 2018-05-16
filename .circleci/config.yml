@@ -38,6 +38,9 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:3.5-jessie
+    post:
+      - coverage html
+      - cp -r html $CIRCLE_ARTIFACTS
   test-2.7:
     <<: *test-template
     docker:
