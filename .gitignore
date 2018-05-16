@@ -41,6 +41,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 .eggs
+cover
 
 # Translations
 *.mo
