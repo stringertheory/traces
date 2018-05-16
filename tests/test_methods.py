@@ -208,10 +208,10 @@ def test_moving_average():
         1 + i / 2.: ts.mean(1 + i / 2. - 1, 1 + i / 2. + 1) for i in range(2, 15)}
 
     # Test pandas compatibility
-    pd_ts = pd.Series(dict(ts.moving_average(1, 2, 1, 8)))
-    assert all(pd_ts.index[i - 1] == i for i in range(1, 9))
+    pd_ts = pd.Series(dict(ts.moving_average(1, 2, 0, 8)))
+    assert all(pd_ts.index[i] == i for i in range(1, 9))
     assert np.isnan(pd_ts.values[0])
-    assert all(pd_ts.values[i - 1] == ts.mean(i - 1, i + 1)
+    assert all(pd_ts.values[i] == ts.mean(i - 1, i + 1)
                for i in range(2, 9))
 
 
