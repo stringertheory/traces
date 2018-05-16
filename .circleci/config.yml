@@ -32,10 +32,10 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
-            nosetests --with-coverage --cover-package=traces --cover-html
+            nosetests --with-coverage --cover-package=traces --cover-html --cover-dir=/tmp/coverage
             pycodestyle traces/
       - store-artifacts:
-          path: ~/cover
+          path: /tmp/coverage
   test-3.5:
     <<: *test-template
     docker:
