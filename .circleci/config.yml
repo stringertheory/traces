@@ -32,7 +32,7 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
-            nosetests --with-coverage --cover-package=traces --cover-html --cover-dir=/tmp/coverage
+            nosetests --with-coverage --cover-package=traces --cover-html --cover-html-dir=/tmp/coverage
             pycodestyle traces/
       - store-artifacts:
           path: /tmp/coverage
