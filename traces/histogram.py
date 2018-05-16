@@ -72,15 +72,24 @@ class Histogram(sortedcontainers.SortedDict):
 
     def mean(self):
         """Mean of the distribution."""
-        weighted_sum = sum(count * value for value, count in iteritems(self))
-        return weighted_sum / float(self.total())
+        _self = self._discard_value(None)
+        if not _self.total():
+            return None
+        weighted_sum = sum(
+            key * value for key, value in iteritems(_self)
+        )
+        return weighted_sum / float(_self.total())
 
     def variance(self):
         """Variance of the distribution."""
-        mean = self.mean()
-        weighted_central_moment = \
-            sum(count * (value - mean)**2 for value, count in iteritems(self))
-        return weighted_central_moment / float(self.total())
+        _self = self._discard_value(None)
+        if not _self.total():
+            return 0.0
+        mean = _self.mean()
+        weighted_central_moment = sum(
+            count * (value - mean)**2 for value, count in iteritems(_self)
+        )
+        return weighted_central_moment / float(_self.total())
 
     def standard_deviation(self):
         """Standard deviation of the distribution."""
@@ -100,6 +109,14 @@ class Histogram(sortedcontainers.SortedDict):
                 result = Histogram.from_dict(dict(result), key=hash)
                 result[value] = count / float(total)
         return result
+
+    def _discard_value(self, value):
+        if value not in self:
+            return self
+        else:
+            return self.__class__.from_dict(
+                {k: v for k, v in iteritems(self) if k is not value}
+            )
 
     def max(self):
         """Maximum observed value."""
