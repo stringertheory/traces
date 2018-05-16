@@ -6,7 +6,6 @@ import glob
 from datetime import datetime, timedelta
 
 import traces
-from traces import masks
 from traces.utils import datetime_range
 
 
@@ -61,7 +60,7 @@ for t in datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'days'):
     biz_end = t + timedelta(hours=18)
     histogram = total_watts.distribution(start=biz_start, end=biz_end)
     print(t, histogram.quantiles([0.25, 0.5, 0.75]))
-    
+
 # transform time series to evenly spaced version using moving average
 # instead of just sampling to avoid aliasing, and proceed to use
 # statsmodels/pandas to forecast electricity usage "Modeling Time
