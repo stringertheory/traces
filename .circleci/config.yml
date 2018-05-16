@@ -34,13 +34,12 @@ jobs:
             . venv/bin/activate
             nosetests --with-coverage --cover-package=traces
             pycodestyle traces/
+            coverage html
+            cp -r htmlcov $CIRCLE_ARTIFACTS
   test-3.5:
     <<: *test-template
     docker:
       - image: circleci/python:3.5-jessie
-    post:
-      - coverage html
-      - cp -r html $CIRCLE_ARTIFACTS
   test-2.7:
     <<: *test-template
     docker:
