@@ -33,6 +33,7 @@ def read_all(pattern='data/lightbulb-*.csv'):
         result.append(ts)
     return result
 
+
 ts_list = read_all()
 
 total_watts = traces.TimeSeries.merge(ts_list, operation=sum)

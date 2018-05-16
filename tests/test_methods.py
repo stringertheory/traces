@@ -4,7 +4,6 @@ import traces
 import pandas as pd
 import numpy as np
 
-from sortedcontainers import SortedDict
 from future.utils import listitems, iteritems
 
 key_list = [
@@ -150,7 +149,13 @@ def test_moving_average():
         return answer
 
     # Check first arguments
-    output = dict(ts.moving_average(sampling_period=1, window_size=2, start=time_list[0], end=time_list[-1]))
+    output = dict(
+        ts.moving_average(
+            sampling_period=1,
+            window_size=2,
+            start=time_list[0],
+            end=time_list[-1]
+        ))
     assert output == build_answer(datetime.timedelta(seconds=1), (2, 11))
 
     output = dict(ts.moving_average(1, 0.2, time_list[0], time_list[-1]))
@@ -205,7 +210,9 @@ def test_moving_average():
     assert dict(ts.moving_average(1, 2, 2, 8)) == {
         i: ts.mean(i - 1, i + 1) for i in range(2, 9)}
     assert dict(ts.moving_average(0.5, 2, 2, 8)) == {
-        1 + i / 2.: ts.mean(1 + i / 2. - 1, 1 + i / 2. + 1) for i in range(2, 15)}
+        1 + i / 2.: ts.mean(1 + i / 2. - 1, 1 + i / 2. + 1)
+        for i in range(2, 15)
+    }
 
     # Test pandas compatibility
     pd_ts = pd.Series(dict(ts.moving_average(1, 2, 0, 8)))
@@ -228,6 +235,7 @@ def test_to_bool():
         values = [v for (k, v) in result.items()]
         assert answer[type_] == values
 
+
 def test_get_item_by_index():
 
     ts = traces.TimeSeries(default=0)
@@ -243,12 +251,14 @@ def test_get_item_by_index():
     assert ts.get_item_by_index(-1) == (5, 10)
     assert ts.last_item() == (5, 10)
 
+
 def test_bin():
     ts = traces.TimeSeries()
     nose.tools.assert_raises(KeyError, ts.bin, 'days')
 
     mask = traces.TimeSeries(default=False)
     print(ts.bin('days', mask=mask))
+
 
 def test_rebin():
     pass

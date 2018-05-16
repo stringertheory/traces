@@ -17,7 +17,7 @@ when the state changes, but some send a signal every minute. We can
 read them with this code.
 
 .. literalinclude:: ../examples/helloworld.py
-   :lines: 13-37
+   :lines: 12-37
 
 The call to :code:`ts.compact()` will remove any redundant
 measurements. Depending on how often your data changes compared to how
@@ -36,7 +36,7 @@ values is the total wattage.
    :lines: 39
 
 The merged time series has times that are the union of all times in
-the invidual series. Since each time series is the wattage of the
+the individual series. Since each time series is the wattage of the
 lightbulb, the values after the sum are the total wattage used over
 time. Here's how to check the mean power consumption in January.
 
