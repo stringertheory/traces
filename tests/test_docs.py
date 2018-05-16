@@ -1,7 +1,6 @@
 import traces
 from datetime import datetime
 
-
 def test_quickstart():
     time_series = traces.TimeSeries()
     time_series[datetime(2042, 2, 1,  6,  0,  0)] = 0  # 6:00:00am
