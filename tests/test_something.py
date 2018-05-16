@@ -1,5 +1,3 @@
-import nose
-
 import traces
 
 

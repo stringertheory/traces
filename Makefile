@@ -52,7 +52,7 @@ lint: ## check style with flake8
 
 test: ## run tests quickly with the default Python
 	nosetests --with-coverage --cover-package=traces
-	pep8 traces
+	pycodestyle traces
 
 test-all: ## run tests on every Python version with tox
 	tox
