@@ -794,7 +794,7 @@ class TimeSeries(object):
         with open(filename) as infile:
             reader = csv.reader(infile)
             if skip_header:
-                reader.next()
+                next(reader)
             for row in reader:
                 time = time_transform(row[time_column])
                 value = value_transform(row[value_column])
