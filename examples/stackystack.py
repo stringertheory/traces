@@ -3,7 +3,7 @@ import random
 import datetime
 from infinity import inf
 
-d = traces.Domain()#[1,3], [2,4])
+d = traces.TimeSeries(default=False)#[1,3], [2,4])
 d = traces.Domain(None)
 d = traces.Domain(-inf, inf)
 # d = traces.Domain(-inf, 0)
@@ -88,7 +88,7 @@ def hour_mask(n_days, hours):
 n_days = 5
 ts = generate_ts(n_days)
 
-# for t0, t1 in ts.to_domain().intervals():
+# for t0, t1 in ts.to_TimeSeries(default=False).intervals():
 #     print t0.isoformat(), -1
 #     print t1.isoformat(), -1
 

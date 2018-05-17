@@ -1,9 +1,6 @@
 import datetime
-import sys
-
 import nose
-
-from traces import TimeSeries, Domain, Histogram
+from traces import TimeSeries, Histogram
 
 
 def test_distribution():
@@ -42,7 +39,6 @@ def test_default_values():
 
     start = datetime.datetime(2015, 3, 1)
     end = datetime.datetime(2015, 3, 4)
-    total = (end - start).total_seconds()
     default = a.distribution()
     distribution = a.distribution(start=start, end=end)
     assert default == distribution
@@ -62,7 +58,7 @@ def test_mask():
     a.set(datetime.datetime(2015, 4, 4), 0)
     end = datetime.datetime(2015, 4, 5)
 
-    mask = Domain()
+    mask = TimeSeries(default=False)
     mask[datetime.datetime(2015, 4, 1)] = True
     mask[datetime.datetime(2015, 4, 3)] = False
 
@@ -106,6 +102,7 @@ def test_distribution_set():
 
     # TODO: How to convert the set into multiple ts?
 
+
 def test_distribution_empty():
 
     ts = TimeSeries()
@@ -142,11 +139,12 @@ def test_distribution_empty():
     # empty mask
     mask = TimeSeries(default=0)
 
-    with nose.tools.assert_raises(KeyError):
+    with nose.tools.assert_raises(ValueError):
         ts.distribution(mask=mask)
 
-    with nose.tools.assert_raises(KeyError):
+    with nose.tools.assert_raises(ValueError):
         ts.distribution(start=0, end=2, mask=mask)
+
 
 def test_none_handling():
     ts = TimeSeries()
@@ -155,5 +153,5 @@ def test_none_handling():
     ts[3] = (2, 0)
 
     # print(ts.distribution(normalized=False))
-    assert( ts.distribution()[(0, 1)] ==  0.5)
-    assert( ts.distribution()[(None, 0)] ==  0.5)
+    assert(ts.distribution()[(0, 1)] == 0.5)
+    assert(ts.distribution()[(None, 0)] == 0.5)

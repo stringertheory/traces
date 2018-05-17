@@ -18,3 +18,17 @@ def test_quickstart():
     )
 
     assert distribution[1] == 0.16440476190476191
+
+
+def test_reference():
+    cart = traces.TimeSeries()
+    cart[1.2] = {'broccoli'}
+    cart[1.7] = {'broccoli', 'apple'}
+    cart[2.2] = {'apple'}
+    cart[3.5] = {'apple', 'beets'}
+
+    assert cart[2] == {'broccoli', 'apple'}
+    assert cart[-1] is None
+
+    cart = traces.TimeSeries(default=set())
+    assert cart[-1] == set([])

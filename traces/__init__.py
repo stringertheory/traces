@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .histogram import Histogram
-from .timeseries import TimeSeries, Domain
+from .timeseries import TimeSeries
 from .utils import datetime_range
 from traces import decorators
 from traces import operations

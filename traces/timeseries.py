@@ -581,7 +581,7 @@ class TimeSeries(object):
         start, end, mask = self._check_boundaries(start, end, mask=mask)
 
         counter = histogram.Histogram()
-        for start, end in mask.intervals():
+        for start, end, _ in mask.iterperiods(value=True):
             for t0, t1, value in self.iterperiods(start, end):
                 duration = utils.duration_to_number(
                     t1 - t0,
@@ -632,7 +632,7 @@ class TimeSeries(object):
         start, end, mask = self._check_boundaries(start, end, mask=mask)
 
         count = 0
-        for start, end in mask.intervals():
+        for start, end, _ in mask.iterperiods(value=True):
 
             if include_end:
                 end_count = self._d.bisect_right(end)
@@ -830,7 +830,7 @@ class TimeSeries(object):
 
     def to_domain(self, start=None, end=None):
         """"""
-        result = Domain()
+        result = TimeSeries(default=False)
         for t0, t1, value in self.iterperiods(start=start, end=end):
             if value:
                 result.set(t0, True, compact=True)
@@ -981,16 +981,12 @@ class TimeSeries(object):
 
     def _check_boundaries(self, start, end, mask=None, allow_infinite=False):
 
-        # if a TimeSeries is given as mask, convert to a domain
-        if type(mask) == TimeSeries:
-            mask = mask.to_domain()
-
         if mask is not None and mask.is_empty():
             raise ValueError('mask can not be empty')
 
         # if only a mask is passed in, return mask boundaries and mask
         if start is None and end is None and mask is not None:
-            return mask.lower, mask.upper, mask
+            return mask.first_key, mask.last_key, mask
 
         # replace with defaults if not given
         start = self._check_boundary(start, allow_infinite, 'lower')
@@ -1000,7 +996,7 @@ class TimeSeries(object):
             msg = "start can't be >= end ({} >= {})".format(start, end)
             raise ValueError(msg)
 
-        start_end_mask = Domain()
+        start_end_mask = TimeSeries(default=False)
         start_end_mask[start] = True
         start_end_mask[end] = False
 
@@ -1040,105 +1036,12 @@ class TimeSeries(object):
         return result
 
 
-class Domain(TimeSeries):
-    """Initialize with:
-
-    >>> Domain(1, 4)
-    >>> Domain([1, 4])
-    >>> Domain((1, 4))
-    >>> Domain([[1, 4]])
-    >>> Domain([(1, 4)])
-    >>> Domain((1, 4), (5, 8))
-    >>> Domain([1, 4], [5, 8])
-    >>> Domain([(1, 4), (5, 8)])
-    >>> Domain([[1, 4], [5, 8]])
-
-    Domain has to be closed intervals. It can be open toward -inf or
-    inf.  For example, Domain(-inf, 3) means a domain from -inf to 3
-    inclusive.
-
-    """
-
-    def __init__(self, data=None):
-        super(Domain, self).__init__(data, default=False)
-
-    def __repr__(self):
-        return '<Domain>\n%s\n</Domain>' % \
-            pprint.pformat(self._d)
-
-    def start(self):
-        try:
-            return self.first_item()[0]
-        except IndexError:
-            return -inf
-
-    def end(self):
-        try:
-            return self.last_item()[0]
-        except IndexError:
-            return +inf
-
-    def is_empty(self):
-
-        for t0, t1 in self.intervals():
-            return False
-
-        return True
-
-    @property
-    def lower(self):
-        return self.start()
-
-    @property
-    def upper(self):
-        return self.end()
-
-    def __and__(self, other):
-
-        lower = max(self.lower, other.lower)
-        upper = min(self.upper, other.upper)
-
-        # if there is no potential overlap, return empty Domain
-        if lower >= upper:
-            return Domain()
-
-        # otherwise, do the logical and only over the potential region
-        # of overlap
-        else:
-            result = Domain()
-            for time, value in self.slice(lower, upper):
-                result[time] = value and other[time]
-            for time, value in other.slice(lower, upper):
-                result[time] = self[time] and value
-            return result
-
-    def intervals(self):
-        for t0, t1, value in self.iterperiods(value=True):
-            yield t0, t1
-
-    def spans_between(self, start, end, unit, n_units=1):
-        previous_dt = None
-        for interval_start, interval_end in self.intervals():
-
-            # floor the start of the interval to start at something round
-            current_dt = \
-                utils.datetime_floor(
-                    interval_start, unit=unit, n_units=n_units)
-
-            while current_dt < interval_end:
-                next_dt = current_dt + datetime.timedelta(**{unit: n_units})
-                if not previous_dt == current_dt:
-                    yield current_dt, next_dt
-                previous_dt = current_dt
-                current_dt = next_dt
-
-
 def hour_of_day(start, end, hour):
 
     # start should be date, or if datetime, will use date of datetime
     floored = utils.datetime_floor(start)
 
-    domain = Domain()
+    domain = TimeSeries(default=False)
     for day_start in utils.datetime_range(floored, end, 'days',
                                           inclusive_end=True):
         interval_start = day_start + datetime.timedelta(hours=hour)
@@ -1165,7 +1068,7 @@ def day_of_week(start, end, weekday):
             first_day = day
             break
 
-    domain = Domain()
+    domain = TimeSeries(default=False)
     for week_start in utils.datetime_range(first_day, end, 'weeks',
                                            inclusive_end=True):
         interval_start = week_start
