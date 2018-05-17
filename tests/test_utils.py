@@ -25,7 +25,8 @@ non_numeric_types = [
 def test_duration_to_number():
     for tdelta in timedelta_list:
         assert utils.duration_to_number(tdelta) == tdelta.total_seconds()
-        nose.tools.assert_raises(NotImplementedError, utils.duration_to_number, tdelta, 'hours')
+        nose.tools.assert_raises(
+            NotImplementedError, utils.duration_to_number, tdelta, 'hours')
 
     for _type, item in iteritems(numeric_types):
         for num in item:
@@ -76,9 +77,11 @@ def test_convert_args_to_list():
     nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2, 3, 4])
     nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2])
 
+
 def test_datetime_range():
     # test default options
-    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'days'))
+    dt_range = list(utils.datetime_range(
+        datetime(2016, 1, 1), datetime(2016, 2, 1), 'days'))
     assert dt_range[0] == datetime(2016, 1, 1)
     assert dt_range[-1] == datetime(2016, 1, 31)
     assert dt_range[10] == datetime(2016, 1, 11)
@@ -93,9 +96,11 @@ def test_datetime_range():
     assert dt_range[10] == datetime(2016, 1, 22)
 
     # test units
-    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'hours'))
+    dt_range = list(utils.datetime_range(
+        datetime(2016, 1, 1), datetime(2016, 2, 1), 'hours'))
     assert dt_range[1] - dt_range[0] == timedelta(hours=1)
-    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'minutes', n_units=10))
+    dt_range = list(utils.datetime_range(datetime(2016, 1, 1),
+                                         datetime(2016, 2, 1), 'minutes', n_units=10))
     assert dt_range[1] - dt_range[0] == timedelta(minutes=10)
 
     # test end < start
@@ -104,10 +109,23 @@ def test_datetime_range():
     ))
     assert dt_range == []
 
+
 def test_floor_datetime():
-    assert utils.floor_datetime(datetime(2016, 5, 6, 11, 45, 6), 'months', n_units=3) == datetime(2016, 4, 1)
-    assert utils.floor_datetime(datetime(2016, 5, 6, 11, 45, 6), 'minutes', n_units=15) == datetime(2016, 5, 6, 11, 45)
+    # the date here is May 6th, 2016 (week 18)
+    assert utils.floor_datetime(
+        datetime(2016, 5, 6, 11, 45, 6), 'years', n_units=1) == datetime(2016, 1, 1)
+    assert utils.floor_datetime(
+        datetime(2016, 5, 6, 11, 45, 6), 'months', n_units=3) == datetime(2016, 4, 1)
+    assert utils.floor_datetime(
+        datetime(2016, 5, 6, 11, 45, 6), 'weeks', n_units=3) == datetime(2016, 4, 18)
+    assert utils.floor_datetime(datetime(
+        2016, 5, 6, 11, 45, 6), 'hours', n_units=10) == datetime(2016, 5, 6, 10)
+    assert utils.floor_datetime(datetime(
+        2016, 5, 6, 11, 45, 6), 'minutes', n_units=15) == datetime(2016, 5, 6, 11, 45)
+    assert utils.floor_datetime(datetime(
+        2016, 5, 6, 11, 45, 6), 'seconds', n_units=30) == datetime(2016, 5, 6, 11, 45)
+
     nose.tools.assert_raises(
         ValueError, utils.floor_datetime,
-        datetime(2016,5, 6, 11,45, 6), 'sleconds', n_units=3
+        datetime(2016, 5, 6, 11, 45, 6), 'sleconds', n_units=3
     )

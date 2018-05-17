@@ -90,11 +90,10 @@ def floor_datetime(dt, unit, n_units=1):
         new_month = dt.month - (dt.month - 1) % n_units
         return datetime.datetime(dt.year, new_month, 1, 0, 0, 0)
     elif unit == 'weeks':
-        rounded_to_day = floor_datetime(dt, 'days', 1)
-        delta_from_monday = datetime.timedelta(days=rounded_to_day.weekday())
-        # days_from_sunday = (rounded_to_day.weekday() + 1) % 7
-        # delta_from_sunday = datetime.timedelta(days=days_from_sunday)
-        return rounded_to_day - delta_from_monday
+        _, isoweek, _ = dt.isocalendar()
+        new_week = isoweek - (isoweek - 1) % n_units
+        return datetime.datetime.strptime(
+            "%d %02d 1" % (dt.year, new_week), "%Y %W %w")
     elif unit == 'days':
         new_day = dt.day - dt.day % n_units
         return datetime.datetime(dt.year, dt.month, new_day, 0, 0, 0)

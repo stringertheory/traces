@@ -16,7 +16,7 @@ def test_scalar_ops():
     ts_threshold = a.threshold(value=1.1)
 
     # test before domain, should give default value
-    assert ts_half[datetime.datetime(2015, 2, 24)] == None
+    assert ts_half[datetime.datetime(2015, 2, 24)] is None
     assert ts_bool[datetime.datetime(2015, 2, 24)] == None
     assert ts_threshold[datetime.datetime(2015, 2, 24)] == None
 
@@ -236,6 +236,7 @@ def example_sum():
     for dt, i in TimeSeries.merge([a, b, c], operation=sum):
         print(dt.isoformat(), i)
 
+
 def test_interpolation():
 
     ts = TimeSeries(data=[(0, 0), (1, 2)])
@@ -250,6 +251,7 @@ def test_interpolation():
     assert ts.get(2, interpolate='linear') == 2
 
     nose.tools.assert_raises(ValueError, ts.get, 0.5, 'spline')
+
 
 def test_default():
     ts = TimeSeries(data=[(0, 0), (1, 2)])
