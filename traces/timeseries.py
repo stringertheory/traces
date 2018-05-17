@@ -569,8 +569,8 @@ class TimeSeries(object):
                 one. If False and the time values of the TimeSeries
                 are datetimes, the units will be seconds.
 
-            mask (:obj:`Domain` or :obj:`TimeSeries`, optional): A
-                Domain on which to calculate the distribution.
+            mask (:obj:`TimeSeries`, optional): A
+                domain on which to calculate the distribution.
 
         Returns:
 
@@ -616,8 +616,8 @@ class TimeSeries(object):
                 calculate the distribution. By default, the end is
                 +infinity.
 
-            mask (:obj:`Domain` or :obj:`TimeSeries`, optional): A
-                Domain on which to calculate the distribution.
+            mask (:obj:`TimeSeries`, optional): A
+                domain on which to calculate the distribution.
 
         Returns:
 
@@ -826,16 +826,6 @@ class TimeSeries(object):
         else:
             for time, value in self:
                 result[time] = function(value, other)
-        return result
-
-    def to_domain(self, start=None, end=None):
-        """"""
-        result = TimeSeries(default=False)
-        for t0, t1, value in self.iterperiods(start=start, end=end):
-            if value:
-                result.set(t0, True, compact=True)
-                result.set(t1, False, compact=True)
-
         return result
 
     def to_bool(self, invert=False):

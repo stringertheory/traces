@@ -3,30 +3,6 @@ import random
 import datetime
 from infinity import inf
 
-d = traces.TimeSeries(default=False)#[1,3], [2,4])
-d = traces.Domain(None)
-d = traces.Domain(-inf, inf)
-# d = traces.Domain(-inf, 0)
-d = traces.Domain(1, 2) 
-d = traces.Domain([1, 2])
-d = traces.Domain([1, 2], [3, 4])
-d = traces.Domain([(1, 2), (3, 4)])
-d = traces.Domain([(2, 5), (3, 4)])
-# d = traces.Domain(datetime.datetime(2001, 2, 3), datetime.datetime(2002, 3, 4))
-# d = traces.Domain(1)
-# d = traces.Domain(1, 2, 3)
-# d = traces.Domain([1, 2, 3])
-# d = traces.Domain([(1, 2), (3, 4, 5)])
-# d = traces.Domain([])
-# d = traces.Domain([1, 2, (3, 4)])
-# d = traces.Domain(2, 1)
-# d = traces.Domain(2, 2)
-# d = traces.Domain([(1, 2), (2, 2)])
-
-dom1 = traces.Domain(1, 2)
-dom2 = traces.Domain(3, 4)
-print dom1.union(dom2)
-raise 'STOP'
 
 def average(values):
     sum_ = 0
@@ -57,7 +33,7 @@ class Test(traces.TimeSeries):
 def xmprint(ts):
     for t, v in ts:
         # print t.isoformat(), v
-        print t, v
+        print(t, v)
 
 
 def generate_ts(n_days):
@@ -76,14 +52,17 @@ def generate_ts(n_days):
     ts[start_time + datetime.timedelta(days=n_days)] = 0
     return ts
 
+
 def hour_mask(n_days, hours):
     start_time = datetime.datetime(2016, 1, 1)
-    intervals = []
+    domain = TimeSeries(default=False)
     for day in range(n_days):
         start = start_time + datetime.timedelta(days=day, hours=hours)
         end = start + datetime.timedelta(hours=1)
-        intervals.append([start, end])
-    return traces.Domain(intervals)
+        domain[start] = True
+        domain[end] = False
+    return domain
+
 
 n_days = 5
 ts = generate_ts(n_days)
