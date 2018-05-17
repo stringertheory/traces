@@ -1,7 +1,7 @@
 -r python-dev.txt
 
 # testing
-pycodestyle < 2.4.0
+pycodestyle<2.4.0
 coveralls
 nose
 

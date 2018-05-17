@@ -12,7 +12,9 @@ jobs:
      - image: circleci/python:3.6-jessie
     filters:
       branches:
-        only: dev
+        only:
+          - dev
+          - master
     working_directory: ~/repo
     steps:
       - checkout

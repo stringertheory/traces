@@ -1,5 +1,5 @@
 site_name: traces
-repo_url: https://github.com/datascopeanalytics/traces/tree/dev
+repo_url: https://github.com/datascopeanalytics/traces/tree/master
 theme: readthedocs
 site_description: Tools for unevenly-spaced time series data
 site_author: Mike Stringer
