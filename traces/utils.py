@@ -150,8 +150,16 @@ def weekday_number(value):
             msg = 'must be value from 0-6'
             raise ValueError(msg)
 
-    elif isinstance(value, str):
-        result = WEEKDAY_LOOKUP.get(value.lower())
-        if result is None:
+    else:
+        result = WEEKDAY_LOOKUP.get(value)
+        if result:
+            return result
+        else:
+            try:
+                result = WEEKDAY_LOOKUP.get(value.lower())
+            except TypeError:
+                pass
+            if result:
+                return result
             msg = 'must be a valid weekday, got {}'.format(value)
             raise ValueError(msg)
