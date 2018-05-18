@@ -3,10 +3,14 @@ workflows:
   version: 2
   test:
     jobs:
-      - test-3.6
-      - test-3.5
-      - test-3.4
-      - test-2.7
+      - test-3.6:
+          context: traces
+      - test-3.5:
+          context: traces
+      - test-3.4:
+          context: traces
+      - test-2.7:
+          context: traces
 jobs:
   test-3.6: &test-template
     docker:
@@ -20,7 +24,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: {{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
+          key: cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
       - run:
           name: Install dependencies
           command: |
@@ -28,7 +32,7 @@ jobs:
             . venv/bin/activate
             pip install --quiet -e .[test]
       - save_cache:
-          key: {{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
+          key: cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
           paths:
             - "venv"
       - run:
