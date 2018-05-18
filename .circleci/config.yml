@@ -20,7 +20,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: deps1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
+          key: {{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
       - run:
           name: Install dependencies
           command: |
@@ -28,7 +28,7 @@ jobs:
             . venv/bin/activate
             pip install --quiet -e .[test]
       - save_cache:
-          key: deps1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
+          key: {{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
           paths:
             - "venv"
       - run:
