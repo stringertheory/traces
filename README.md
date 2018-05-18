@@ -1,6 +1,6 @@
 # traces
 
-[![Version](https://img.shields.io/pypi/v/traces.svg?)](https://pypi.python.org/pypi/traces) [![Build Status](https://circleci.com/gh/datascopeanalytics/traces/tree/master.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/datascopeanalytics/traces) [![Documentation Status](https://readthedocs.org/projects/traces/badge/?version=master)](https://traces.readthedocs.io/en/master/?badge=master) [![Coverage Status](https://coveralls.io/repos/github/datascopeanalytics/traces/badge.svg?branch=master)](https://coveralls.io/github/datascopeanalytics/traces?branch=master)
+[![Version](https://img.shields.io/pypi/v/traces.svg?)](https://pypi.python.org/pypi/traces) [![PyVersions](https://img.shields.io/pypi/pyversions/traces.svg)](https://pypi.python.org/pypi/traces) [![CircleCI](https://circleci.com/gh/datascopeanalytics/traces/tree/master.svg?style=shield)](https://circleci.com/gh/datascopeanalytics/traces/tree/master) [![Documentation Status](https://readthedocs.org/projects/traces/badge/?version=master)](https://traces.readthedocs.io/en/master/?badge=master) [![Coverage Status](https://coveralls.io/repos/github/datascopeanalytics/traces/badge.svg?branch=master)](https://coveralls.io/github/datascopeanalytics/traces?branch=master)
 
 A Python library for unevenly-spaced time series analysis.
 
