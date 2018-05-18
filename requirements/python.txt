@@ -1,4 +1,4 @@
-sortedcontainers
+sortedcontainers<2
 arrow
 future
 intervals
