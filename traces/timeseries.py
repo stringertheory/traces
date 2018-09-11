@@ -209,6 +209,8 @@ class TimeSeries(object):
         be anyway.
 
         """
+        e = None
+
         # for each interval to render
         for i, (s, e, v) in enumerate(self.iterperiods(start, end)):
             # look at all intervals included in the current interval
@@ -220,8 +222,9 @@ class TimeSeries(object):
                 # otherwise, remove intermediate key
                 del self[s]
 
-        # finish by setting the end of the interval to the previous value
-        self.set(end, v, compact)
+        if e and e != end:
+            # finish by setting the end of the interval to the previous value
+            self.set(end, v, compact)
 
     def compact(self):
         """Convert this instance to a compact version: the value will be the
