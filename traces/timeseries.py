@@ -210,7 +210,7 @@ class TimeSeries(object):
 
         """
         # for each interval to render
-        for i, (s, e, v) in enumerate(self.iterperiods(start, end)):
+        for i, (s, e, v) in enumerate(list(self.iterperiods(start, end))):
             # look at all intervals included in the current interval
             # (always at least 1)
             if i == 0:
