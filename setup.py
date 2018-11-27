@@ -45,12 +45,14 @@ def read_dependencies(filename):
     return dependencies
 
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='traces',
     version='0.4.2',
     description="A library for unevenly-spaced time series analysis.",
-    long_description=("View on github: "  # string continuation, not a tuple
-                      "https://github.com/datascopeanalytics/traces"),
+    long_description=long_description,
     author=read_author(),
     author_email=read_author_email(),
     url='https://github.com/datascopeanalytics/traces',
@@ -76,6 +78,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     test_suite='nose.collector',
 )
