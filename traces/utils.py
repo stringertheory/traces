@@ -163,3 +163,14 @@ def weekday_number(value):
                 return result
             msg = 'must be a valid weekday, got {}'.format(value)
             raise ValueError(msg)
+
+
+def pairwise(iterable):
+    """ given an interable `p1, p2, p3, ...`
+    it iterates through pairwise tuples `(p0, p1), (p1, p2), ...`"""
+    it = iter(iterable)
+    a = next(it, None)
+
+    for b in it:
+        yield (a, b)
+        a = b

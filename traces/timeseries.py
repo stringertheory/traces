@@ -536,11 +536,10 @@ class TimeSeries(object):
 
         function = getattr(self, transform)
         result = sortedcontainers.SortedDict()
-        for bin_start, bin_end in mask.spans_between(start, end, unit,
-                                                     n_units=n_units):
-
-            result[bin_start] = function(bin_start, bin_end,
-                                         mask=mask, normalized=False)
+        dt_range = utils.datetime_range(start, end, unit, n_units=n_units)
+        for bin_start, bin_end in utils.pairwise(dt_range):
+            result[bin_start] = function(
+                bin_start, bin_end, mask=mask, normalized=False)
 
         return result
 
@@ -944,10 +943,10 @@ class TimeSeries(object):
 
         if lower_or_upper == 'lower':
             infinity_value = -inf
-            method_name = 'first_item'
+            method_name = 'first_key'
         elif lower_or_upper == 'upper':
             infinity_value = inf
-            method_name = 'last_item'
+            method_name = 'last_key'
         else:
             msg = '`lower_or_upper` must be "lower" or "upper", got {}'.format(
                 lower_or_upper,
@@ -959,7 +958,7 @@ class TimeSeries(object):
                 return infinity_value
             else:
                 try:
-                    return getattr(self, method_name)()[0]
+                    return getattr(self, method_name)()
                 except IndexError:
                     msg = (
                         "can't use '{}' for default {} boundary "
@@ -976,7 +975,7 @@ class TimeSeries(object):
 
         # if only a mask is passed in, return mask boundaries and mask
         if start is None and end is None and mask is not None:
-            return mask.first_key, mask.last_key, mask
+            return mask.first_key(), mask.last_key(), mask
 
         # replace with defaults if not given
         start = self._check_boundary(start, allow_infinite, 'lower')
