@@ -11,6 +11,8 @@ workflows:
           context: traces
       - test-2.7:
           context: traces
+      - test-3.7:
+          context: traces
 jobs:
   test-3.6: &test-template
     docker:
@@ -54,3 +56,7 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:2.7-jessie
+  test-3.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7-jessie
