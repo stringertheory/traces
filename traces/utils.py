@@ -1,7 +1,7 @@
 import datetime
 from past.builtins import long
 from infinity import inf
-
+import numpy as np
 
 def duration_to_number(duration, units='seconds'):
     """If duration is already a numeric type, then just return
@@ -11,7 +11,7 @@ def duration_to_number(duration, units='seconds'):
     TODO: allow for multiple types of units.
 
     """
-    if isinstance(duration, (int, float, long)):
+    if isinstance(duration, (int, float, long, np.float32)):
         return duration
     elif isinstance(duration, (datetime.timedelta,)):
         if units == 'seconds':
