@@ -121,10 +121,8 @@ class TimeSeries(object):
             # right of last measurement
             return self.last_item()[1]
         else:
-            left_time = self._d.iloc[left_index]
-            left_value = self._d[left_time]
-            right_time = self._d.iloc[right_index]
-            right_value = self._d[right_time]
+            left_time, left_value = self._d.peekitem(left_index)
+            right_time, right_value = self._d.peekitem(right_index)
             dt_interval = right_time - left_time
             dt_start = time - left_time
             if isinstance(dt_interval, datetime.timedelta):
@@ -138,8 +136,7 @@ class TimeSeries(object):
         right_index = self._d.bisect_right(time)
         left_index = right_index - 1
         if right_index > 0:
-            left_time = self._d.iloc[left_index]
-            left_value = self._d[left_time]
+            left_time, left_value = self._d.peekitem(left_index)
             return left_value
         elif right_index == 0:
             return self.default
@@ -343,7 +340,7 @@ class TimeSeries(object):
         # get start index and value
         start_index = self._d.bisect_right(start)
         if start_index:
-            start_value = self._d[self._d.iloc[start_index - 1]]
+            _, start_value = self._d.peekitem(start_index - 1)
         else:
             start_value = self.default
 

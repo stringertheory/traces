@@ -120,11 +120,11 @@ class Histogram(sortedcontainers.SortedDict):
 
     def max(self):
         """Maximum observed value."""
-        return self.iloc[-1]
+        return self.keys()[-1]
 
     def min(self):
         """Minimum observed value."""
-        return self.iloc[0]
+        return self.keys()[0]
 
     def _quantile_function(self, alpha=0.5, smallest_count=None):
         """Return a function that returns the quantile values for this
@@ -152,8 +152,8 @@ class Histogram(sortedcontainers.SortedDict):
             debug_plot.append((cumulative_sum / total, value))
 
         # get maximum and minumum q values
-        q_min = inverse.iloc[0]
-        q_max = inverse.iloc[-1]
+        q_min = inverse.keys()[0]
+        q_max = inverse.keys()[-1]
 
         # this stuff if helpful for debugging -- keep it in here
         # for i, j in debug_plot:
@@ -179,8 +179,8 @@ class Histogram(sortedcontainers.SortedDict):
                     result = inverse[q]
                 else:
                     previous_index = inverse.bisect_left(q) - 1
-                    x1 = inverse.iloc[previous_index]
-                    x2 = inverse.iloc[previous_index + 1]
+                    x1 = inverse.keys()[previous_index]
+                    x2 = inverse.keys()[previous_index + 1]
                     y1 = inverse[x1]
                     y2 = inverse[x2]
                     result = (y2 - y1) * (q - x1) / float(x2 - x1) + y1
@@ -188,14 +188,14 @@ class Histogram(sortedcontainers.SortedDict):
             else:
                 if q in inverse:
                     previous_index = inverse.bisect_left(q) - 1
-                    x1 = inverse.iloc[previous_index]
-                    x2 = inverse.iloc[previous_index + 1]
+                    x1 = inverse.keys()[previous_index]
+                    x2 = inverse.keys()[previous_index + 1]
                     y1 = inverse[x1]
                     y2 = inverse[x2]
                     result = 0.5 * (y1 + y2)
                 else:
                     previous_index = inverse.bisect_left(q) - 1
-                    x1 = inverse.iloc[previous_index]
+                    x1 = inverse.keys()[previous_index]
                     result = inverse[x1]
 
             return float(result)
