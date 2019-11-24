@@ -50,7 +50,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='traces',
-    version='0.4.7',
+    version='0.4.8',
     description="A library for unevenly-spaced time series analysis.",
     long_description=long_description,
     long_description_content_type="text/markdown",
