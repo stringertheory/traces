@@ -18,6 +18,7 @@
 # it absolute, like shown here.
 import os
 import sys
+import datetime
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.abspath("_themes"))
 import traces
@@ -48,7 +49,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'traces'
-copyright = u'2016, Mike Stringer'
+copyright = u'2016-{}, Mike Stringer'.format(datetime.date.today().year)
 author = u'Mike Stringer'
 
 # The version info for the project you're documenting, acts as
