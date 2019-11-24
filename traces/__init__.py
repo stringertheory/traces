@@ -9,4 +9,4 @@ from infinity import inf
 
 __author__ = 'Mike Stringer'
 __email__ = 'mike.stringer@datascopeanalytics.com'
-__version__ = '0.4.3'
+__version__ = '0.4.4'
