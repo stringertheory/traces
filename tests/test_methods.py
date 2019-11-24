@@ -286,3 +286,61 @@ def test_bin():
 
 def test_rebin():
     pass
+
+
+def test_npoints():
+
+    ts = traces.TimeSeries()
+    ts[0] = 4
+    ts[1] = 2
+    ts[2] = 1
+    ts[5] = 2
+    ts[8] = 4
+
+    nose.tools.eq_(ts.n_points(), 5)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=False, include_end=False), 3)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=False, include_end=True), 4)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=True, include_end=False), 4)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=True, include_end=True), 5)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=False, include_end=False), 2)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=False, include_end=True), 3)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=True, include_end=False), 3)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=True, include_end=True), 4)
+
+    ts = traces.TimeSeries()
+
+    nose.tools.eq_(ts.n_points(), 0)
+    nose.tools.eq_(ts.n_points(include_start=False), 0)
+    nose.tools.eq_(ts.n_points(include_end=False), 0)
+
+
+def test_radd():
+
+    ts1 = traces.TimeSeries(default=0)
+    ts1[0] = 1
+    ts1[2] = 0
+    ts1[3] = 1
+    ts1[4] = 0
+
+    ts2 = traces.TimeSeries(default=0)
+    ts2[-1] = 1
+    ts2[2] = 0
+    ts2[3] = 1
+    ts2[4] = 0
+
+    ts3 = ts1 + ts2
+
+    nose.tools.eq_(
+        list(ts3.items()),
+        [(-1, 1), (0, 2), (2, 0), (3, 2), (4, 0)]
+    )
+
+    nose.tools.assert_raises(TypeError, ts3.__radd__, 1)

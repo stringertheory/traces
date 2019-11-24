@@ -27,9 +27,6 @@ except ImportError:
     pass
 
 
-# EXTEND_BACK = object()
-
-
 class TimeSeries(object):
     """A class to help manipulate and analyze time series that are the
     result of taking measurements at irregular points in time. For
@@ -85,25 +82,9 @@ class TimeSeries(object):
     def is_empty(self):
         return len(self) == 0
 
-    # def is_floating(self):
-    #     """An empty TimeSeries with no specific default value is said to be
-    #     "floating", since the value of the TimeSeries is
-    #     undefined. Any operation that needs to look up the value of
-    #     the TimeSeries is not defined on a floating TimeSeries.
-    #
-    #     """
-    #     return (self.extend_back and len(self) == 0)
-
     @property
     def default(self):
         """Return the default value of the time series."""
-        # if self.is_floating():
-        #     msg = "can't get value of empty TimeSeries with no default value"
-        #     raise KeyError(msg)
-        # else:
-        # if self._default == EXTEND_BACK:
-        #     return self.first_item()[1]
-        # else:
         return self._default
 
     @default.setter
@@ -619,7 +600,7 @@ class TimeSeries(object):
              `int` with the result
 
         """
-        # just go ahead and return 0 if we already know it regarless
+        # just go ahead and return 0 if we already know it regardless
         # of boundaries
         if not self.n_measurements():
             return 0

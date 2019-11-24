@@ -75,6 +75,9 @@ def test_merge():
     assert True in ts_merge[0]
     assert None in ts_merge[0]
 
+    ts_c = TimeSeries.merge([])
+    assert list(ts_c.items()) == []
+
 
 def test_set_interval():
     ts = TimeSeries()

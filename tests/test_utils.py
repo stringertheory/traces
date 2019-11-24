@@ -100,8 +100,12 @@ def test_datetime_range():
     dt_range = list(utils.datetime_range(
         datetime(2016, 1, 1), datetime(2016, 2, 1), 'hours'))
     assert dt_range[1] - dt_range[0] == timedelta(hours=1)
-    dt_range = list(utils.datetime_range(datetime(2016, 1, 1),
-                                         datetime(2016, 2, 1), 'minutes', n_units=10))
+    dt_range = list(utils.datetime_range(
+        datetime(2016, 1, 1),
+        datetime(2016, 2, 1),
+        'minutes',
+        n_units=10,
+    ))
     assert dt_range[1] - dt_range[0] == timedelta(minutes=10)
 
     # test end < start
@@ -114,27 +118,41 @@ def test_datetime_range():
 def test_datetime_floor():
     # the date here is May 6th, 2016 (week 18)
 
-    assert utils.datetime_floor(date(2016, 5, 6), 'years') == datetime(2016, 1, 1)
-    assert utils.datetime_floor(inf) == inf
-    assert utils.datetime_floor(
-        datetime(2016, 5, 6, 11, 45, 6), 'months', n_units=3) == datetime(2016, 4, 1)
-    assert utils.datetime_floor(
-        datetime(2016, 5, 6, 11, 45, 6), 'weeks', n_units=3) == datetime(2016, 4, 18)
-    assert utils.datetime_floor(datetime(
-        2016, 5, 6, 11, 45, 6), 'hours', n_units=10) == datetime(2016, 5, 6, 10)
-    assert utils.datetime_floor(datetime(
-        2016, 5, 6, 11, 45, 6), 'minutes', n_units=15) == datetime(2016, 5, 6, 11, 45)
-    assert utils.datetime_floor(datetime(
-        2016, 5, 6, 11, 45, 6), 'seconds', n_units=30) == datetime(2016, 5, 6, 11, 45)
+    nose.tools.eq_(
+        utils.datetime_floor(date(2016, 5, 6), 'years'),
+        datetime(2016, 1, 1)
+    )
+    nose.tools.eq_(utils.datetime_floor(inf), inf)
 
+    test_dt = datetime(2016, 5, 6, 11, 45, 6)
+    nose.tools.eq_(
+        utils.datetime_floor(test_dt, 'months', n_units=3),
+        datetime(2016, 4, 1)
+    )
+    nose.tools.eq_(
+        utils.datetime_floor(test_dt, 'weeks', n_units=3),
+        datetime(2016, 4, 18)
+    )
+    nose.tools.eq_(
+        utils.datetime_floor(test_dt, 'hours', n_units=10),
+        datetime(2016, 5, 6, 10)
+    )
+    nose.tools.eq_(
+        utils.datetime_floor(test_dt, 'minutes', n_units=15),
+        datetime(2016, 5, 6, 11, 45)
+    )
+    nose.tools.eq_(
+        utils.datetime_floor(test_dt, 'seconds', n_units=30),
+        datetime(2016, 5, 6, 11, 45)
+    )
     nose.tools.assert_raises(
         ValueError, utils.datetime_floor, "2016-6-7"
     )
-
     nose.tools.assert_raises(
         ValueError, utils.datetime_floor,
-        datetime(2016, 5, 6, 11, 45, 6), 'sleconds', n_units=3
+        test_dt, 'sleconds', n_units=3
     )
+
 
 def test_weekday_number():
     assert utils.weekday_number(5) == 5
