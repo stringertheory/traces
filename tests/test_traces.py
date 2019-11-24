@@ -99,18 +99,19 @@ def test_set_interval():
     assert ts[7] == 2
 
     ts[2:4] = 5
-    assert ts.items() == [(1.2, 1), (2, 5), (4, 0), (6, 2)]
+    assert list(ts.items()) == [(1.2, 1), (2, 5), (4, 0), (6, 2)]
 
     ts[3:5] = 4
-    assert ts.items() == [(1.2, 1), (2, 5), (3, 4), (5, 0), (6, 2)]
+    assert list(ts.items()) == [(1.2, 1), (2, 5), (3, 4), (5, 0), (6, 2)]
 
     tsc = TimeSeries(ts)
 
     ts.set_interval(3, 4, 4)
-    assert ts.items() == [(1.2, 1), (2, 5), (3, 4), (4, 4), (5, 0), (6, 2)]
+    assert list(ts.items()) == [(1.2, 1), (2, 5),
+                                (3, 4), (4, 4), (5, 0), (6, 2)]
 
     tsc.set_interval(3, 4, 4, compact=True)
-    assert tsc.items() == [(1.2, 1), (2, 5), (3, 4), (5, 0), (6, 2)]
+    assert list(tsc.items()) == [(1.2, 1), (2, 5), (3, 4), (5, 0), (6, 2)]
 
 
 def test_set_interval_datetime():
@@ -119,9 +120,9 @@ def test_set_interval_datetime():
     ts[datetime(2012, 1, 9, 18)] = 10
     ts[datetime(2012, 1, 8):datetime(2012, 1, 10)] = 100
 
-    assert ts.items() == [(datetime(2012, 1, 4, 12, 0), 5),
-                          (datetime(2012, 1, 8, 0, 0), 100),
-                          (datetime(2012, 1, 10, 0, 0), 10)]
+    assert list(ts.items()) == [(datetime(2012, 1, 4, 12, 0), 5),
+                                (datetime(2012, 1, 8, 0, 0), 100),
+                                (datetime(2012, 1, 10, 0, 0), 10)]
 
 
 def test_remove_points_from_interval():

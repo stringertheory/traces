@@ -14,7 +14,6 @@ from queue import PriorityQueue
 # 3rd party
 import sortedcontainers
 from dateutil.parser import parse as date_parse
-from future.utils import iteritems, listitems
 from infinity import inf
 from traces import operations
 
@@ -78,7 +77,7 @@ class TimeSeries(object):
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
-        return iter(iteritems(self._d))
+        return iter(self._d.items())
 
     def __bool__(self):
         return bool(self._d)
@@ -236,7 +235,7 @@ class TimeSeries(object):
 
     def items(self):
         """ts.items() -> list of the (key, value) pairs in ts, as 2-tuples"""
-        return listitems(self._d)
+        return self._d.items()
 
     def exists(self):
         """returns False when the timeseries has a None value,
@@ -502,7 +501,7 @@ class TimeSeries(object):
     def rebin(binned, key_function):
 
         result = sortedcontainers.SortedDict()
-        for bin_start, value in iteritems(binned):
+        for bin_start, value in binned.items():
             new_bin_start = key_function(bin_start)
             try:
                 result[new_bin_start] += value

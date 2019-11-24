@@ -85,10 +85,10 @@ def test_slice():
     ts[4] = 0
     ts[6] = 2
 
-    assert ts.slice(0.5, 2.5).items() == [(0.5, 1), (1, 5), (2.5, 5)]
-    assert ts.slice(1.0, 2.5).items() == [(1.0, 5), (2.5, 5)]
-    assert ts.slice(-1, 1).items() == [(-1, 1), (0, 1), (1, 5)]
-    assert ts.slice(-1, 0.5).items() == [(-1, 1), (0, 1), (0.5, 1)]
+    assert list(ts.slice(0.5, 2.5).items()) == [(0.5, 1), (1, 5), (2.5, 5)]
+    assert list(ts.slice(1.0, 2.5).items()) == [(1.0, 5), (2.5, 5)]
+    assert list(ts.slice(-1, 1).items()) == [(-1, 1), (0, 1), (1, 5)]
+    assert list(ts.slice(-1, 0.5).items()) == [(-1, 1), (0, 1), (0.5, 1)]
 
     nose.tools.assert_raises(ValueError, ts.slice, 2.5, 0)
 
@@ -141,7 +141,7 @@ def test_single_merges():
 
     merged = TimeSeries.merge([ts])
 
-    assert merged.items() == [(21, [42])]
+    assert list(merged.items()) == [(21, [42])]
 
     # test an empty time series and a time series with one measurement
     ts_a = TimeSeries()
@@ -165,7 +165,7 @@ def test_single_merges():
 
     merged = TimeSeries.merge([ts_a, ts_b])
 
-    assert merged.items() == [
+    assert list(merged.items()) == [
         (20, [None, 1]),
         (21, [42, 1]),
         (22, [41, 2]),

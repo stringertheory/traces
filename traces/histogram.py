@@ -1,6 +1,5 @@
 import math
 import sortedcontainers
-from six import itervalues, iteritems
 
 
 class UnorderableElements(TypeError):
@@ -16,7 +15,7 @@ class Histogram(sortedcontainers.SortedDict):
     @classmethod
     def from_dict(cls, in_dict, *args, **kwargs):
         self = cls(*args, **kwargs)
-        for key, value in iteritems(in_dict):
+        for key, value in in_dict.items():
             self[key] = value
         return self
 
@@ -68,7 +67,7 @@ class Histogram(sortedcontainers.SortedDict):
 
     def total(self):
         """Sum of values."""
-        return sum(itervalues(self))
+        return sum(self.values())
 
     def mean(self):
         """Mean of the distribution."""
@@ -76,7 +75,7 @@ class Histogram(sortedcontainers.SortedDict):
         if not _self.total():
             return None
         weighted_sum = sum(
-            key * value for key, value in iteritems(_self)
+            key * value for key, value in _self.items()
         )
         return weighted_sum / float(_self.total())
 
@@ -87,7 +86,7 @@ class Histogram(sortedcontainers.SortedDict):
             return 0.0
         mean = _self.mean()
         weighted_central_moment = sum(
-            count * (value - mean)**2 for value, count in iteritems(_self)
+            count * (value - mean)**2 for value, count in _self.items()
         )
         return weighted_central_moment / float(_self.total())
 
@@ -102,7 +101,7 @@ class Histogram(sortedcontainers.SortedDict):
         """
         total = self.total()
         result = Histogram()
-        for value, count in iteritems(self):
+        for value, count in self.items():
             try:
                 result[value] = count / float(total)
             except UnorderableElements as e:
@@ -115,7 +114,7 @@ class Histogram(sortedcontainers.SortedDict):
             return self
         else:
             return self.__class__.from_dict(
-                {k: v for k, v in iteritems(self) if k is not value}
+                {k: v for k, v in self.items() if k is not value}
             )
 
     def max(self):
@@ -133,7 +132,7 @@ class Histogram(sortedcontainers.SortedDict):
         """
         total = float(self.total())
 
-        smallest_observed_count = min(itervalues(self))
+        smallest_observed_count = min(self.values())
         if smallest_count is None:
             smallest_count = smallest_observed_count
         else:
@@ -144,7 +143,7 @@ class Histogram(sortedcontainers.SortedDict):
         debug_plot = []
         cumulative_sum = 0.0
         inverse = sortedcontainers.SortedDict()
-        for value, count in iteritems(self):
+        for value, count in self.items():
             debug_plot.append((cumulative_sum / total, value))
             inverse[(cumulative_sum + beta) / total] = value
             cumulative_sum += count
@@ -159,7 +158,7 @@ class Histogram(sortedcontainers.SortedDict):
         # for i, j in debug_plot:
         #     print i, j
         # print ''
-        # for i, j in inverse.iteritems():
+        # for i, j in inverse.items():
         #     print i, j
         # print ''
 
@@ -215,9 +214,9 @@ class Histogram(sortedcontainers.SortedDict):
 
     def add(self, other):
         result = Histogram()
-        for key, value in iteritems(self):
+        for key, value in self.items():
             result[key] += value
-        for key, value in iteritems(other):
+        for key, value in other.items():
             result[key] += value
         return result
 
