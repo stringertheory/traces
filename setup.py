@@ -53,6 +53,7 @@ setup(
     version='0.4.3',
     description="A library for unevenly-spaced time series analysis.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author=read_author(),
     author_email=read_author_email(),
     url='https://github.com/datascopeanalytics/traces',
