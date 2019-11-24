@@ -1,6 +1,6 @@
 import math
+
 import sortedcontainers
-import warnings
 
 
 class UnorderableElements(TypeError):
@@ -34,36 +34,36 @@ class Histogram(sortedcontainers.SortedDict):
             result = super(Histogram, self).__getitem__(key)
         except KeyError:
             result = 0
-        except TypeError as e:
+        except TypeError as error:
 
-            if "unorderable" in str(e):
-                raise UnorderableElements(e)
+            if "unorderable" in str(error):
+                raise UnorderableElements(error)
 
-            if "unhashable" in str(e):
+            if "unhashable" in str(error):
                 msg = "Can't make histogram of unhashable type (%s)" % type(
                     key)
                 raise UnhashableType(msg)
 
-            raise e
+            raise error
         return result
 
     def __setitem__(self, key, value):
         try:
             result = super(Histogram, self).__setitem__(key, value)
-        except TypeError as e:
+        except TypeError as error:
 
-            if "unorderable" in str(e):
-                raise UnorderableElements(e)
+            if "unorderable" in str(error):
+                raise UnorderableElements(error)
 
-            if "not supported between instances of" in str(e):
-                raise UnorderableElements(e)
+            if "not supported between instances of" in str(error):
+                raise UnorderableElements(error)
 
-            if "unhashable" in str(e):
+            if "unhashable" in str(error):
                 msg = "Can't make histogram of unhashable type (%s)" % type(
                     key)
                 raise UnhashableType(msg)
 
-            raise e
+            raise error
         return result
 
     def total(self):
@@ -115,7 +115,7 @@ class Histogram(sortedcontainers.SortedDict):
         for value, count in self.items():
             try:
                 result[value] = count / float(total)
-            except UnorderableElements as e:
+            except UnorderableElements:
                 result = Histogram.from_dict(dict(result), key=hash)
                 result[value] = count / float(total)
         return result
@@ -147,9 +147,7 @@ class Histogram(sortedcontainers.SortedDict):
         """
         clean, total = self._prepare_for_stats()
         if not total:
-            def function(q):
-                return None
-            return function
+            return lambda q: None
 
         smallest_observed_count = min(clean.values())
         if smallest_count is None:

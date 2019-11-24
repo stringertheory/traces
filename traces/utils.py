@@ -1,6 +1,7 @@
 import datetime
-from past.builtins import long
+
 from infinity import inf
+from past.builtins import long
 
 
 def duration_to_number(duration, units='seconds'):
@@ -19,7 +20,7 @@ def duration_to_number(duration, units='seconds'):
         else:
             msg = 'unit "%s" is not supported' % units
             raise NotImplementedError(msg)
-    elif duration == inf or duration == -inf:
+    elif duration in (inf, -inf):
         msg = "Can't convert infinite duration to number"
         raise ValueError(msg)
     else:
@@ -54,7 +55,7 @@ def convert_args_to_list(args):
         if len(args) == 2:
             list_of_pairs.append(list(args))
         else:
-            msg = "The argument type is invalid. ".format(args)
+            msg = "The argument type is invalid. {}".format(args)
             raise TypeError(msg)
 
     return list_of_pairs

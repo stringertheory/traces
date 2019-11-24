@@ -1,4 +1,3 @@
-import sys
 from functools import wraps
 
 try:
@@ -8,10 +7,7 @@ except ImportError:
 
 
 def _is_none(obj):
-    if obj is None:
-        return True
-    else:
-        return False
+    return bool(obj is None)
 
 
 def ignorant(func):

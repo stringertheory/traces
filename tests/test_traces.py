@@ -81,7 +81,7 @@ def test_merge():
 
 def test_set_interval():
     ts = TimeSeries()
-    # nose.tools.assert_raises(KeyError, ts.get, 0)
+
     assert ts[0] is None
 
     ts.set_interval(2, 4, 5)
@@ -115,6 +115,9 @@ def test_set_interval():
 
     tsc.set_interval(3, 4, 4, compact=True)
     assert list(tsc.items()) == [(1.2, 1), (2, 5), (3, 4), (5, 0), (6, 2)]
+
+    tsd = TimeSeries()
+    nose.tools.assert_raises(ValueError, tsd.set_interval, 4, 4, 4)
 
 
 def test_set_interval_datetime():

@@ -12,8 +12,9 @@ from itertools import tee
 from queue import PriorityQueue
 
 # 3rd party
-import sortedcontainers
 from dateutil.parser import parse as date_parse
+
+import sortedcontainers
 from infinity import inf
 from traces import operations
 
@@ -116,7 +117,7 @@ class TimeSeries(object):
         right_index = self._d.bisect_right(time)
         left_index = right_index - 1
         if right_index > 0:
-            left_time, left_value = self._d.peekitem(left_index)
+            _, left_value = self._d.peekitem(left_index)
             return left_value
         elif right_index == 0:
             return self.default
@@ -219,8 +220,10 @@ class TimeSeries(object):
         return self._d.items()
 
     def exists(self):
-        """returns False when the timeseries has a None value,
-        True otherwise"""
+        """returns False when the timeseries has a None value, True
+        otherwise
+
+        """
         result = TimeSeries(default=False if self.default is None else True)
         for t, v in self:
             result[t] = False if v is None else True
@@ -275,7 +278,7 @@ class TimeSeries(object):
         # second cursor -->     *
         #  third cursor -->        *
         for stream_index, stream in enumerate(streams):
-            for i in range(stream_index):
+            for _ in range(stream_index):
                 next(stream)
 
         # now, zip the offset streams back together to yield tuples,
@@ -557,15 +560,15 @@ class TimeSeries(object):
         start, end, mask = self._check_boundaries(start, end, mask=mask)
 
         counter = histogram.Histogram()
-        for start, end, _ in mask.iterperiods(value=True):
-            for t0, t1, value in self.iterperiods(start, end):
+        for i_start, i_end, _ in mask.iterperiods(value=True):
+            for t0, t1, value in self.iterperiods(i_start, i_end):
                 duration = utils.duration_to_number(
                     t1 - t0,
                     units='seconds',
                 )
                 try:
                     counter[value] += duration
-                except histogram.UnorderableElements as e:
+                except histogram.UnorderableElements:
 
                     counter = histogram.Histogram.from_dict(
                         dict(counter), key=hash)
@@ -608,17 +611,17 @@ class TimeSeries(object):
         start, end, mask = self._check_boundaries(start, end, mask=mask)
 
         count = 0
-        for start, end, _ in mask.iterperiods(value=True):
+        for i_start, i_end, _ in mask.iterperiods(value=True):
 
             if include_end:
-                end_count = self._d.bisect_right(end)
+                end_count = self._d.bisect_right(i_end)
             else:
-                end_count = self._d.bisect_left(end)
+                end_count = self._d.bisect_left(i_end)
 
             if include_start:
-                start_count = self._d.bisect_left(start)
+                start_count = self._d.bisect_left(i_start)
             else:
-                start_count = self._d.bisect_right(start)
+                start_count = self._d.bisect_right(i_start)
 
             count += (end_count - start_count)
 
@@ -808,10 +811,10 @@ class TimeSeries(object):
         """Return the truth value of each element."""
         if invert:
             def function(x, y):
-                return False if x else True
+                return not bool(x)
         else:
             def function(x, y):
-                return True if x else False
+                return bool(x)
         return self.operation(None, function)
 
     def threshold(self, value, inclusive=False):
@@ -821,10 +824,10 @@ class TimeSeries(object):
         """
         if inclusive:
             def function(x, y):
-                return True if x >= y else False
+                return x >= y
         else:
             def function(x, y):
-                return True if x > y else False
+                return x > y
         return self.operation(value, function)
 
     def sum(self, other):
@@ -982,8 +985,7 @@ class TimeSeries(object):
         result = []
         for hour in range(first, last + 1):
             mask = hour_of_day(start, end, hour)
-            histogram = self.distribution(mask=mask)
-            result.append((hour, histogram))
+            result.append((hour, self.distribution(mask=mask)))
 
         return result
 
@@ -996,8 +998,7 @@ class TimeSeries(object):
         result = []
         for week in range(first, last + 1):
             mask = day_of_week(start, end, week)
-            histogram = self.distribution(mask=mask)
-            result.append((week, histogram))
+            result.append((week, self.distribution(mask=mask)))
 
         return result
 

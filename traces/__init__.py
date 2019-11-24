@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from infinity import inf
+from traces import decorators, operations
+
 from .histogram import Histogram
 from .timeseries import TimeSeries
 from .utils import datetime_range
-from traces import decorators
-from traces import operations
-from infinity import inf
 
 __author__ = 'Mike Stringer'
 __email__ = 'mike.stringer@datascopeanalytics.com'
