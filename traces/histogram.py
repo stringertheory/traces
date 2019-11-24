@@ -1,5 +1,6 @@
 import math
 import sortedcontainers
+import warnings
 
 
 class UnorderableElements(TypeError):
@@ -69,30 +70,40 @@ class Histogram(sortedcontainers.SortedDict):
         """Sum of values."""
         return sum(self.values())
 
+    def _prepare_for_stats(self):
+        """Removes None values and calculates total."""
+        clean = self._discard_value(None)
+        total = float(clean.total())
+        return clean, total
+
     def mean(self):
         """Mean of the distribution."""
-        _self = self._discard_value(None)
-        if not _self.total():
+        clean, total = self._prepare_for_stats()
+        if not total:
             return None
-        weighted_sum = sum(
-            key * value for key, value in _self.items()
-        )
-        return weighted_sum / float(_self.total())
+
+        weighted_sum = sum(key * value for key, value in clean.items())
+        return weighted_sum / total
 
     def variance(self):
         """Variance of the distribution."""
-        _self = self._discard_value(None)
-        if not _self.total():
-            return 0.0
-        mean = _self.mean()
+        clean, total = self._prepare_for_stats()
+        if not total:
+            return None
+
+        mean = self.mean()
         weighted_central_moment = sum(
-            count * (value - mean)**2 for value, count in _self.items()
+            count * (value - mean)**2 for value, count in clean.items()
         )
-        return weighted_central_moment / float(_self.total())
+        return weighted_central_moment / total
 
     def standard_deviation(self):
         """Standard deviation of the distribution."""
-        return math.sqrt(self.variance())
+        clean, total = self._prepare_for_stats()
+        if not total:
+            return None
+
+        return math.sqrt(clean.variance())
 
     def normalized(self):
         """Return a normalized version of the histogram where the values sum
@@ -117,22 +128,30 @@ class Histogram(sortedcontainers.SortedDict):
                 {k: v for k, v in self.items() if k is not value}
             )
 
-    def max(self):
-        """Maximum observed value."""
-        return self.keys()[-1]
+    def max(self, include_zero=False):
+        """Maximum observed value with non-zero count."""
+        for key, value in reversed(self.items()):
+            if value > 0 or include_zero:
+                return key
 
-    def min(self):
-        """Minimum observed value."""
-        return self.keys()[0]
+    def min(self, include_zero=False):
+        """Minimum observed value with non-zero count."""
+        for key, value in self.items():
+            if value > 0 or include_zero:
+                return key
 
     def _quantile_function(self, alpha=0.5, smallest_count=None):
         """Return a function that returns the quantile values for this
         histogram.
 
         """
-        total = float(self.total())
+        clean, total = self._prepare_for_stats()
+        if not total:
+            def function(q):
+                return None
+            return function
 
-        smallest_observed_count = min(self.values())
+        smallest_observed_count = min(clean.values())
         if smallest_count is None:
             smallest_count = smallest_observed_count
         else:
@@ -143,7 +162,7 @@ class Histogram(sortedcontainers.SortedDict):
         debug_plot = []
         cumulative_sum = 0.0
         inverse = sortedcontainers.SortedDict()
-        for value, count in self.items():
+        for value, count in clean.items():
             debug_plot.append((cumulative_sum / total, value))
             inverse[(cumulative_sum + beta) / total] = value
             cumulative_sum += count
@@ -165,7 +184,7 @@ class Histogram(sortedcontainers.SortedDict):
         def function(q):
 
             if q < 0.0 or q > 1.0:
-                msg = 'invalid quantile %s, need `0 <= q <= 1`' % q
+                msg = 'invalid quantile {}, need `0 <= q <= 1`'.format(q)
                 raise ValueError(msg)
             elif q < q_min:
                 q = q_min
