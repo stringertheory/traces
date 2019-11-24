@@ -28,7 +28,7 @@ def test_normalize():
     histogram = traces.Histogram(data)
     normalized = histogram.normalized()
 
-    assert sum(normalized.itervalues()) == 1.0
+    assert sum(normalized.values()) == 1.0
 
 
 def _test_statistics(normalized):

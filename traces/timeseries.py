@@ -78,7 +78,7 @@ class TimeSeries(object):
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
-        return iteritems(self._d)
+        return iter(iteritems(self._d))
 
     def __bool__(self):
         return bool(self._d)
