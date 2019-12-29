@@ -71,6 +71,34 @@ def test_mean():
                                  key_list[0], key_list[1])
 
 
+def test_mean_interpolate():
+    
+    ts = traces.TimeSeries()
+    ts[0] = 0
+    ts[1] = 0
+    ts[3] = 20
+    nose.tools.assert_almost_equal(
+        ts.mean(0, 2, interpolate='linear'),
+        2.5,
+    )
+    assert ts.mean(0, 2, interpolate='linear') == 2.5
+
+    mask = traces.TimeSeries(default=False)
+    mask[0] = True
+    mask[0.5] = False
+    mask[1] = True
+    mask[3] = False
+    nose.tools.assert_almost_equal(
+        ts.mean(0, 2, mask=mask, interpolate='linear'),
+        10/3.0,
+    )
+    nose.tools.assert_almost_equal(
+        ts.mean(0, 3, mask=mask, interpolate='linear'),
+        8.0,
+    )
+    
+    
+
 def test_sample():
     time_list = [
         datetime.datetime(2016, 1, 1, 1, 1, 2),

@@ -60,14 +60,14 @@ class TimeSeries(object):
         self.default = default
 
         self.getter_functions = {
-            'previous': self._get_previous,
-            'linear': self._get_linear_interpolate,
+            "previous": self._get_previous,
+            "linear": self._get_linear_interpolate,
         }
 
     def __getstate__(self):
         return {
             "data": self.items(),
-            "default": self.default
+            "default": self.default,
         }
 
     def __setstate__(self, state):
@@ -123,13 +123,13 @@ class TimeSeries(object):
             return self.default
         else:
             msg = (
-                'self._d.bisect_right({}) returned a negative value. '
+                "self._d.bisect_right({}) returned a negative value. "
                 """This "can't" happen: please file an issue at """
-                'https://github.com/datascopeanalytics/traces/issues'
+                "https://github.com/datascopeanalytics/traces/issues"
             ).format(time)
             raise ValueError(msg)
 
-    def get(self, time, interpolate='previous'):
+    def get(self, time, interpolate="previous"):
         """Get the value of the time series, even in-between measured values.
 
         """
@@ -139,7 +139,7 @@ class TimeSeries(object):
             msg = (
                 "unknown value '{}' for interpolate, "
                 "valid values are in [{}]"
-            ).format(interpolate, ', '.join(self.getter_functions))
+            ).format(interpolate, ", ".join(self.getter_functions))
             raise ValueError(msg)
         else:
             return getter(time)
@@ -177,8 +177,11 @@ class TimeSeries(object):
         value if it's different from what it would be anyway.
 
         """
-        if (len(self) == 0) or (not compact) or \
-                (compact and self.get(time) != value):
+        if (
+            (len(self) == 0)
+            or (not compact)
+            or (compact and self.get(time) != value)
+        ):
             self._d[time] = value
 
     def set_interval(self, start, end, value, compact=False):
@@ -237,7 +240,7 @@ class TimeSeries(object):
         try:
             del self._d[time]
         except KeyError:
-            raise KeyError('no measurement at %s' % time)
+            raise KeyError("no measurement at {}".format(time))
 
     def remove_points_from_interval(self, start, end):
         """Allow removal of all points from the time series within a interval
@@ -259,8 +262,7 @@ class TimeSeries(object):
         return self.n_measurements()
 
     def __repr__(self):
-        return '<TimeSeries>\n%s\n</TimeSeries>' % \
-               pprint.pformat(self._d)
+        return "<TimeSeries>\n%s\n</TimeSeries>" % pprint.pformat(self._d)
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
@@ -292,6 +294,7 @@ class TimeSeries(object):
 
         # if value is None, don't filter
         if value is None:
+
             def value_function(t0_, t1_, value_):
                 return True
 
@@ -303,6 +306,7 @@ class TimeSeries(object):
         # return only the intervals where the value equals the
         # constant
         else:
+
             def value_function(t0_, t1_, value_):
                 return value_ == value
 
@@ -315,8 +319,9 @@ class TimeSeries(object):
         TODO: add mask argument here.
 
         """
-        start, end, mask = \
-            self._check_boundaries(start, end, allow_infinite=False)
+        start, end, mask = self._check_boundaries(
+            start, end, allow_infinite=False
+        )
 
         value_function = self._value_function(value)
 
@@ -352,8 +357,9 @@ class TimeSeries(object):
         `start` and `end` (always starting at `start`)
 
         """
-        start, end, mask = \
-            self._check_boundaries(start, end, allow_infinite=True)
+        start, end, mask = self._check_boundaries(
+            start, end, allow_infinite=True
+        )
 
         result = TimeSeries(default=self.default)
         for t0, t1, value in self.iterperiods(start, end):
@@ -374,17 +380,20 @@ class TimeSeries(object):
                 sampling_period_timedelta = sampling_period
             else:
                 sampling_period_seconds = sampling_period
-                sampling_period_timedelta = \
-                    datetime.timedelta(seconds=sampling_period)
+                sampling_period_timedelta = datetime.timedelta(
+                    seconds=sampling_period
+                )
 
             if sampling_period_seconds <= 0:
                 msg = "sampling_period must be > 0"
                 raise ValueError(msg)
 
             if sampling_period_seconds > utils.duration_to_number(end - start):
-                msg = "sampling_period " \
-                      "is greater than the duration between " \
-                      "start and end."
+                msg = (
+                    "sampling_period "
+                    "is greater than the duration between "
+                    "start and end."
+                )
                 raise ValueError(msg)
 
             if isinstance(start, datetime.datetime):
@@ -394,15 +403,17 @@ class TimeSeries(object):
 
         return sampling_period
 
-    def sample(self, sampling_period, start=None, end=None,
-               interpolate='previous'):
+    def sample(
+        self, sampling_period, start=None, end=None, interpolate="previous"
+    ):
         """Sampling at regular time periods.
 
         """
         start, end, mask = self._check_boundaries(start, end)
 
-        sampling_period = \
-            self._check_regularization(start, end, sampling_period)
+        sampling_period = self._check_regularization(
+            start, end, sampling_period
+        )
 
         result = []
         current_time = start
@@ -412,11 +423,15 @@ class TimeSeries(object):
             current_time += sampling_period
         return result
 
-    def moving_average(self, sampling_period,
-                       window_size=None,
-                       start=None, end=None,
-                       placement='center',
-                       pandas=False):
+    def moving_average(
+        self,
+        sampling_period,
+        window_size=None,
+        start=None,
+        end=None,
+        placement="center",
+        pandas=False,
+    ):
         """Averaging over regular intervals
         """
         start, end, mask = self._check_boundaries(start, end)
@@ -425,14 +440,16 @@ class TimeSeries(object):
         if window_size is None:
             window_size = sampling_period
 
-        sampling_period = \
-            self._check_regularization(start, end, sampling_period)
+        sampling_period = self._check_regularization(
+            start, end, sampling_period
+        )
 
         # convert to datetime if the times are datetimes
-        full_window = window_size * 1.  # convert to float if int or do nothing
-        half_window = full_window / 2.  # divide by 2
-        if (isinstance(start, datetime.datetime) and
-                not isinstance(full_window, datetime.timedelta)):
+        full_window = float(window_size)
+        half_window = full_window / 2
+        if isinstance(start, datetime.datetime) and not isinstance(
+            full_window, datetime.timedelta
+        ):
             half_window = datetime.timedelta(seconds=half_window)
             full_window = datetime.timedelta(seconds=full_window)
 
@@ -440,13 +457,13 @@ class TimeSeries(object):
         current_time = start
         while current_time <= end:
 
-            if placement == 'center':
+            if placement == "center":
                 window_start = current_time - half_window
                 window_end = current_time + half_window
-            elif placement == 'left':
+            elif placement == "left":
                 window_start = current_time
                 window_end = current_time + full_window
-            elif placement == 'right':
+            elif placement == "right":
                 window_start = current_time - full_window
                 window_end = current_time
             else:
@@ -457,7 +474,7 @@ class TimeSeries(object):
             try:
                 mean = self.mean(window_start, window_end)
             except TypeError as e:
-                if 'NoneType' in str(e):
+                if "NoneType" in str(e):
                     mean = None
                 else:
                     raise e
@@ -475,8 +492,7 @@ class TimeSeries(object):
                 raise ImportError(msg)
 
             result = pd.Series(
-                [v for t, v in result],
-                index=[t for t, v in result],
+                [v for t, v in result], index=[t for t, v in result],
             )
 
         return result
@@ -494,8 +510,16 @@ class TimeSeries(object):
 
         return result
 
-    def bin(self, unit, n_units=1, start=None, end=None, mask=None,
-            smaller=None, transform='distribution'):
+    def bin(
+        self,
+        unit,
+        n_units=1,
+        start=None,
+        end=None,
+        mask=None,
+        smaller=None,
+        transform="distribution",
+    ):
 
         # return an empty sorted dictionary if there is no time span
         if mask is not None and mask.is_empty():
@@ -506,8 +530,7 @@ class TimeSeries(object):
         # use smaller if available
         if smaller:
             return self.rebin(
-                smaller,
-                lambda x: utils.datetime_floor(x, unit, n_units),
+                smaller, lambda x: utils.datetime_floor(x, unit, n_units),
             )
 
         start, end, mask = self._check_boundaries(start, end, mask=mask)
@@ -519,18 +542,28 @@ class TimeSeries(object):
         dt_range = utils.datetime_range(start, end, unit, n_units=n_units)
         for bin_start, bin_end in utils.pairwise(dt_range):
             result[bin_start] = function(
-                bin_start, bin_end, mask=mask, normalized=False)
+                bin_start, bin_end, mask=mask, normalized=False
+            )
 
         return result
 
-    def mean(self, start=None, end=None, mask=None):
+    def mean(self, start=None, end=None, mask=None, interpolate="previous"):
         """This calculated the average value of the time series over the given
         time range from `start` to `end`, when `mask` is truthy.
 
         """
-        return self.distribution(start=start, end=end, mask=mask).mean()
+        return self.distribution(
+            start=start, end=end, mask=mask, interpolate=interpolate
+        ).mean()
 
-    def distribution(self, start=None, end=None, normalized=True, mask=None):
+    def distribution(
+        self,
+        start=None,
+        end=None,
+        normalized=True,
+        mask=None,
+        interpolate="previous",
+    ):
         """Calculate the distribution of values over the given time range from
         `start` to `end`.
 
@@ -548,8 +581,17 @@ class TimeSeries(object):
                 one. If False and the time values of the TimeSeries
                 are datetimes, the units will be seconds.
 
-            mask (:obj:`TimeSeries`, optional): A
-                domain on which to calculate the distribution.
+            mask (:obj:`TimeSeries`, optional): A domain on which to
+                calculate the distribution.
+
+            interpolate (str, optional): Method for interpolating
+                between measurement points: either "previous"
+                (default) or "linear". Note: if "previous" is used,
+                then the resulting histogram is exact. If "linear" is
+                given, then the values used for the histogram are the
+                average value for each segment -- the mean of this
+                histogram will be exact, but higher moments (variance)
+                will be approximate.
 
         Returns:
 
@@ -561,17 +603,17 @@ class TimeSeries(object):
 
         counter = histogram.Histogram()
         for i_start, i_end, _ in mask.iterperiods(value=True):
-            for t0, t1, value in self.iterperiods(i_start, i_end):
-                duration = utils.duration_to_number(
-                    t1 - t0,
-                    units='seconds',
-                )
+            for t0, t1, _ in self.iterperiods(i_start, i_end):
+                duration = utils.duration_to_number(t1 - t0, units="seconds",)
+                midpoint = t0 + (t1 - t0) / 2.0
+                value = self.get(midpoint, interpolate=interpolate)
                 try:
                     counter[value] += duration
                 except histogram.UnorderableElements:
 
                     counter = histogram.Histogram.from_dict(
-                        dict(counter), key=hash)
+                        dict(counter), key=hash
+                    )
                     counter[value] += duration
 
         # divide by total duration if result needs to be normalized
@@ -580,8 +622,15 @@ class TimeSeries(object):
         else:
             return counter
 
-    def n_points(self, start=-inf, end=+inf, mask=None,
-                 include_start=True, include_end=False, normalized=False):
+    def n_points(
+        self,
+        start=-inf,
+        end=+inf,
+        mask=None,
+        include_start=True,
+        include_end=False,
+        normalized=False,
+    ):
         """Calculate the number of points over the given time range from
         `start` to `end`.
 
@@ -623,7 +672,7 @@ class TimeSeries(object):
             else:
                 start_count = self._d.bisect_right(i_start)
 
-            count += (end_count - start_count)
+            count += end_count - start_count
 
         if normalized:
             count /= float(self.n_measurements())
@@ -636,8 +685,10 @@ class TimeSeries(object):
 
         """
         if not isinstance(other, TimeSeries):
-            msg = "unsupported operand types(s) for +: %s and %s" % \
-                  (type(self), type(other))
+            msg = "unsupported operand types(s) for +: %s and %s" % (
+                type(self),
+                type(other),
+            )
             raise TypeError(msg)
 
     @staticmethod
@@ -755,13 +806,16 @@ class TimeSeries(object):
         return str(raw)
 
     @classmethod
-    def from_csv(cls, filename,
-                 time_column=0,
-                 value_column=1,
-                 time_transform=None,
-                 value_transform=None,
-                 skip_header=True,
-                 default=None):
+    def from_csv(
+        cls,
+        filename,
+        time_column=0,
+        value_column=1,
+        time_transform=None,
+        value_transform=None,
+        skip_header=True,
+        default=None,
+    ):
 
         # use default on class if not given
         if time_transform is None:
@@ -810,11 +864,15 @@ class TimeSeries(object):
     def to_bool(self, invert=False):
         """Return the truth value of each element."""
         if invert:
+
             def function(x, y):
                 return not bool(x)
+
         else:
+
             def function(x, y):
                 return bool(x)
+
         return self.operation(None, function)
 
     def threshold(self, value, inclusive=False):
@@ -823,11 +881,15 @@ class TimeSeries(object):
 
         """
         if inclusive:
+
             def function(x, y):
                 return x >= y
+
         else:
+
             def function(x, y):
                 return x > y
+
         return self.operation(value, function)
 
     def sum(self, other):
@@ -921,12 +983,12 @@ class TimeSeries(object):
 
     def _check_boundary(self, value, allow_infinite, lower_or_upper):
 
-        if lower_or_upper == 'lower':
+        if lower_or_upper == "lower":
             infinity_value = -inf
-            method_name = 'first_key'
-        elif lower_or_upper == 'upper':
+            method_name = "first_key"
+        elif lower_or_upper == "upper":
             infinity_value = inf
-            method_name = 'last_key'
+            method_name = "last_key"
         else:
             msg = '`lower_or_upper` must be "lower" or "upper", got {}'.format(
                 lower_or_upper,
@@ -951,15 +1013,15 @@ class TimeSeries(object):
     def _check_boundaries(self, start, end, mask=None, allow_infinite=False):
 
         if mask is not None and mask.is_empty():
-            raise ValueError('mask can not be empty')
+            raise ValueError("mask can not be empty")
 
         # if only a mask is passed in, return mask boundaries and mask
         if start is None and end is None and mask is not None:
             return mask.first_key(), mask.last_key(), mask
 
         # replace with defaults if not given
-        start = self._check_boundary(start, allow_infinite, 'lower')
-        end = self._check_boundary(end, allow_infinite, 'upper')
+        start = self._check_boundary(start, allow_infinite, "lower")
+        end = self._check_boundary(end, allow_infinite, "upper")
 
         if start >= end:
             msg = "start can't be >= end ({} >= {})".format(start, end)
@@ -976,9 +1038,9 @@ class TimeSeries(object):
 
         return start, end, mask
 
-    def distribution_by_hour_of_day(self,
-                                    first=0, last=23,
-                                    start=None, end=None):
+    def distribution_by_hour_of_day(
+        self, first=0, last=23, start=None, end=None
+    ):
 
         start, end, mask = self._check_boundaries(start, end)
 
@@ -989,9 +1051,9 @@ class TimeSeries(object):
 
         return result
 
-    def distribution_by_day_of_week(self,
-                                    first=0, last=6,
-                                    start=None, end=None):
+    def distribution_by_day_of_week(
+        self, first=0, last=6, start=None, end=None
+    ):
 
         start, end, mask = self._check_boundaries(start, end)
 
@@ -1009,8 +1071,9 @@ def hour_of_day(start, end, hour):
     floored = utils.datetime_floor(start)
 
     domain = TimeSeries(default=False)
-    for day_start in utils.datetime_range(floored, end, 'days',
-                                          inclusive_end=True):
+    for day_start in utils.datetime_range(
+        floored, end, "days", inclusive_end=True
+    ):
         interval_start = day_start + datetime.timedelta(hours=hour)
         interval_end = interval_start + datetime.timedelta(hours=1)
         domain[interval_start] = True
@@ -1030,14 +1093,15 @@ def day_of_week(start, end, weekday):
     floored = utils.datetime_floor(start)
 
     next_week = floored + datetime.timedelta(days=7)
-    for day in utils.datetime_range(floored, next_week, 'days'):
+    for day in utils.datetime_range(floored, next_week, "days"):
         if day.weekday() == number:
             first_day = day
             break
 
     domain = TimeSeries(default=False)
-    for week_start in utils.datetime_range(first_day, end, 'weeks',
-                                           inclusive_end=True):
+    for week_start in utils.datetime_range(
+        first_day, end, "weeks", inclusive_end=True
+    ):
         interval_start = week_start
         interval_end = interval_start + datetime.timedelta(days=1)
         domain[interval_start] = True
