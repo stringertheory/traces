@@ -72,7 +72,7 @@ def test_mean():
 
 
 def test_mean_interpolate():
-    
+
     ts = traces.TimeSeries()
     ts[0] = 0
     ts[1] = 0
@@ -96,8 +96,7 @@ def test_mean_interpolate():
         ts.mean(0, 3, mask=mask, interpolate='linear'),
         8.0,
     )
-    
-    
+
 
 def test_sample():
     time_list = [

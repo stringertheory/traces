@@ -605,7 +605,7 @@ class TimeSeries(object):
         for i_start, i_end, _ in mask.iterperiods(value=True):
             for t0, t1, _ in self.iterperiods(i_start, i_end):
                 duration = utils.duration_to_number(t1 - t0, units="seconds",)
-                midpoint = t0 + (t1 - t0) / 2
+                midpoint = utils.time_midpoint(t0, t1)
                 value = self.get(midpoint, interpolate=interpolate)
                 try:
                     counter[value] += duration
