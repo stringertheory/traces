@@ -9,4 +9,4 @@ from .utils import datetime_range
 
 __author__ = 'Mike Stringer'
 __email__ = 'mike.stringer@datascopeanalytics.com'
-__version__ = '0.5.1'
+__version__ = '0.5.2'
