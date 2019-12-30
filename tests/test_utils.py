@@ -1,5 +1,4 @@
 from datetime import timedelta, datetime, date
-from six import iteritems
 import nose
 from infinity import inf
 
@@ -29,7 +28,7 @@ def test_duration_to_number():
         nose.tools.assert_raises(
             NotImplementedError, utils.duration_to_number, tdelta, 'hours')
 
-    for _type, item in iteritems(numeric_types):
+    for _type, item in numeric_types.items():
         for num in item:
             assert utils.duration_to_number(num) == num
 

@@ -4,7 +4,6 @@ import traces
 import pandas as pd
 import numpy as np
 
-from future.utils import listitems, iteritems
 
 key_list = [
     datetime.datetime(2012, 1, 7),
@@ -27,9 +26,9 @@ unhashable_types = {
     set: [{1}, {1, 2}, {1, 2, 3}, set()],
 }
 all_types = dict(
-    listitems(numeric_types) +
-    listitems(non_numeric_hashable_types) +
-    listitems(unhashable_types)
+    list(numeric_types.items()) +
+    list(non_numeric_hashable_types.items()) +
+    list(unhashable_types.items())
 )
 
 
@@ -49,21 +48,21 @@ def frange(x, y, jump):
 def test_mean():
 
     # numeric hashable types should work
-    for type_, value_list in iteritems(numeric_types):
+    for type_, value_list in numeric_types.items():
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
         ts.mean(key_list[0], key_list[-1])
 
     # non-numeric hashable types should raise type error on mean, but
     # distribution should work
-    for type_, value_list in iteritems(non_numeric_hashable_types):
+    for type_, value_list in non_numeric_hashable_types.items():
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
         nose.tools.assert_raises(TypeError, ts.mean, key_list[0], key_list[1])
 
     # non-numeric unhashable types should raise error on distribution
     # and mean
-    for type_, value_list in iteritems(unhashable_types):
+    for type_, value_list in unhashable_types.items():
         ts = _make_ts(type_, key_list, value_list)
         nose.tools.assert_raises(TypeError, ts.distribution,
                                  key_list[0], key_list[1])
@@ -252,11 +251,11 @@ def test_moving_average():
 def test_to_bool():
 
     answer = {}
-    for type_, value_list in iteritems(all_types):
+    for type_, value_list in all_types.items():
         answer[type_] = [True if i else False for i in value_list]
 
     # numeric hashable types should work
-    for type_, value_list in iteritems(all_types):
+    for type_, value_list in all_types.items():
         ts = _make_ts(type_, key_list, value_list)
         result = ts.to_bool()
         values = [v for (k, v) in result.items()]
