@@ -1,9 +1,5 @@
 from functools import wraps
-
-try:
-    from itertools import filterfalse
-except ImportError:
-    from itertools import ifilterfalse as filterfalse
+from itertools import filterfalse
 
 
 def _is_none(obj):
@@ -15,6 +11,7 @@ def ignorant(func):
     def wrapper(iterable, *args, **kwargs):
         filtered = filterfalse(_is_none, iterable)
         return func(filtered, *args, **kwargs)
+
     return wrapper
 
 
@@ -25,4 +22,5 @@ def strict(func):
             return None
         else:
             return func(iterable, *args, **kwargs)
+
     return wrapper

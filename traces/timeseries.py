@@ -4,28 +4,17 @@ unevenly-spaced times, see:
 http://en.wikipedia.org/wiki/Unevenly_spaced_time_series
 
 """
-# standard library
 import csv
 import datetime
+import itertools
 import pprint
-from itertools import tee
 from queue import PriorityQueue
 
-# 3rd party
-from dateutil.parser import parse as date_parse
-
 import sortedcontainers
+from dateutil.parser import parse as date_parse
 from infinity import inf
-from traces import operations
 
-# local
-from . import histogram, utils
-
-# python 2/3 compatibility
-try:
-    import itertools.izip as zip
-except ImportError:
-    pass
+from . import histogram, operations, utils
 
 
 class TimeSeries(object):
@@ -270,7 +259,7 @@ class TimeSeries(object):
 
         """
         # tee the original iterator into n identical iterators
-        streams = tee(iter(self), n)
+        streams = itertools.tee(iter(self), n)
 
         # advance the "cursor" on each iterator by an increasing
         # offset, e.g. if n=3:

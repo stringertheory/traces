@@ -12,7 +12,6 @@ class UnhashableType(TypeError):
 
 
 class Histogram(sortedcontainers.SortedDict):
-
     @classmethod
     def from_dict(cls, in_dict, *args, **kwargs):
         self = cls(*args, **kwargs)
@@ -21,8 +20,8 @@ class Histogram(sortedcontainers.SortedDict):
         return self
 
     def __init__(self, data=(), **kwargs):
-        if 'key' in kwargs:
-            super(Histogram, self).__init__(kwargs['key'])
+        if "key" in kwargs:
+            super(Histogram, self).__init__(kwargs["key"])
         else:
             super(Histogram, self).__init__()
 
@@ -40,8 +39,9 @@ class Histogram(sortedcontainers.SortedDict):
                 raise UnorderableElements(error)
 
             if "unhashable" in str(error):
-                msg = "Can't make histogram of unhashable type (%s)" % type(
-                    key)
+                msg = "Can't make histogram of unhashable type ({})".format(
+                    type(key)
+                )
                 raise UnhashableType(msg)
 
             raise error
@@ -59,8 +59,9 @@ class Histogram(sortedcontainers.SortedDict):
                 raise UnorderableElements(error)
 
             if "unhashable" in str(error):
-                msg = "Can't make histogram of unhashable type (%s)" % type(
-                    key)
+                msg = "Can't make histogram of unhashable type ({})".format(
+                    type(key)
+                )
                 raise UnhashableType(msg)
 
             raise error
@@ -93,7 +94,7 @@ class Histogram(sortedcontainers.SortedDict):
 
         mean = self.mean()
         weighted_central_moment = sum(
-            count * (value - mean)**2 for value, count in clean.items()
+            count * (value - mean) ** 2 for value, count in clean.items()
         )
         return weighted_central_moment / total
 
@@ -182,7 +183,7 @@ class Histogram(sortedcontainers.SortedDict):
         def function(q):
 
             if q < 0.0 or q > 1.0:
-                msg = 'invalid quantile {}, need `0 <= q <= 1`'.format(q)
+                msg = "invalid quantile {}, need `0 <= q <= 1`".format(q)
                 raise ValueError(msg)
             elif q < q_min:
                 q = q_min
@@ -226,8 +227,9 @@ class Histogram(sortedcontainers.SortedDict):
         return [f(q) for q in q_list]
 
     def quantile(self, q, alpha=0.5, smallest_count=None):
-        return \
-            self.quantiles([q], alpha=alpha, smallest_count=smallest_count)[0]
+        return self.quantiles(
+            [q], alpha=alpha, smallest_count=smallest_count,
+        )[0]
 
     def add(self, other):
         result = Histogram()

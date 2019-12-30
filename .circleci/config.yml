@@ -7,8 +7,6 @@ workflows:
           context: traces
       - test-3.5:
           context: traces
-      - test-2.7:
-          context: traces
       - test-3.7:
           context: traces
       - test-3.8:
@@ -16,7 +14,7 @@ workflows:
 jobs:
   test-3.6: &test-template
     docker:
-     - image: circleci/python:3.6-jessie
+     - image: circleci/python:3.6-buster
     filters:
       branches:
         only:
@@ -47,16 +45,12 @@ jobs:
   test-3.5:
     <<: *test-template
     docker:
-      - image: circleci/python:3.5-jessie
-  test-2.7:
-    <<: *test-template
-    docker:
-      - image: circleci/python:2.7-jessie
+      - image: circleci/python:3.5-buster
   test-3.7:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.7-buster
   test-3.8:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8-buster
