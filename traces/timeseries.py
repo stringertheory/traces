@@ -434,7 +434,7 @@ class TimeSeries(object):
         )
 
         # convert to datetime if the times are datetimes
-        full_window = float(window_size)
+        full_window = window_size * 1.
         half_window = full_window / 2
         if isinstance(start, datetime.datetime) and not isinstance(
             full_window, datetime.timedelta
