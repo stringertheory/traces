@@ -385,7 +385,7 @@ class TimeSeries(object):
                 )
                 raise ValueError(msg)
 
-            if isinstance(start, datetime.datetime):
+            if isinstance(start, datetime.date):
                 sampling_period = sampling_period_timedelta
             else:
                 sampling_period = sampling_period_seconds
@@ -436,7 +436,7 @@ class TimeSeries(object):
         # convert to datetime if the times are datetimes
         full_window = window_size * 1.
         half_window = full_window / 2
-        if isinstance(start, datetime.datetime) and not isinstance(
+        if isinstance(start, datetime.date) and not isinstance(
             full_window, datetime.timedelta
         ):
             half_window = datetime.timedelta(seconds=half_window)
