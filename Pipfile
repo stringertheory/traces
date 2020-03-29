@@ -1,0 +1,37 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+sphinxcontrib-napoleon = "*"
+recommonmark = "*"
+sphinx-autobuild = "*"
+bumpversion = "*"
+tox = "*"
+flake8 = "*"
+coverage = "*"
+cryptography = "*"
+Sphinx = "*"
+CProfileV = "*"
+PyYAML = "*"
+pycodestyle = "*"
+coveralls = "*"
+nose = "*"
+pytest = "*"
+pytest-mpl = "*"
+numpy = "*"
+scipy = "*"
+pandas = "*"
+matplotlib = "*"
+setuptools = "*"
+wheel = "*"
+twine = "*"
+
+[packages]
+sortedcontainers = "*"
+infinity = "*"
+python-dateutil = "*"
+
+[requires]
+python_version = "3.8"
