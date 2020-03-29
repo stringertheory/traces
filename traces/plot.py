@@ -54,7 +54,7 @@ def plot(
     linewidth=1,
     marker="o",
     markersize=3,
-    color="#222",
+    color="#222222",
     aspect_ratio=None,
     font=None,
 ):

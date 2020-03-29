@@ -1060,7 +1060,7 @@ class TimeSeries(object):
         linewidth=1,
         marker="o",
         markersize=3,
-        color="#222",
+        color="#222222",
     ):
         return plot.plot(
             self,
