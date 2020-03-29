@@ -85,10 +85,10 @@ def plot(
     try:
         drawstyle = INTERPOLATE_DRAWSTYLE[interpolate]
     except KeyError:
-        raise ValueError(
-            f"invalid value for interpolate='{interpolate}', "
-            f"must be in {set(INTERPOLATE_DRAWSTYLE.keys())}"
-        )
+        raise ValueError((
+            "invalid value for interpolate='{}', "
+            "must be in {}"
+        ).format(interpolate, set(INTERPOLATE_DRAWSTYLE.keys())))
 
     with plt.style.context(PLOT_STYLE):
 
