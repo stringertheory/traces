@@ -14,7 +14,7 @@ import sortedcontainers
 from dateutil.parser import parse as date_parse
 from infinity import inf
 
-from . import histogram, operations, utils
+from . import histogram, operations, utils, plot
 
 
 class TimeSeries(object):
@@ -1052,6 +1052,25 @@ class TimeSeries(object):
             result.append((week, self.distribution(mask=mask)))
 
         return result
+
+    def plot(
+        self,
+        interpolate="previous",
+        figure_width=12,
+        linewidth=1,
+        marker="o",
+        markersize=3,
+        color="#222",
+    ):
+        return plot.plot(
+            self,
+            interpolate=interpolate,
+            figure_width=figure_width,
+            linewidth=linewidth,
+            marker=marker,
+            markersize=markersize,
+            color=color,
+        )
 
 
 def hour_of_day(start, end, hour):
