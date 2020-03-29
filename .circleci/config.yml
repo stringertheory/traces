@@ -26,6 +26,10 @@ jobs:
       - restore_cache:
           key: cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
       - run:
+          name: Create artifacts folder
+          command: |
+            mkdir /tmp/artifacts
+      - run:
           name: Install dependencies
           command: |
             python -m venv venv || virtualenv --no-site-packages venv
@@ -42,7 +46,9 @@ jobs:
             nosetests --with-coverage --cover-package=traces
             coveralls
             pycodestyle traces/
-            pytest --mpl tests/test_plot.py
+            pytest --mpl tests/test_plot.py --mpl-results-path=/tmp/artifacts
+      - store_artifacts:
+          path: /tmp/artifacts
   test-3.5:
     <<: *test-template
     docker:
