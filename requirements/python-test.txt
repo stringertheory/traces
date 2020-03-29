@@ -4,8 +4,13 @@
 pycodestyle
 coveralls
 nose
+pytest
+pytest-mpl
 
 # reference implementations
 numpy
 scipy
+
+# optional imports
 pandas
+matplotlib

@@ -14,7 +14,7 @@ import sortedcontainers
 from dateutil.parser import parse as date_parse
 from infinity import inf
 
-from . import histogram, operations, utils
+from . import histogram, operations, utils, plot
 
 
 class TimeSeries(object):
@@ -385,7 +385,7 @@ class TimeSeries(object):
                 )
                 raise ValueError(msg)
 
-            if isinstance(start, datetime.datetime):
+            if isinstance(start, datetime.date):
                 sampling_period = sampling_period_timedelta
             else:
                 sampling_period = sampling_period_seconds
@@ -434,9 +434,9 @@ class TimeSeries(object):
         )
 
         # convert to datetime if the times are datetimes
-        full_window = float(window_size)
+        full_window = window_size * 1.
         half_window = full_window / 2
-        if isinstance(start, datetime.datetime) and not isinstance(
+        if isinstance(start, datetime.date) and not isinstance(
             full_window, datetime.timedelta
         ):
             half_window = datetime.timedelta(seconds=half_window)
@@ -1052,6 +1052,25 @@ class TimeSeries(object):
             result.append((week, self.distribution(mask=mask)))
 
         return result
+
+    def plot(
+        self,
+        interpolate="previous",
+        figure_width=12,
+        linewidth=1,
+        marker="o",
+        markersize=3,
+        color="#222222",
+    ):
+        return plot.plot(
+            self,
+            interpolate=interpolate,
+            figure_width=figure_width,
+            linewidth=linewidth,
+            marker=marker,
+            markersize=markersize,
+            color=color,
+        )
 
 
 def hour_of_day(start, end, hour):

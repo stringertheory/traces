@@ -247,6 +247,13 @@ def test_moving_average():
     assert all(pd_ts.values[i] == ts.mean(i - 1, i + 1)
                for i in range(2, 9))
 
+    # Test using timedelta as sampling_period
+    ts = _make_ts(int, time_list, [1, 2, 3, 0])
+    sampling_period = datetime.timedelta(seconds=1)
+    output = dict(ts.moving_average(sampling_period))
+    answer = build_answer(datetime.timedelta(seconds=1), (2, 11))
+    assert output == build_answer(datetime.timedelta(seconds=1), (2, 11))
+
 
 def test_to_bool():
 

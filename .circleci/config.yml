@@ -5,8 +5,6 @@ workflows:
     jobs:
       - test-3.6:
           context: traces
-      - test-3.5:
-          context: traces
       - test-3.7:
           context: traces
       - test-3.8:
@@ -26,6 +24,10 @@ jobs:
       - restore_cache:
           key: cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "setup.py" }}
       - run:
+          name: Create artifacts folder
+          command: |
+            mkdir /tmp/artifacts
+      - run:
           name: Install dependencies
           command: |
             python -m venv venv || virtualenv --no-site-packages venv
@@ -42,10 +44,9 @@ jobs:
             nosetests --with-coverage --cover-package=traces
             coveralls
             pycodestyle traces/
-  test-3.5:
-    <<: *test-template
-    docker:
-      - image: circleci/python:3.5-buster
+            pytest --mpl tests/test_plot.py --mpl-results-path=/tmp/artifacts
+      - store_artifacts:
+          path: /tmp/artifacts
   test-3.7:
     <<: *test-template
     docker:

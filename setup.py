@@ -50,7 +50,11 @@ with open("README.md", "r") as fh:
 
 setup(
     name='traces',
+<<<<<<< HEAD
     version='0.6.0',
+=======
+    version='0.5.4',
+>>>>>>> dev
     description="A library for unevenly-spaced time series analysis.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -75,7 +79,6 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
