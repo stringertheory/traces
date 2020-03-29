@@ -47,8 +47,8 @@ cover
 *.mo
 *.pot
 
-# Django stuff:
-*.log
+# IPython stuff
+.ipynb_checkpoints/
 
 # mkdocs
 docs/_build
