@@ -251,7 +251,43 @@ class TimeSeries(object):
         return self.n_measurements()
 
     def __repr__(self):
-        return "<TimeSeries>\n%s\n</TimeSeries>" % pprint.pformat(self._d)
+        """A detailed string representation for debugging."""
+
+        def format_item(item):
+            return "{!r}: {!r}".format(*item)
+
+        return "{name}({{{items}}})".format(
+            name=type(self).__name__,
+            items=", ".join(format_item(_) for _ in self._d.items()),
+        )
+
+    def __str__(self):
+        """A human-readable string representation (truncated if it gets too
+        long).
+
+        """
+
+        def format_item(item):
+            return "{!s}: {!s}".format(*item)
+
+        MAX_LENGTH = 20
+        half = MAX_LENGTH // 2
+        if len(self) > MAX_LENGTH:
+            one = ", ".join(format_item(_) for _ in self._d.items()[:half])
+            two = ", ".join(
+                format_item(_) for _ in self._d.items()[half:-half]
+            )
+            three = ", ".join(format_item(_) for _ in self._d.items()[-half:])
+            truncate_string = "<...{} items...>".format(len(self) - MAX_LENGTH)
+            if len(truncate_string) < len(two):
+                two = truncate_string
+            items = ", ".join([one, two, three])
+        else:
+            items = ", ".join(format_item(_) for _ in self._d.items())
+
+        return "{name}({{{items}}})".format(
+            name=type(self).__name__, items=items,
+        )
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
@@ -434,7 +470,7 @@ class TimeSeries(object):
         )
 
         # convert to datetime if the times are datetimes
-        full_window = window_size * 1.
+        full_window = window_size * 1.0
         half_window = full_window / 2
         if isinstance(start, datetime.date) and not isinstance(
             full_window, datetime.timedelta
