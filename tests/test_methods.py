@@ -377,3 +377,20 @@ def test_radd():
     )
 
     nose.tools.assert_raises(TypeError, ts3.__radd__, 1)
+
+def test_repr():
+    import traces
+    import random
+    import datetime
+
+    ts = traces.TimeSeries()
+    t = datetime.date(2000, 1, 1)
+    for i in range(1000):
+        ts[t] = i
+        t += datetime.timedelta(days=i)
+
+    assert '<...' not in repr(ts)
+
+    assert '<...' in str(ts)
+    
+    
