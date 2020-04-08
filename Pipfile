@@ -27,6 +27,7 @@ matplotlib = "*"
 setuptools = "*"
 wheel = "*"
 twine = "*"
+codecov = "*"
 
 [packages]
 sortedcontainers = "*"

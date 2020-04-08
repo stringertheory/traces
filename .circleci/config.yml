@@ -42,7 +42,7 @@ jobs:
           command: |
             . venv/bin/activate
             nosetests --with-coverage --cover-package=traces
-            coveralls
+            codecov
             pycodestyle traces/
             pytest --mpl tests/test_plot.py --mpl-results-path=/tmp/artifacts
       - store_artifacts:
