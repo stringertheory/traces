@@ -22,16 +22,18 @@ def test_cumsum():
             '2019-04-16T13:09:29', '2019-04-16T13:10:20']
     es = EventSeries(pd.to_datetime(data))
 
-    reference = TimeSeries({pd.Timestamp('2018-10-15 16:45:01'): 1,
-                            pd.Timestamp('2019-02-22 12:05:08'): 2,
-                            pd.Timestamp('2019-03-08 16:46:48'): 3,
-                            pd.Timestamp('2019-04-16 13:08:26'): 4,
-                            pd.Timestamp('2019-04-16 13:09:06'): 5,
-                            pd.Timestamp('2019-04-16 13:09:13'): 6,
-                            pd.Timestamp('2019-04-16 13:09:28'): 7,
-                            pd.Timestamp('2019-04-16 13:09:29'): 9,
-                            pd.Timestamp('2019-04-16 13:10:20'): 11,
-                            pd.Timestamp('2019-04-16 13:10:30'): 12}, default=0)
+    ref = {pd.Timestamp('2018-10-15 16:45:01'): 1,
+           pd.Timestamp('2019-02-22 12:05:08'): 2,
+           pd.Timestamp('2019-03-08 16:46:48'): 3,
+           pd.Timestamp('2019-04-16 13:08:26'): 4,
+           pd.Timestamp('2019-04-16 13:09:06'): 5,
+           pd.Timestamp('2019-04-16 13:09:13'): 6,
+           pd.Timestamp('2019-04-16 13:09:28'): 7,
+           pd.Timestamp('2019-04-16 13:09:29'): 9,
+           pd.Timestamp('2019-04-16 13:10:20'): 11,
+           pd.Timestamp('2019-04-16 13:10:30'): 12}
+
+    reference = TimeSeries(ref, default=0)
 
     assert es.cumsum() == reference
 
