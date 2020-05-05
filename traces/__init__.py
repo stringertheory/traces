@@ -6,6 +6,7 @@ from traces import decorators, operations
 from .histogram import Histogram
 from .timeseries import TimeSeries
 from .utils import datetime_range
+from .eventseries import EventSeries
 
 __author__ = 'Mike Stringer'
 __email__ = 'mike.stringer@datascopeanalytics.com'
