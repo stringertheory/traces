@@ -9,7 +9,7 @@ A Python library for unevenly-spaced time series analysis.
 Taking measurements at irregular intervals is common, but most tools are
 primarily designed for evenly-spaced measurements. Also, in the real
 world, time series have missing observations or you may have multiple
-series with different frequencies: it's can be useful to model these as
+series with different frequencies: it can be useful to model these as
 unevenly-spaced.
 
 Traces was designed by the team at
