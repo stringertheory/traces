@@ -11,8 +11,15 @@ def test_init_data():
     assert es[3] == 8.7
     assert es[4] == 10
 
+    es.add(9)
+    assert es[4] == 9
 
-def test_cumsum():
+    es.update([4, 5, 9.5])
+    assert es[2] == 4
+    assert es[7] == 9.5
+
+
+def test_cumulative_sum():
     # Test with basic timestamp data
     data = ['2018-10-15T16:45:01', '2019-04-16T13:08:26',
             '2019-02-22T12:05:08', '2019-04-16T13:09:06',
@@ -35,14 +42,14 @@ def test_cumsum():
 
     reference = TimeSeries(ref, default=0)
 
-    assert es.cumsum() == reference
+    assert es.cumulative_sum() == reference
 
     # check default is 0
-    assert es.cumsum()[pd.Timestamp('2015-01-01')] == 0
+    assert es.cumulative_sum()[pd.Timestamp('2015-01-01')] == 0
 
     # Test Empty Series
     es = EventSeries()
-    assert es.cumsum() == TimeSeries(default=0)
+    assert es.cumulative_sum() == TimeSeries(default=0)
 
 
 def test_n_measurements():
@@ -93,15 +100,15 @@ def test_count_active():
     assert ts['13:00'] == 1
 
 
-def test_time_lag():
+def test_interevent_times():
     data = ['2019-02-01', '2019-02-28',
             '2019-02-22', '2019-02-16',
             '2019-02-26', '2019-02-16']
     es = EventSeries(pd.to_datetime(data))
 
-    time_lag = es.time_lag()
-    assert time_lag[0] == pd.Timedelta(days=15)
-    assert time_lag[1] == pd.Timedelta(days=0)
+    interevent_times = es.interevent_times()
+    assert interevent_times[0] == pd.Timedelta(days=15)
+    assert interevent_times[1] == pd.Timedelta(days=0)
 
     # Make sure we got the right shape
-    assert time_lag.shape[0] == len(data)-1
+    assert len(interevent_times) == len(data)-1
