@@ -45,7 +45,7 @@ def test_cumsum():
     assert es.cumsum() == TimeSeries(default=0)
 
 
-def test_events_between():
+def test_n_measurements():
     data = ['2018-10-15T16:45:01', '2019-04-16T13:08:26',
             '2019-02-22T12:05:08', '2019-04-16T13:09:06',
             '2019-04-16T13:09:13', '2019-04-16T13:09:28',
@@ -54,25 +54,30 @@ def test_events_between():
             '2019-04-16T13:09:29', '2019-04-16T13:10:20']
     es = EventSeries(pd.to_datetime(data))
 
-    assert es.events_between(pd.Timestamp(
+    assert es.n_measurements(pd.Timestamp(
         '2018-01-01'), pd.Timestamp('2020-01-01')) == 12
-    assert es.events_between(pd.Timestamp(
+    assert es.n_measurements(pd.Timestamp(
         '2018-01-01'), pd.Timestamp('2019-01-01')) == 1
-    assert es.events_between(pd.Timestamp(
+    assert es.n_measurements(pd.Timestamp(
         '2020-01-01'), pd.Timestamp('2020-02-01')) == 0
-    assert es.events_between(pd.Timestamp(
+    assert es.n_measurements(pd.Timestamp(
         '2016-01-01'), pd.Timestamp('2017-02-01')) == 0
 
     # Test closed boundaries on end points
     # left
-    assert es.events_between(pd.Timestamp('2018-10-15 16:45:01'),
+    assert es.n_measurements(pd.Timestamp('2018-10-15 16:45:01'),
                              pd.Timestamp('2019-04-15 12:00:00')) == 3
     # right
-    assert es.events_between(pd.Timestamp('2019-02-28 12:00:00'),
+    assert es.n_measurements(pd.Timestamp('2019-02-28 12:00:00'),
                              pd.Timestamp('2019-04-16 13:10:20')) == 9
     # both
-    assert es.events_between(pd.Timestamp('2019-02-22 12:05:08'),
+    assert es.n_measurements(pd.Timestamp('2019-02-22 12:05:08'),
                              pd.Timestamp('2019-04-16 13:10:20')) == 10
+
+    # Test unspecified boundaries
+    assert es.n_measurements() == 12
+    assert es.n_measurements(pd.Timestamp('2019-01-01')) == 11
+    assert es.n_measurements(end=pd.Timestamp('2019-01-01')) == 1
 
 
 def test_count_active():

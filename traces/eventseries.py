@@ -25,14 +25,15 @@ class EventSeries(sortedcontainers.SortedList):
 
         return TimeSeries(zip(keys, values), default=0)
 
-    def events_between(self, start, end):
+    def n_measurements(self, start=None, end=None):
         '''
         Returns the number of events that occured between `start and `end.
+        If start or end aren't provided defaults to the start or end of the EventSeries.
         Calculates on a closed interval, so start and end are included in the
         range
         '''
-        start_idx = self.bisect_left(start)
-        end_idx = self.bisect_right(end)
+        start_idx = self.bisect_left(start) if start else 0
+        end_idx = self.bisect_right(end) if end else len(self)
         return end_idx - start_idx
 
     def time_lag(self):
