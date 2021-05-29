@@ -4,7 +4,6 @@ import traces
 import pandas as pd
 import numpy as np
 
-from future.utils import listitems, iteritems
 
 key_list = [
     datetime.datetime(2012, 1, 7),
@@ -27,9 +26,9 @@ unhashable_types = {
     set: [{1}, {1, 2}, {1, 2, 3}, set()],
 }
 all_types = dict(
-    listitems(numeric_types) +
-    listitems(non_numeric_hashable_types) +
-    listitems(unhashable_types)
+    list(numeric_types.items()) +
+    list(non_numeric_hashable_types.items()) +
+    list(unhashable_types.items())
 )
 
 
@@ -49,26 +48,53 @@ def frange(x, y, jump):
 def test_mean():
 
     # numeric hashable types should work
-    for type_, value_list in iteritems(numeric_types):
+    for type_, value_list in numeric_types.items():
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
         ts.mean(key_list[0], key_list[-1])
 
     # non-numeric hashable types should raise type error on mean, but
     # distribution should work
-    for type_, value_list in iteritems(non_numeric_hashable_types):
+    for type_, value_list in non_numeric_hashable_types.items():
         ts = _make_ts(type_, key_list, value_list)
         ts.distribution(key_list[0], key_list[-1])
         nose.tools.assert_raises(TypeError, ts.mean, key_list[0], key_list[1])
 
     # non-numeric unhashable types should raise error on distribution
     # and mean
-    for type_, value_list in iteritems(unhashable_types):
+    for type_, value_list in unhashable_types.items():
         ts = _make_ts(type_, key_list, value_list)
         nose.tools.assert_raises(TypeError, ts.distribution,
                                  key_list[0], key_list[1])
         nose.tools.assert_raises(TypeError, ts.mean,
                                  key_list[0], key_list[1])
+
+
+def test_mean_interpolate():
+
+    ts = traces.TimeSeries()
+    ts[0] = 0
+    ts[1] = 0
+    ts[3] = 20
+    nose.tools.assert_almost_equal(
+        ts.mean(0, 2, interpolate='linear'),
+        2.5,
+    )
+    assert ts.mean(0, 2, interpolate='linear') == 2.5
+
+    mask = traces.TimeSeries(default=False)
+    mask[0] = True
+    mask[0.5] = False
+    mask[1] = True
+    mask[3] = False
+    nose.tools.assert_almost_equal(
+        ts.mean(0, 2, mask=mask, interpolate='linear'),
+        10/3.0,
+    )
+    nose.tools.assert_almost_equal(
+        ts.mean(0, 3, mask=mask, interpolate='linear'),
+        8.0,
+    )
 
 
 def test_sample():
@@ -221,15 +247,22 @@ def test_moving_average():
     assert all(pd_ts.values[i] == ts.mean(i - 1, i + 1)
                for i in range(2, 9))
 
+    # Test using timedelta as sampling_period
+    ts = _make_ts(int, time_list, [1, 2, 3, 0])
+    sampling_period = datetime.timedelta(seconds=1)
+    output = dict(ts.moving_average(sampling_period))
+    answer = build_answer(datetime.timedelta(seconds=1), (2, 11))
+    assert output == build_answer(datetime.timedelta(seconds=1), (2, 11))
+
 
 def test_to_bool():
 
     answer = {}
-    for type_, value_list in iteritems(all_types):
+    for type_, value_list in all_types.items():
         answer[type_] = [True if i else False for i in value_list]
 
     # numeric hashable types should work
-    for type_, value_list in iteritems(all_types):
+    for type_, value_list in all_types.items():
         ts = _make_ts(type_, key_list, value_list)
         result = ts.to_bool()
         values = [v for (k, v) in result.items()]
@@ -253,12 +286,94 @@ def test_get_item_by_index():
 
 
 def test_bin():
-    ts = traces.TimeSeries()
-    nose.tools.assert_raises(KeyError, ts.bin, 'days')
+    # make some random dates
+    start = datetime.datetime(2018, 12, 13, 7, 43, 15)
+    end = datetime.datetime(2019, 2, 3, 8, 45, 10)
 
+    # make a timeseries
+    span = end-start
+    ts = traces.TimeSeries()
+    ts[start-span/2] = 2
+    ts[start] = 12
+    ts[start+span/3] = 5
+    ts[end - span/4] = 14
+    ts[end+span] = None
+    # nose.tools.assert_raises(KeyError, ts.bin, 'days')
+
+    # make a mask
     mask = traces.TimeSeries(default=False)
-    print(ts.bin('days', mask=mask))
+    mask[start] = True
+    mask[end] = False
+    mask[start + 3*span/10] = False
+    mask[start + 5*span/10] = True
+
+    binned = ts.bin('weeks', mask=mask)
+    first = binned.peekitem(0)
+    last = binned.peekitem()
+
+    assert len(binned) == 7
+    assert first[0] == datetime.datetime(2018, 12, 10, 0, 0)
+    assert last[0] == datetime.datetime(2019, 1, 21, 0, 0)
+    assert int(last[1][5]) == 30581
 
 
 def test_rebin():
     pass
+
+
+def test_npoints():
+
+    ts = traces.TimeSeries()
+    ts[0] = 4
+    ts[1] = 2
+    ts[2] = 1
+    ts[5] = 2
+    ts[8] = 4
+
+    nose.tools.eq_(ts.n_points(), 5)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=False, include_end=False), 3)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=False, include_end=True), 4)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=True, include_end=False), 4)
+    nose.tools.eq_(
+        ts.n_points(start=0, end=8, include_start=True, include_end=True), 5)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=False, include_end=False), 2)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=False, include_end=True), 3)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=True, include_end=False), 3)
+    nose.tools.eq_(
+        ts.n_points(start=1, end=8, include_start=True, include_end=True), 4)
+
+    ts = traces.TimeSeries()
+
+    nose.tools.eq_(ts.n_points(), 0)
+    nose.tools.eq_(ts.n_points(include_start=False), 0)
+    nose.tools.eq_(ts.n_points(include_end=False), 0)
+
+
+def test_radd():
+
+    ts1 = traces.TimeSeries(default=0)
+    ts1[0] = 1
+    ts1[2] = 0
+    ts1[3] = 1
+    ts1[4] = 0
+
+    ts2 = traces.TimeSeries(default=0)
+    ts2[-1] = 1
+    ts2[2] = 0
+    ts2[3] = 1
+    ts2[4] = 0
+
+    ts3 = ts1 + ts2
+
+    nose.tools.eq_(
+        list(ts3.items()),
+        [(-1, 1), (0, 2), (2, 0), (3, 2), (4, 0)]
+    )
+
+    nose.tools.assert_raises(TypeError, ts3.__radd__, 1)

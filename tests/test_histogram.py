@@ -28,7 +28,7 @@ def test_normalize():
     histogram = traces.Histogram(data)
     normalized = histogram.normalized()
 
-    assert sum(normalized.itervalues()) == 1.0
+    assert sum(normalized.values()) == 1.0
 
 
 def _test_statistics(normalized):
@@ -123,6 +123,7 @@ def test_quantile_interpolation():
     for i, j in zip(result, answer):
         nose.tools.assert_almost_equal(i, j)
 
+
 def test_addition():
 
     hist_a = traces.Histogram([1, 1, 1, 2, 3, 5])
@@ -130,3 +131,48 @@ def test_addition():
 
     together = hist_a.add(hist_b)
     assert list(together.items()) == [(0, 2), (1, 4), (2, 3), (3, 1), (5, 1)]
+
+
+def test_minmax_with_zeros():
+
+    histogram = traces.Histogram()
+
+    histogram[0] += 0
+    histogram[1] += 1
+    histogram[2] += 1
+    histogram[3] += 0
+
+    nose.tools.eq_(histogram.min(), 1)
+    nose.tools.eq_(histogram.max(), 2)
+
+
+def test_histogram_stats_with_nones():
+
+    histogram = traces.Histogram()
+
+    nose.tools.eq_(histogram.mean(), None)
+    nose.tools.eq_(histogram.variance(), None)
+    nose.tools.eq_(histogram.standard_deviation(), None)
+    nose.tools.eq_(histogram.min(), None)
+    nose.tools.eq_(histogram.max(), None)
+    nose.tools.eq_(histogram.median(), None)
+
+    histogram = traces.Histogram.from_dict({None: 1}, key=hash)
+
+    nose.tools.eq_(histogram.mean(), None)
+    nose.tools.eq_(histogram.variance(), None)
+    nose.tools.eq_(histogram.standard_deviation(), None)
+    nose.tools.eq_(histogram.min(), None)
+    nose.tools.eq_(histogram.max(), None)
+    nose.tools.eq_(histogram.median(), None)
+
+    ts = traces.TimeSeries()
+    ts[0] = None
+    ts[1] = 5
+    ts[2] = 6
+    ts[3] = None
+    ts[9] = 7
+    ts[10] = None
+
+    histogram = ts.distribution(start=0, end=10)
+    nose.tools.eq_(histogram.mean(), 6)
