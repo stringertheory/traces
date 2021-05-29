@@ -17,26 +17,26 @@ def test_scalar_ops():
 
     # test before domain, should give default value
     assert ts_half[datetime.datetime(2015, 2, 24)] is None
-    assert ts_bool[datetime.datetime(2015, 2, 24)] == None
-    assert ts_threshold[datetime.datetime(2015, 2, 24)] == None
+    assert ts_bool[datetime.datetime(2015, 2, 24)] is None
+    assert ts_threshold[datetime.datetime(2015, 2, 24)] is None
 
     # test values throughout series
     assert ts_half[datetime.datetime(2015, 3, 1, 6)] == 0.5
-    assert ts_bool[datetime.datetime(2015, 3, 1, 6)] == True
-    assert ts_threshold[datetime.datetime(2015, 3, 1, 6)] == False
+    assert ts_bool[datetime.datetime(2015, 3, 1, 6)] is True
+    assert ts_threshold[datetime.datetime(2015, 3, 1, 6)] is False
 
     assert ts_half[datetime.datetime(2015, 3, 2, 6)] == 0
-    assert ts_bool[datetime.datetime(2015, 3, 2, 6)] == False
-    assert ts_threshold[datetime.datetime(2015, 3, 2, 6)] == False
+    assert ts_bool[datetime.datetime(2015, 3, 2, 6)] is False
+    assert ts_threshold[datetime.datetime(2015, 3, 2, 6)] is False
 
     assert ts_half[datetime.datetime(2015, 3, 3, 6)] == 1.5
-    assert ts_bool[datetime.datetime(2015, 3, 3, 6)] == True
-    assert ts_threshold[datetime.datetime(2015, 3, 3, 6)] == True
+    assert ts_bool[datetime.datetime(2015, 3, 3, 6)] is True
+    assert ts_threshold[datetime.datetime(2015, 3, 3, 6)] is True
 
     # test after domain, should give last value
     assert ts_half[datetime.datetime(2015, 3, 4, 18)] == 1
-    assert ts_bool[datetime.datetime(2015, 3, 4, 18)] == True
-    assert ts_threshold[datetime.datetime(2015, 3, 4, 18)] == True
+    assert ts_bool[datetime.datetime(2015, 3, 4, 18)] is True
+    assert ts_threshold[datetime.datetime(2015, 3, 4, 18)] is True
 
 
 def test_sum():
@@ -86,55 +86,52 @@ def test_sum():
 def example_dictlike():
 
     # test overwriting keys
-    l = TimeSeries()
-    l[datetime.datetime(2010, 1, 1)] = 5
-    l[datetime.datetime(2010, 1, 2)] = 4
-    l[datetime.datetime(2010, 1, 3)] = 3
-    l[datetime.datetime(2010, 1, 7)] = 2
-    l[datetime.datetime(2010, 1, 4)] = 1
-    l[datetime.datetime(2010, 1, 4)] = 10
-    l[datetime.datetime(2010, 1, 4)] = 5
-    l[datetime.datetime(2010, 1, 1)] = 1
-    l[datetime.datetime(2010, 1, 7)] = 1.2
-    l[datetime.datetime(2010, 1, 8)] = 1.3
-    l[datetime.datetime(2010, 1, 12)] = 1.3
+    ts = TimeSeries()
+    ts[datetime.datetime(2010, 1, 1)] = 5
+    ts[datetime.datetime(2010, 1, 2)] = 4
+    ts[datetime.datetime(2010, 1, 3)] = 3
+    ts[datetime.datetime(2010, 1, 7)] = 2
+    ts[datetime.datetime(2010, 1, 4)] = 1
+    ts[datetime.datetime(2010, 1, 4)] = 10
+    ts[datetime.datetime(2010, 1, 4)] = 5
+    ts[datetime.datetime(2010, 1, 1)] = 1
+    ts[datetime.datetime(2010, 1, 7)] = 1.2
+    ts[datetime.datetime(2010, 1, 8)] = 1.3
+    ts[datetime.datetime(2010, 1, 12)] = 1.3
 
     # do some wackiness with a bunch of points
     dt = datetime.datetime(2010, 1, 12)
     for i in range(1000):
         dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.sin(i / float(math.pi))
+        ts[dt] = math.sin(i / float(math.pi))
 
     dt -= datetime.timedelta(hours=500)
     dt -= datetime.timedelta(minutes=30)
     for i in range(1000):
         dt += datetime.timedelta(hours=random.random())
-        l[dt] = math.cos(i / float(math.pi))
-
-    # what does this get?
-    print >> sys.stderr, l[datetime.datetime(2010, 1, 3, 23, 59, 59)]
+        ts[dt] = math.cos(i / float(math.pi))
 
     # output the time series
-    for i, j in l:
+    for i, j in ts:
         print(i.isoformat(), j)
 
 
 def example_mean():
 
-    l = TimeSeries()
-    l[datetime.datetime(2010, 1, 1)] = 0
-    l[datetime.datetime(2010, 1, 3, 10)] = 1
-    l[datetime.datetime(2010, 1, 5)] = 0
-    l[datetime.datetime(2010, 1, 8)] = 1
-    l[datetime.datetime(2010, 1, 17)] = 0
-    l[datetime.datetime(2010, 1, 19)] = 1
-    l[datetime.datetime(2010, 1, 23)] = 0
-    l[datetime.datetime(2010, 1, 26)] = 1
-    l[datetime.datetime(2010, 1, 28)] = 0
-    l[datetime.datetime(2010, 1, 31)] = 1
-    l[datetime.datetime(2010, 2, 5)] = 0
+    ts = TimeSeries()
+    ts[datetime.datetime(2010, 1, 1)] = 0
+    ts[datetime.datetime(2010, 1, 3, 10)] = 1
+    ts[datetime.datetime(2010, 1, 5)] = 0
+    ts[datetime.datetime(2010, 1, 8)] = 1
+    ts[datetime.datetime(2010, 1, 17)] = 0
+    ts[datetime.datetime(2010, 1, 19)] = 1
+    ts[datetime.datetime(2010, 1, 23)] = 0
+    ts[datetime.datetime(2010, 1, 26)] = 1
+    ts[datetime.datetime(2010, 1, 28)] = 0
+    ts[datetime.datetime(2010, 1, 31)] = 1
+    ts[datetime.datetime(2010, 2, 5)] = 0
 
-    for time, value in l:
+    for time, value in ts:
         print(time.isoformat(), 0.1 * value + 1.1)
 
     print('')
@@ -143,7 +140,7 @@ def example_mean():
     start = datetime.datetime(2010, 1, 1)
     while start <= datetime.datetime(2010, 2, 5):
         end = start + datetime.timedelta(**timestep)
-        print(start.isoformat(), l.mean(start, end))
+        print(start.isoformat(), ts.mean(start, end))
         start = end
 
     print('')
@@ -158,20 +155,20 @@ def example_mean():
 
 def example_arrow():
 
-    l = TimeSeries()
-    l[arrow.Arrow(2010, 1, 1)] = 0
-    l[arrow.Arrow(2010, 1, 3, 10)] = 1
-    l[arrow.Arrow(2010, 1, 5)] = 0
-    l[arrow.Arrow(2010, 1, 8)] = 1
-    l[arrow.Arrow(2010, 1, 17)] = 0
-    l[arrow.Arrow(2010, 1, 19)] = 1
-    l[arrow.Arrow(2010, 1, 23)] = 0
-    l[arrow.Arrow(2010, 1, 26)] = 1
-    l[arrow.Arrow(2010, 1, 28)] = 0
-    l[arrow.Arrow(2010, 1, 31)] = 1
-    l[arrow.Arrow(2010, 2, 5)] = 0
+    ts = TimeSeries()
+    ts[arrow.Arrow(2010, 1, 1)] = 0
+    ts[arrow.Arrow(2010, 1, 3, 10)] = 1
+    ts[arrow.Arrow(2010, 1, 5)] = 0
+    ts[arrow.Arrow(2010, 1, 8)] = 1
+    ts[arrow.Arrow(2010, 1, 17)] = 0
+    ts[arrow.Arrow(2010, 1, 19)] = 1
+    ts[arrow.Arrow(2010, 1, 23)] = 0
+    ts[arrow.Arrow(2010, 1, 26)] = 1
+    ts[arrow.Arrow(2010, 1, 28)] = 0
+    ts[arrow.Arrow(2010, 1, 31)] = 1
+    ts[arrow.Arrow(2010, 2, 5)] = 0
 
-    for time, value in l:
+    for time, value in ts:
         print(time.naive.isoformat(), 0.1 * value + 1.1)
 
     print('')
@@ -180,7 +177,7 @@ def example_arrow():
     end = arrow.Arrow(2010, 2, 5)
     unit = {'hours': 25}
     for start, end in span_range(start, end, unit):
-        print(start.naive.isoformat(), l.mean(start, end))
+        print(start.naive.isoformat(), ts.mean(start, end))
 
     print('')
 
@@ -247,7 +244,7 @@ def test_interpolation():
     assert ts.get(0.75, interpolate='linear') == 1.5
     assert ts.get(1, interpolate='linear') == 2
 
-    assert ts.get(-1, interpolate='linear') == None
+    assert ts.get(-1, interpolate='linear') is None
     assert ts.get(2, interpolate='linear') == 2
 
     nose.tools.assert_raises(ValueError, ts.get, 0.5, 'spline')
@@ -256,10 +253,19 @@ def test_interpolation():
 def test_default():
     ts = TimeSeries(data=[(0, 0), (1, 2)])
     ts_no_default = ts.operation(ts, lambda a, b: a + b)
-    assert ts_no_default.default == None
+    assert ts_no_default.default is None
 
     ts_default = ts.operation(ts, lambda a, b: a + b, default=1)
     assert ts_default.default == 1
 
     ts_none = ts.operation(ts, lambda a, b: a + b, default=None)
-    assert ts_none.default == None
+    assert ts_none.default is None
+
+
+def test_difference():
+
+    a = TimeSeries(data=[(0, 0), (2, 2)], default=0)
+    b = TimeSeries(data=[(1, 1), (3, 2)], default=0)
+
+    c = a - b
+    nose.tools.eq_(list(c.items()), [(0, 0), (1, -1), (2, 1), (3, 0)])

@@ -83,7 +83,7 @@ Adding more data...
 +++++++++++++++++++
 
 Now let's get a little more complicated and look at the sensor
-readings from forty lights in a house.
+readings from forty lights in a building.
 
 .. figure:: _static/img/traces.svg
    :alt: many light switch trace
@@ -103,8 +103,8 @@ We also applied a ``sum`` operation to the list of states to get the
 .. figure:: _static/img/count.svg
    :alt: many light switch count
 
-How many lights are on in the building on average during business hours,
-from 8am to 6pm?
+How many lights are typically on during business hours, from 8am to
+6pm?
 
 .. code:: python
 

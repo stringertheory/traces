@@ -53,6 +53,7 @@ lint: ## check style with flake8
 test: ## run tests quickly with the default Python
 	nosetests --with-coverage --cover-package=traces
 	pycodestyle traces
+	pytest --mpl tests/test_plot.py
 
 test-all: ## run tests on every Python version with tox
 	tox
@@ -70,12 +71,11 @@ servedocs: ## compile the docs watching for changes
 	sphinx-autobuild -z traces/ docs docs/_build/html
 
 release: clean ## package and upload a release
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	python setup.py sdist bdist_wheel
+	twine upload dist/*
 
 dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
+	python setup.py sdist bdist_wheel
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
