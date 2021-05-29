@@ -337,7 +337,7 @@ class TimeSeries(object):
             interval_value = self[interval_t0]
 
         # yield the time, duration, and value of the final period
-        if interval_t0 < end:
+        if interval_t0 <= end:
             if value_function(interval_t0, end, interval_value):
                 yield interval_t0, end, interval_value
 
