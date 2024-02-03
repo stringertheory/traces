@@ -84,9 +84,9 @@ def test_mean_interpolate():
     mask[0.5] = False
     mask[1] = True
     mask[3] = False
-    
+
     assert ts.mean(0, 2, mask=mask, interpolate='linear') == pytest.approx(10/3.0)
-    
+
     assert ts.mean(0, 3, mask=mask, interpolate='linear') == pytest.approx(8.0)
 
 
@@ -358,7 +358,7 @@ def test_radd():
     ts3 = ts1 + ts2
 
     assert list(ts3.items()) == [(-1, 1), (0, 2), (2, 0), (3, 2), (4, 0)]
-    
+
 
     pytest.raises(TypeError, ts3.__radd__, 1)
 
@@ -376,5 +376,3 @@ def test_repr():
     assert '<...' not in repr(ts)
 
     assert '<...' in str(ts)
-    
-    

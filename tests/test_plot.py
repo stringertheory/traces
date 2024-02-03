@@ -14,7 +14,7 @@ def test_plot():
     ts[1] = 2
     ts[3] = 1
     ts[5] = 0
-    
+
     figure, axes = ts.plot()
     return figure
 
@@ -29,7 +29,7 @@ def test_invalid_call():
     ts = traces.TimeSeries()
     ts[0] = 0
     ts[1] = 1
-    
+
     ts.plot(interpolate='previous')
     ts.plot(interpolate='linear')
 
@@ -40,6 +40,5 @@ def test_invalid_call():
 def test_empty():
 
     ts = traces.TimeSeries()
-    
+
     ts.plot()
-    

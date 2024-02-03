@@ -56,9 +56,9 @@ def print_results(*args):
             else:
                 msg = '%s is %.1fx faster than %s' % (name_b, ratio, name_a)
             print >> sys.stderr, msg
-            
+
     return result
-    
+
 def timing_loop(n, mod=1000):
     for index, i in enumerate(range(n)):
         if not index % mod:
