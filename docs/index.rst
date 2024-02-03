@@ -20,11 +20,8 @@ model these as unevenly-spaced.
 .. include:: goals.rst
 
 Traces was designed by the team at `Datascope
-<https://datascopeanalytics.com/>`__ based on several practical
-applications in different domains, because it turns out
-`unevenly-spaced data is actually pretty great, particularly for
-sensor data analysis
-<https://datascopeanalytics.com/blog/unevenly-spaced-time-series/>`_.
+<https://en.wikipedia.org/wiki/Datascope_Analytics>`__ based on several practical
+applications in different domains, because it turns out :doc:`unevenly-spaced data is actually pretty great, particularly for sensor data analysis <unevenly-spaced>`.
 
 Installation
 ------------

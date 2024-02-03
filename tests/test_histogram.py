@@ -171,3 +171,5 @@ def test_histogram_stats_with_nones():
 
     histogram = ts.distribution(start=0, end=10)
     assert histogram.mean() == 6
+    assert histogram.max() == 7
+    assert histogram.min() == 5
