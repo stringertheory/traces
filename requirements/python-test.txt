@@ -4,7 +4,7 @@
 pycodestyle
 coveralls
 codecov
-nose
+nose==1.3.7
 pytest
 pytest-mpl
 
