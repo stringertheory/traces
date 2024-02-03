@@ -10,7 +10,7 @@ def parse_iso_datetime(value):
     return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
 
 
-def read_all(pattern="data/lightbulb-*.csv"):
+def read_all(pattern="examples/data/lightbulb-*.csv"):
     """Read all of the CSVs in a directory matching the filename pattern
     as TimeSeries.
 
