@@ -1,7 +1,7 @@
 -r python-dev.txt
 
 # testing
-pycodestyle
+pycodestyle==2.11.1
 coveralls
 codecov
 nose
