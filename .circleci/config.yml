@@ -12,7 +12,7 @@ workflows:
 jobs:
   test-3.6: &test-template
     docker:
-     - image: circleci/python:3.6-buster
+      - image: circleci/python:3.6-buster
     filters:
       branches:
         only:
@@ -42,7 +42,7 @@ jobs:
           command: |
             . venv/bin/activate
             nosetests --with-coverage --cover-package=traces
-            coveralls
+            codecov
             pycodestyle traces/
             pytest --mpl tests/test_plot.py --mpl-results-path=/tmp/artifacts
       - store_artifacts:

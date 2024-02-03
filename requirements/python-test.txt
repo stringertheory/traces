@@ -3,6 +3,7 @@
 # testing
 pycodestyle
 coveralls
+codecov
 nose
 pytest
 pytest-mpl
