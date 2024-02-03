@@ -1,5 +1,6 @@
 import contextlib
 import datetime
+import numbers
 
 from infinity import inf
 
@@ -12,7 +13,7 @@ def duration_to_number(duration, units="seconds"):
     TODO: allow for multiple types of units.
 
     """
-    if isinstance(duration, (int, float)):
+    if isinstance(duration, (numbers.Integral, numbers.Real)):
         return duration
     elif isinstance(duration, (datetime.timedelta,)):
         if units == "seconds":
