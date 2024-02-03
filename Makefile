@@ -45,7 +45,8 @@ docs-test: ## Test if documentation can be built without warnings or errors
 
 .PHONY: docs
 docs: ## Build and serve the documentation
-	@poetry run mkdocs serve
+	# @poetry run mkdocs serve -a localhost:8002
+	@poetry run sphinx-autobuild --port 8002 docs docs/_build/html
 
 .PHONY: help
 help:
