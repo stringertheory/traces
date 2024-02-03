@@ -1,8 +1,8 @@
-# Authors (chronological)
+# Authors
 
-- [Mike Stringer](https://datascopeanalytics.com/team/mike-stringer/)
-- [Vlad Seghete](https://datascopeanalytics.com/team/vlad-seghete/)
-- [Yoke Peng Leong](https://datascopeanalytics.com/team/yoke-peng-leong/)
+Created by [Mike Stringer](https://github.com/stringertheory/), [Vlad Seghete](https://github.com/vlsd/), and [Yoke Peng Leong](https://github.com/ypleong/) while working at Datascope. [Mike](https://github.com/stringertheory/) is most recently maintaining traces.
+
+With merged pull requests by [sdementen](https://github.com/sdementen), [nsteins](https://github.com/nsteins), [zzrcxb](https://github.com/zzrcxb), [gokturksm](https://github.com/gokturksm). Thank you!
 
 # Design Philosophy
 
@@ -12,10 +12,7 @@
 
 # Contributing to `traces`
 
-Contributions are welcome, and they are greatly appreciated!
-Every little bit helps, and credit will always be given.
-
-You can contribute in many ways:
+Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given. You can contribute in many ways.
 
 # Types of Contributions
 
