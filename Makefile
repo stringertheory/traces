@@ -1,82 +1,54 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
-.DEFAULT_GOAL := help
-define BROWSER_PYSCRIPT
-import os, webbrowser, sys
-try:
-	from urllib import pathname2url
-except:
-	from urllib.request import pathname2url
+.PHONY: install
+install: ## Install the poetry environment and install the pre-commit hooks
+	@echo "🚀 Creating virtual environment using pyenv and poetry"
+	@poetry install
+	@ poetry run pre-commit install
+	@poetry shell
 
-webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
-endef
-export BROWSER_PYSCRIPT
+.PHONY: check
+check: ## Run code quality tools.
+	@echo "🚀 Checking Poetry lock file consistency with 'pyproject.toml': Running poetry lock --check"
+	@poetry check --lock
+	@echo "🚀 Linting code: Running pre-commit"
+	@poetry run pre-commit run -a
+	@echo "🚀 Static type checking: Running mypy"
+	@poetry run mypy
 
-define PRINT_HELP_PYSCRIPT
-import re, sys
+.PHONY: test
+test: ## Test the code with pytest
+	@echo "🚀 Testing code: Running pytest"
+	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
-for line in sys.stdin:
-	match = re.match(r'^([a-zA-Z_-]+):.*?## (.*)$$', line)
-	if match:
-		target, help = match.groups()
-		print("%-20s %s" % (target, help))
-endef
-export PRINT_HELP_PYSCRIPT
-BROWSER := python -c "$$BROWSER_PYSCRIPT"
+.PHONY: build
+build: clean-build ## Build wheel file using poetry
+	@echo "🚀 Creating wheel file"
+	@poetry build
 
+.PHONY: clean-build
+clean-build: ## clean build artifacts
+	@rm -rf dist
+
+.PHONY: publish
+publish: ## publish a release to pypi.
+	@echo "🚀 Publishing: Dry run."
+	@poetry config pypi-token.pypi $(PYPI_TOKEN)
+	@poetry publish --dry-run
+	@echo "🚀 Publishing."
+	@poetry publish
+
+.PHONY: build-and-publish
+build-and-publish: build publish ## Build and publish.
+
+.PHONY: docs-test
+docs-test: ## Test if documentation can be built without warnings or errors
+	@poetry run mkdocs build -s
+
+.PHONY: docs
+docs: ## Build and serve the documentation
+	@poetry run mkdocs serve
+
+.PHONY: help
 help:
-	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
-
-
-clean-build: ## remove build artifacts
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
-
-clean-pyc: ## remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
-
-lint: ## check style with flake8
-	flake8 traces tests
-
-test: ## run tests quickly with the default Python
-	nosetests --with-coverage --cover-package=traces
-	pycodestyle traces
-	pytest --mpl tests/test_plot.py
-
-test-all: ## run tests on every Python version with tox
-	tox
-
-coverage: ## check code coverage quickly with the default Python
-		coverage run --source traces setup.py test
-		coverage report -m
-		coverage html
-		$(BROWSER) htmlcov/index.html
-
-docs: ## generate HTML documentation
-	cd docs && make html
-
-servedocs: ## compile the docs watching for changes
-	sphinx-autobuild -z traces/ docs docs/_build/html
-
-release: clean ## package and upload a release
-	python setup.py sdist bdist_wheel
-	twine upload dist/*
-
-dist: clean ## builds source and wheel package
-	python setup.py sdist bdist_wheel
-	ls -l dist
-
-install: clean ## install the package to the active Python's site-packages
-	python setup.py install
+.DEFAULT_GOAL := help
