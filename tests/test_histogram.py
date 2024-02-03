@@ -1,4 +1,4 @@
-import nose
+import pytest
 
 import traces
 
@@ -50,19 +50,13 @@ def _test_statistics(normalized):
         else:
             n = len(data)
 
-        nose.tools.assert_almost_equal(histogram.total(), n)
-        nose.tools.assert_almost_equal(histogram.mean(), numpy.mean(data))
-        nose.tools.assert_almost_equal(histogram.variance(), numpy.var(data))
-        nose.tools.assert_almost_equal(
-            histogram.standard_deviation(),
-            numpy.std(data),
-        )
-        nose.tools.assert_almost_equal(histogram.max(), numpy.max(data))
-        nose.tools.assert_almost_equal(histogram.min(), numpy.min(data))
-        nose.tools.assert_almost_equal(
-            histogram.quantile(0.5),
-            numpy.median(data),
-        )
+        assert histogram.total() == pytest.approx(n)
+        assert histogram.mean() == pytest.approx(numpy.mean(data))
+        assert histogram.variance() == pytest.approx(numpy.var(data))
+        assert histogram.standard_deviation() == pytest.approx(numpy.std(data))
+        assert histogram.max() == pytest.approx(numpy.max(data))
+        assert histogram.min() == pytest.approx(numpy.min(data))
+        assert histogram.quantile(0.5) == pytest.approx(numpy.median(data))
         q_list = [0.001, 0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99, 0.999]
 
         # linear interpolation
@@ -71,7 +65,7 @@ def _test_statistics(normalized):
             data, prob=q_list, alphap=0.5, betap=0.5,
         )
         for i, j in zip(result, reference):
-            nose.tools.assert_almost_equal(i, j)
+            assert i == pytest.approx(j)
 
         # make sure ot throw an error for bad quantile values
         try:
@@ -100,13 +94,13 @@ def test_quantile_interpolation():
     result = histogram.quantiles(q_list, alpha=0, smallest_count=1)
     answer = [1.0, 1.0, 1.0, 1.0, 2.5, 5.5, 7.0, 7.0, 7.0]
     for i, j in zip(result, answer):
-        nose.tools.assert_almost_equal(i, j)
+        assert i == pytest.approx(j)
 
     # same thing with normalized
     result = normalized.quantiles(
         q_list, alpha=0, smallest_count=1.0 / len(data))
     for i, j in zip(result, answer):
-        nose.tools.assert_almost_equal(i, j)
+        assert i == pytest.approx(j)
 
     # now do the linear interpolation method
     result = histogram.quantiles(q_list, alpha=0.5, smallest_count=1)
@@ -114,14 +108,14 @@ def test_quantile_interpolation():
         data, prob=q_list, alphap=0.5, betap=0.5,
     )
     for i, j in zip(result, answer):
-        nose.tools.assert_almost_equal(i, j)
+        assert i == pytest.approx(j)
 
     # same thing with normalized
     result = normalized.quantiles(
         q_list, alpha=0.5, smallest_count=1.0 / len(data),
     )
     for i, j in zip(result, answer):
-        nose.tools.assert_almost_equal(i, j)
+        assert i == pytest.approx(j)
 
 
 def test_addition():
@@ -142,29 +136,29 @@ def test_minmax_with_zeros():
     histogram[2] += 1
     histogram[3] += 0
 
-    nose.tools.eq_(histogram.min(), 1)
-    nose.tools.eq_(histogram.max(), 2)
+    assert histogram.min() == 1
+    assert histogram.max() == 2
 
 
 def test_histogram_stats_with_nones():
 
     histogram = traces.Histogram()
 
-    nose.tools.eq_(histogram.mean(), None)
-    nose.tools.eq_(histogram.variance(), None)
-    nose.tools.eq_(histogram.standard_deviation(), None)
-    nose.tools.eq_(histogram.min(), None)
-    nose.tools.eq_(histogram.max(), None)
-    nose.tools.eq_(histogram.median(), None)
+    assert histogram.mean() is None
+    assert histogram.variance() is None
+    assert histogram.standard_deviation() is None
+    assert histogram.min() is None
+    assert histogram.max() is None
+    assert histogram.median() is None
 
     histogram = traces.Histogram.from_dict({None: 1}, key=hash)
 
-    nose.tools.eq_(histogram.mean(), None)
-    nose.tools.eq_(histogram.variance(), None)
-    nose.tools.eq_(histogram.standard_deviation(), None)
-    nose.tools.eq_(histogram.min(), None)
-    nose.tools.eq_(histogram.max(), None)
-    nose.tools.eq_(histogram.median(), None)
+    assert histogram.mean() is None
+    assert histogram.variance() is None
+    assert histogram.standard_deviation() is None
+    assert histogram.min() is None
+    assert histogram.max() is None
+    assert histogram.median() is None
 
     ts = traces.TimeSeries()
     ts[0] = None
@@ -175,4 +169,4 @@ def test_histogram_stats_with_nones():
     ts[10] = None
 
     histogram = ts.distribution(start=0, end=10)
-    nose.tools.eq_(histogram.mean(), 6)
+    assert histogram.mean() == 6
