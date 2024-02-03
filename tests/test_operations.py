@@ -1,7 +1,11 @@
 import datetime
-from traces import TimeSeries
-from traces.decorators import ignorant, strict
+import math
+import random
+
 import pytest
+
+from traces import TimeSeries
+from traces.decorators import ignorant
 
 
 def test_scalar_ops():
@@ -40,7 +44,6 @@ def test_scalar_ops():
 
 
 def test_sum():
-
     a = TimeSeries()
     a.set(datetime.datetime(2015, 3, 1), 1)
     a.set(datetime.datetime(2015, 3, 2), 0)
@@ -84,7 +87,6 @@ def test_sum():
 
 
 def example_dictlike():
-
     # test overwriting keys
     ts = TimeSeries()
     ts[datetime.datetime(2010, 1, 1)] = 5
@@ -117,7 +119,6 @@ def example_dictlike():
 
 
 def example_mean():
-
     ts = TimeSeries()
     ts[datetime.datetime(2010, 1, 1)] = 0
     ts[datetime.datetime(2010, 1, 3, 10)] = 1
@@ -134,16 +135,16 @@ def example_mean():
     for time, value in ts:
         print(time.isoformat(), 0.1 * value + 1.1)
 
-    print('')
+    print("")
 
-    timestep = {'hours': 25}
+    timestep = {"hours": 25}
     start = datetime.datetime(2010, 1, 1)
     while start <= datetime.datetime(2010, 2, 5):
         end = start + datetime.timedelta(**timestep)
         print(start.isoformat(), ts.mean(start, end))
         start = end
 
-    print('')
+    print("")
 
     start = datetime.datetime(2010, 1, 1)
     while start <= datetime.datetime(2010, 2, 5):
@@ -154,6 +155,7 @@ def example_mean():
 
 
 def example_arrow():
+    import arrow
 
     ts = TimeSeries()
     ts[arrow.Arrow(2010, 1, 1)] = 0
@@ -171,15 +173,15 @@ def example_arrow():
     for time, value in ts:
         print(time.naive.isoformat(), 0.1 * value + 1.1)
 
-    print('')
+    print("")
 
     start = arrow.Arrow(2010, 1, 1)
     end = arrow.Arrow(2010, 2, 5)
-    unit = {'hours': 25}
+    unit = {"hours": 25}
     for start, end in span_range(start, end, unit):
         print(start.naive.isoformat(), ts.mean(start, end))
 
-    print('')
+    print("")
 
     for start, end in span_range(start, end, unit):
         print(start.naive.isoformat(), -0.2)
@@ -187,7 +189,6 @@ def example_arrow():
 
 
 def example_sum():
-
     a = TimeSeries()
     a.set(datetime.datetime(2015, 3, 1), 1)
     a.set(datetime.datetime(2015, 3, 2), 0)
@@ -213,18 +214,17 @@ def example_sum():
 
     # output the three time series
     for i, ts in enumerate([a, b, c]):
-
-        for (t0, v0), (t1, v1) in ts.iterintervals(1):
+        for (t0, _v0), (t1, _v1) in ts.iterintervals(1):
             print(t0.isoformat(), i)
             print(t1.isoformat(), i)
 
-        print('')
+        print("")
 
-        for (t0, v0), (t1, v1) in ts.iterintervals(0):
+        for (t0, _v0), (t1, _v1) in ts.iterintervals(0):
             print(t0.isoformat(), i)
             print(t1.isoformat(), i)
 
-        print('')
+        print("")
 
     # output the sum
     # for dt, i in sum([a, b, c]):
@@ -235,19 +235,18 @@ def example_sum():
 
 
 def test_interpolation():
-
     ts = TimeSeries(data=[(0, 0), (1, 2)])
 
-    assert ts.get(0, interpolate='linear') == 0
-    assert ts.get(0.25, interpolate='linear') == 0.5
-    assert ts.get(0.5, interpolate='linear') == 1.0
-    assert ts.get(0.75, interpolate='linear') == 1.5
-    assert ts.get(1, interpolate='linear') == 2
+    assert ts.get(0, interpolate="linear") == 0
+    assert ts.get(0.25, interpolate="linear") == 0.5
+    assert ts.get(0.5, interpolate="linear") == 1.0
+    assert ts.get(0.75, interpolate="linear") == 1.5
+    assert ts.get(1, interpolate="linear") == 2
 
-    assert ts.get(-1, interpolate='linear') is None
-    assert ts.get(2, interpolate='linear') == 2
+    assert ts.get(-1, interpolate="linear") is None
+    assert ts.get(2, interpolate="linear") == 2
 
-    pytest.raises(ValueError, ts.get, 0.5, 'spline')
+    pytest.raises(ValueError, ts.get, 0.5, "spline")
 
 
 def test_default():
@@ -263,7 +262,6 @@ def test_default():
 
 
 def test_difference():
-
     a = TimeSeries(data=[(0, 0), (2, 2)], default=0)
     b = TimeSeries(data=[(1, 1), (3, 2)], default=0)
 

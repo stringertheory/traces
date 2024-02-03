@@ -1,14 +1,15 @@
-import traces
 import pytest
 
+import traces
+
+
 @pytest.mark.mpl_image_compare(
-    savefig_kwargs={'bbox_inches': 'tight', 'dpi': 300},
+    savefig_kwargs={"bbox_inches": "tight", "dpi": 300},
     remove_text=True,
-    style='ggplot',
+    style="ggplot",
     tolerance=20,
 )
 def test_plot():
-
     ts = traces.TimeSeries()
     ts[0] = 0
     ts[1] = 2
@@ -25,20 +26,18 @@ def test_optional_import():
 
 
 def test_invalid_call():
-
     ts = traces.TimeSeries()
     ts[0] = 0
     ts[1] = 1
 
-    ts.plot(interpolate='previous')
-    ts.plot(interpolate='linear')
+    ts.plot(interpolate="previous")
+    ts.plot(interpolate="linear")
 
     with pytest.raises(ValueError):
-        ts.plot(interpolate='yomama')
+        ts.plot(interpolate="yomama")
 
 
 def test_empty():
-
     ts = traces.TimeSeries()
 
     ts.plot()

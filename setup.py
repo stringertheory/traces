@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import os
+
 from setuptools import setup
 
 
@@ -14,70 +14,68 @@ def read_init(key):
     with open(filename) as stream:
         for line in stream:
             if key in line:
-                result = line.split('=')[-1].strip().replace("'", "")
+                result = line.split("=")[-1].strip().replace("'", "")
 
     # throw error if version isn't in __init__ file
     if result is None:
-        raise ValueError('must define %s in %s' % (key, filename))
+        raise ValueError(f"must define {key} in {filename}")
 
     return result
 
 
 def read_author():
-    return read_init('author')
+    return read_init("author")
 
 
 def read_author_email():
-    return read_init('email')
+    return read_init("email")
 
 
 def read_dependencies(filename):
-    """Read in the dependencies from the virtualenv requirements file.
-
-    """
+    """Read in the dependencies from the virtualenv requirements file."""
     dependencies = []
-    filepath = os.path.join('requirements', filename)
-    with open(filepath, 'r') as stream:
+    filepath = os.path.join("requirements", filename)
+    with open(filepath) as stream:
         for line in stream:
-            package = line.strip().split('#')[0].strip()
-            if package and package.split(' ')[0] != '-r':
+            package = line.strip().split("#")[0].strip()
+            if package and package.split(" ")[0] != "-r":
                 dependencies.append(package)
     return dependencies
 
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 setup(
-    name='traces',
-    version='0.6.0',
+    name="traces",
+    version="0.6.0",
     description="A library for unevenly-spaced time series analysis.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author=read_author(),
     author_email=read_author_email(),
-    url='https://github.com/datascopeanalytics/traces',
-    packages=['traces'],
-    package_dir={'traces': 'traces'},
+    url="https://github.com/datascopeanalytics/traces",
+    packages=["traces"],
+    package_dir={"traces": "traces"},
     include_package_data=True,
-    install_requires=read_dependencies('python.txt'),
+    install_requires=read_dependencies("python.txt"),
     extras_require={
-        'test': read_dependencies('python-test.txt'),
-        'doc': read_dependencies('python-doc.txt'),
-        'dev': read_dependencies('python-dev.txt'),
-        'pandas': ['pandas'],
+        "test": read_dependencies("python-test.txt"),
+        "doc": read_dependencies("python-doc.txt"),
+        "dev": read_dependencies("python-dev.txt"),
+        "pandas": ["pandas"],
     },
     license="MIT license",
     zip_safe=False,
-    keywords='traces',
+    keywords="traces",
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
-    test_suite='nose.collector',
+    test_suite="nose.collector",
 )

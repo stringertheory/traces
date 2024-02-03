@@ -1,16 +1,13 @@
 import datetime
-import random
-import sys
 import pprint
+import random
 
-from infinity import inf
 import pytest
 
 from traces import TimeSeries
 
 
 def test_iterintervals():
-
     ts = TimeSeries()
     ts.set(datetime.datetime(2015, 3, 1), 1)
     ts.set(datetime.datetime(2015, 3, 2), 0)
@@ -19,13 +16,12 @@ def test_iterintervals():
 
     answer = [(1, 0), (0, 1), (1, 2)]
     result = []
-    for (t0, v0), (t1, v1) in ts.iterintervals():
+    for (_t0, v0), (_t1, v1) in ts.iterintervals():
         result.append((v0, v1))
     assert answer == result
 
 
 def test_iterperiods():
-
     # timeseries with no points raises a KeyError
     ts = TimeSeries()
     with pytest.raises(KeyError):
@@ -39,12 +35,10 @@ def test_iterperiods():
     answer = [
         (datetime.datetime(2015, 3, 1), datetime.datetime(2015, 3, 2), 1),
         (datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3), 0),
-        (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4), 1)]
+        (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4), 1),
+    ]
     result = []
-    for (t0, t1, v0) in ts.iterperiods(
-            start=datetime.datetime(2015, 3, 1),
-            end=datetime.datetime(2015, 3, 4)
-    ):
+    for t0, t1, v0 in ts.iterperiods(start=datetime.datetime(2015, 3, 1), end=datetime.datetime(2015, 3, 4)):
         result.append((t0, t1, v0))
     assert answer == result
 
@@ -53,32 +47,31 @@ def test_iterperiods():
         (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4), 1),
     ]
     result = []
-    for (t0, t1, v0) in ts.iterperiods(
-            start=datetime.datetime(2015, 3, 1),
-            end=datetime.datetime(2015, 3, 4),
-            value=1,
+    for t0, t1, v0 in ts.iterperiods(
+        start=datetime.datetime(2015, 3, 1),
+        end=datetime.datetime(2015, 3, 4),
+        value=1,
     ):
         result.append((t0, t1, v0))
     assert answer == result
 
     def filter(t0, t1, value):
-        return True if not value else False
+        return bool(not value)
 
     answer = [
         (datetime.datetime(2015, 3, 2), datetime.datetime(2015, 3, 3), 0),
     ]
     result = []
-    for (t0, t1, v0) in ts.iterperiods(
-            start=datetime.datetime(2015, 3, 1),
-            end=datetime.datetime(2015, 3, 4),
-            value=filter,
+    for t0, t1, v0 in ts.iterperiods(
+        start=datetime.datetime(2015, 3, 1),
+        end=datetime.datetime(2015, 3, 4),
+        value=filter,
     ):
         result.append((t0, t1, v0))
     assert answer == result
 
 
 def test_slice():
-
     ts = TimeSeries(default=1)
     ts[0] = 1
     ts[1] = 5
@@ -97,7 +90,7 @@ def make_random_timeseries():
     length = random.randint(1, 10)
     result = TimeSeries()
     t = 0
-    for i in range(length):
+    for _i in range(length):
         t += random.randint(0, 5)
         x = random.randint(0, 5)
         result[t] = x
@@ -105,26 +98,23 @@ def make_random_timeseries():
 
 
 def test_merge():
-
     # since this is random, do it a bunch of times
-    for n_trial in range(1000):
-
+    for _n_trial in range(1000):
         # make a list of TimeSeries that is anywhere from 0 to 5
         # long. Each TimeSeries is of random length between 0 and 20,
         # with random time points and random values.
         ts_list = []
-        for i in range(random.randint(1, 5)):
+        for _i in range(random.randint(1, 5)):
             ts_list.append(make_random_timeseries())
 
         method_a = list(TimeSeries.merge(ts_list, compact=False))
         method_b = list(TimeSeries.iter_merge(ts_list))
 
-        msg = '%s != %s' % (pprint.pformat(method_a), pprint.pformat(method_b))
+        msg = f"{pprint.pformat(method_a)} != {pprint.pformat(method_b)}"
         assert method_a == method_b, msg
 
 
 def test_single_merges():
-
     # a single empty time series
     ts = TimeSeries()
     assert TimeSeries.merge([ts]) == TimeSeries(default=[None])
@@ -132,8 +122,7 @@ def test_single_merges():
     # multiple empty time series
     ts_a = TimeSeries()
     ts_b = TimeSeries()
-    assert TimeSeries.merge([ts_a, ts_b]) == \
-        TimeSeries(default=[None, None])
+    assert TimeSeries.merge([ts_a, ts_b]) == TimeSeries(default=[None, None])
 
     # test a single time series with only one measurement
     ts = TimeSeries()

@@ -1,10 +1,11 @@
-import pytest
 import datetime
-from traces import TimeSeries, Histogram
+
+import pytest
+
+from traces import Histogram, TimeSeries
 
 
 def test_distribution():
-
     start = datetime.datetime(2015, 3, 1)
 
     # v. simple
@@ -17,7 +18,9 @@ def test_distribution():
 
     # not normalized
     distribution = a.distribution(
-        start=start, end=end, normalized=False,
+        start=start,
+        end=end,
+        normalized=False,
     )
     assert distribution[0] == 24 * 60 * 60 * 2  # two days
     assert distribution[1] == 24 * 60 * 60 * 2
@@ -29,7 +32,6 @@ def test_distribution():
 
 
 def test_default_values():
-
     # v. simple
     a = TimeSeries()
     a.set(datetime.datetime(2015, 3, 1), 1)
@@ -47,7 +49,6 @@ def test_default_values():
 
 
 def test_mask():
-
     start = datetime.datetime(2015, 3, 1)
 
     # v. simple
@@ -64,21 +65,25 @@ def test_mask():
 
     # not normalized
     distribution = a.distribution(
-        start=start, end=end, normalized=False, mask=mask,
+        start=start,
+        end=end,
+        normalized=False,
+        mask=mask,
     )
     assert distribution[0] == 24 * 60 * 60  # one day
     assert distribution[1] == 24 * 60 * 60
 
     # normalized
     distribution = a.distribution(
-        start=start, end=end, mask=mask,
+        start=start,
+        end=end,
+        mask=mask,
     )
     assert distribution[0] == 0.5
     assert distribution[1] == 0.5
 
 
 def test_integer_times():
-
     # v. simple
     a = TimeSeries()
     a[0] = 1
@@ -94,17 +99,16 @@ def test_integer_times():
 
 def test_distribution_set():
     time_series = TimeSeries()
-    time_series[1.2] = {'broccoli'}
-    time_series[1.4] = {'broccoli', 'orange'}
-    time_series[1.7] = {'broccoli', 'orange', 'banana'}
-    time_series[2.2] = {'orange', 'banana'}
-    time_series[3.5] = {'orange', 'banana', 'beets'}
+    time_series[1.2] = {"broccoli"}
+    time_series[1.4] = {"broccoli", "orange"}
+    time_series[1.7] = {"broccoli", "orange", "banana"}
+    time_series[2.2] = {"orange", "banana"}
+    time_series[3.5] = {"orange", "banana", "beets"}
 
     # TODO: How to convert the set into multiple ts?
 
 
 def test_distribution_empty():
-
     ts = TimeSeries()
 
     mask = TimeSeries(default=0)

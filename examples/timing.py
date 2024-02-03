@@ -1,15 +1,15 @@
-import time
-import pprint
 import collections
-import sys
 import functools
+import sys
+import time
 
 TIMING_RESULTS = collections.defaultdict(list)
 
-class timer(object):
 
+class timer:
     def __call__(self, function):
         """Turn the object into a decorator"""
+
         @functools.wraps(function)
         def wrapper(*arg, **kwargs):
             t1 = time.clock()
@@ -17,7 +17,9 @@ class timer(object):
             t2 = time.clock()
             TIMING_RESULTS[function.__name__].append(t2 - t1)
             return result
+
         return wrapper
+
 
 def print_results(*args):
     args = sorted([f.__name__ for f in args])
@@ -28,8 +30,8 @@ def print_results(*args):
             continue
         n = 0
         sum_ = 0
-        min_ = float('inf')
-        max_ = float('-inf')
+        min_ = float("inf")
+        max_ = float("-inf")
         for dt in timing_results:
             n += 1
             sum_ += dt
@@ -38,29 +40,28 @@ def print_results(*args):
             if dt > max_:
                 max_ = dt
         avg = float(sum_) / n
-        msg = '{}: n={} avg={} min={} max={}'.format(
-            name, n, avg, min_, max_,
-        )
+        msg = f"{name}: n={n} avg={avg} min={min_} max={max_}"
         result[name] = {
-            'n': n,
-            'avg': avg,
-            'min': min_,
-            'max': min_,
+            "n": n,
+            "avg": avg,
+            "min": min_,
+            "max": min_,
         }
     for i, name_a in enumerate(args):
         for j in range(i):
             name_b = args[j]
-            ratio = result[name_a]['min'] / result[name_b]['min']
+            ratio = result[name_a]["min"] / result[name_b]["min"]
             if ratio <= 1:
-                msg = '%s is %.1fx faster than %s' % (name_a, 1 / ratio, name_b)
+                msg = f"{name_a} is {1 / ratio:.1f}x faster than {name_b}"
             else:
-                msg = '%s is %.1fx faster than %s' % (name_b, ratio, name_a)
+                msg = f"{name_b} is {ratio:.1f}x faster than {name_a}"
             print >> sys.stderr, msg
 
     return result
 
+
 def timing_loop(n, mod=1000):
     for index, i in enumerate(range(n)):
         if not index % mod:
-            print >> sys.stderr, 'iteration %i' % index
+            print >> sys.stderr, "iteration %i" % index
         yield i

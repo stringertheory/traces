@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 
 from infinity import inf
@@ -48,9 +49,7 @@ def convert_args_to_list(args):
         # Domain([(1, 4)])
         # Domain([(1, 4), (5, 8)])
         # Domain([[1, 4], [5, 8]])
-        if len(args) == 1 and any(
-            isinstance(arg, (list, tuple)) for arg in args[0]
-        ):
+        if len(args) == 1 and any(isinstance(arg, (list, tuple)) for arg in args[0]):
             for item in args[0]:
                 list_of_pairs.append(list(item))
         else:
@@ -65,7 +64,7 @@ def convert_args_to_list(args):
         if len(args) == 2:
             list_of_pairs.append(list(args))
         else:
-            msg = "The argument type is invalid. {}".format(args)
+            msg = f"The argument type is invalid. {args}"
             raise TypeError(msg)
 
     return list_of_pairs
@@ -102,9 +101,7 @@ def floor_datetime(dt, unit, n_units=1):
     elif unit == "weeks":
         _, isoweek, _ = dt.isocalendar()
         new_week = isoweek - (isoweek - 1) % n_units
-        return datetime.datetime.strptime(
-            "%d %02d 1" % (dt.year, new_week), "%Y %W %w"
-        )
+        return datetime.datetime.strptime("%d %02d 1" % (dt.year, new_week), "%Y %W %w")
     elif unit == "days":
         new_day = dt.day - dt.day % n_units
         return datetime.datetime(dt.year, dt.month, new_day, 0, 0, 0)
@@ -113,21 +110,16 @@ def floor_datetime(dt, unit, n_units=1):
         return datetime.datetime(dt.year, dt.month, dt.day, new_hour, 0, 0)
     elif unit == "minutes":
         new_minute = dt.minute - dt.minute % n_units
-        return datetime.datetime(
-            dt.year, dt.month, dt.day, dt.hour, new_minute, 0
-        )
+        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, new_minute, 0)
     elif unit == "seconds":
         new_second = dt.second - dt.second % n_units
-        return datetime.datetime(
-            dt.year, dt.month, dt.day, dt.hour, dt.minute, new_second
-        )
+        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, new_second)
     else:
-        msg = "Unknown unit type {}".format(unit)
+        msg = f"Unknown unit type {unit}"
         raise ValueError(msg)
 
 
 def datetime_floor(value, unit="days", n_units=1):
-
     # if it's a date, convert to datetime at start of day
     if type(value) is datetime.date:
         value = datetime.datetime.combine(value, datetime.time())
@@ -139,7 +131,7 @@ def datetime_floor(value, unit="days", n_units=1):
     elif value == inf:
         return inf
     else:
-        msg = "must be date, datetime, or inf; got {}".format(value)
+        msg = f"must be date, datetime, or inf; got {value}"
         raise ValueError(msg)
 
 
@@ -155,7 +147,6 @@ WEEKDAY_LOOKUP = {
 
 
 def weekday_number(value):
-
     if isinstance(value, int):
         if 0 <= value < 7:
             return value
@@ -168,18 +159,16 @@ def weekday_number(value):
         if result:
             return result
         else:
-            try:
+            with contextlib.suppress(TypeError):
                 result = WEEKDAY_LOOKUP.get(value.lower())
-            except TypeError:
-                pass
             if result:
                 return result
-            msg = "must be a valid weekday, got {}".format(value)
+            msg = f"must be a valid weekday, got {value}"
             raise ValueError(msg)
 
 
 def pairwise(iterable):
-    """ given an interable `p1, p2, p3, ...`
+    """given an interable `p1, p2, p3, ...`
     it iterates through pairwise tuples `(p0, p1), (p1, p2), ...`"""
     it = iter(iterable)
     a = next(it, None)

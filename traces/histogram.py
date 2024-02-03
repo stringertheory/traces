@@ -21,37 +21,33 @@ class Histogram(sortedcontainers.SortedDict):
 
     def __init__(self, data=(), **kwargs):
         if "key" in kwargs:
-            super(Histogram, self).__init__(kwargs["key"])
+            super().__init__(kwargs["key"])
         else:
-            super(Histogram, self).__init__()
+            super().__init__()
 
         for datum in data:
             self[datum] += 1
 
     def __getitem__(self, key):
         try:
-            result = super(Histogram, self).__getitem__(key)
+            result = super().__getitem__(key)
         except KeyError:
             result = 0
         except TypeError as error:
-
             if "unorderable" in str(error):
                 raise UnorderableElements(error)
 
             if "unhashable" in str(error):
-                msg = "Can't make histogram of unhashable type ({})".format(
-                    type(key)
-                )
+                msg = f"Can't make histogram of unhashable type ({type(key)})"
                 raise UnhashableType(msg)
 
-            raise error
+            raise
         return result
 
     def __setitem__(self, key, value):
         try:
-            result = super(Histogram, self).__setitem__(key, value)
+            result = super().__setitem__(key, value)
         except TypeError as error:
-
             if "unorderable" in str(error):
                 raise UnorderableElements(error)
 
@@ -59,12 +55,10 @@ class Histogram(sortedcontainers.SortedDict):
                 raise UnorderableElements(error)
 
             if "unhashable" in str(error):
-                msg = "Can't make histogram of unhashable type ({})".format(
-                    type(key)
-                )
+                msg = f"Can't make histogram of unhashable type ({type(key)})"
                 raise UnhashableType(msg)
 
-            raise error
+            raise
         return result
 
     def total(self):
@@ -93,9 +87,7 @@ class Histogram(sortedcontainers.SortedDict):
             return None
 
         mean = self.mean()
-        weighted_central_moment = sum(
-            count * (value - mean) ** 2 for value, count in clean.items()
-        )
+        weighted_central_moment = sum(count * (value - mean) ** 2 for value, count in clean.items())
         return weighted_central_moment / total
 
     def standard_deviation(self):
@@ -125,9 +117,7 @@ class Histogram(sortedcontainers.SortedDict):
         if value not in self:
             return self
         else:
-            return self.__class__.from_dict(
-                {k: v for k, v in self.items() if k is not value}
-            )
+            return self.__class__.from_dict({k: v for k, v in self.items() if k is not value})
 
     def max(self, include_zero=False):
         """Maximum observed value with non-zero count."""
@@ -181,9 +171,8 @@ class Histogram(sortedcontainers.SortedDict):
         # print ''
 
         def function(q):
-
             if q < 0.0 or q > 1.0:
-                msg = "invalid quantile {}, need `0 <= q <= 1`".format(q)
+                msg = f"invalid quantile {q}, need `0 <= q <= 1`"
                 raise ValueError(msg)
             elif q < q_min:
                 q = q_min
@@ -228,7 +217,9 @@ class Histogram(sortedcontainers.SortedDict):
 
     def quantile(self, q, alpha=0.5, smallest_count=None):
         return self.quantiles(
-            [q], alpha=alpha, smallest_count=smallest_count,
+            [q],
+            alpha=alpha,
+            smallest_count=smallest_count,
         )[0]
 
     def add(self, other):

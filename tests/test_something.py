@@ -1,8 +1,9 @@
+import contextlib
+
 import traces
 
 
 def test_compact():
-
     # make a v. simple time series
     ts = traces.TimeSeries()
     ts[0] = 42
@@ -24,7 +25,6 @@ def test_compact():
 
 
 def test_remove():
-
     # v. simple time series
     ts = traces.TimeSeries()
     ts[0] = 42
@@ -32,10 +32,8 @@ def test_remove():
 
     # asser that trying to delete a non-existent entry raises a
     # KeyError
-    try:
+    with contextlib.suppress(KeyError):
         del ts[2]
-    except KeyError:
-        pass
 
     # now delete the measurement at t=1
     del ts[1]
@@ -47,7 +45,6 @@ def test_remove():
 
 
 def test_last_item():
-
     # v. simple time series
     ts = traces.TimeSeries()
     ts[0] = 42
