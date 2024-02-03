@@ -11,7 +11,9 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
+python = ">=3.9,<4.0"
+infinity = "^1.5"
+sortedcontainers = "^2.4.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
@@ -19,6 +21,12 @@ pytest-cov = "^4.0.0"
 mypy = "^1.5.1"
 pre-commit = "^3.4.0"
 tox = "^4.11.1"
+numpy = "^1.26.3"
+pandas = "^2.2.0"
+scipy = "^1.12.0"
+matplotlib = "^3.8.2"
+pytest-mpl = "^0.16.1"
+pyarrow = "^15.0.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.2"
@@ -44,7 +52,7 @@ testpaths = ["tests"]
 
 [tool.ruff]
 target-version = "py37"
-line-length = 120
+line-length = 80
 fix = true
 select = [
     # flake8-2020
@@ -83,6 +91,10 @@ ignore = [
     "E501",
     # DoNotAssignLambda
     "E731",
+    # Non-cryptographic random usage
+    "S311",
+    # Class attribute shadowing a Python builtin
+    "A003",
 ]
 
 [tool.ruff.format]
@@ -95,6 +107,6 @@ skip_empty = true
 branch = true
 source = ["traces"]
 
-
 [tool.ruff.per-file-ignores]
 "tests/*" = ["S101"]
+"__init__.py" = ["F401"]

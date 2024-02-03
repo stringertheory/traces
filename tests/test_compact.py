@@ -1,13 +1,11 @@
-import traces
-
 import random
+
+import traces
 
 
 def test_compact():
-
     # since this is random, do it a bunch of times
-    for n_trial in range(100):
-
+    for _n_trial in range(100):
         # make two time series, one compact and one not
         test_ts = traces.TimeSeries()
         compact_ts = traces.TimeSeries()

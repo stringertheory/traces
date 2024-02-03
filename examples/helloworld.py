@@ -1,6 +1,5 @@
-import sys
 import glob
-
+import sys
 from datetime import datetime, timedelta
 
 import traces
@@ -11,14 +10,14 @@ def parse_iso_datetime(value):
     return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
 
 
-def read_all(pattern='data/lightbulb-*.csv'):
+def read_all(pattern="data/lightbulb-*.csv"):
     """Read all of the CSVs in a directory matching the filename pattern
     as TimeSeries.
 
     """
     result = []
     for filename in glob.iglob(pattern):
-        print('reading', filename, file=sys.stderr)
+        print("reading", filename, file=sys.stderr)
         ts = traces.TimeSeries.from_csv(
             filename,
             time_column=0,
@@ -54,7 +53,7 @@ for day, distribution in total_watts.distribution_by_day_of_week():
 
 # look at the typical number of lights on during business hours
 # (8am-6pm) for each day in january
-for t in datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), 'days'):
+for t in datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), "days"):
     biz_start = t + timedelta(hours=8)
     biz_end = t + timedelta(hours=18)
     histogram = total_watts.distribution(start=biz_start, end=biz_end)

@@ -34,7 +34,7 @@ To install traces, run this command in your terminal:
 .. code:: bash
 
     $ pip install traces
-   
+
 Quickstart: using traces
 ------------------------
 
@@ -99,7 +99,7 @@ one ``TimeSeries`` where the each value is a list of all lights.
 
 We also applied a ``sum`` operation to the list of states to get the
 ``TimeSeries`` of the number of lights that are on.
-    
+
 .. figure:: _static/img/count.svg
    :alt: many light switch count
 
@@ -120,7 +120,7 @@ that can be used to get summary metrics such as the mean or quantiles.
 
 It's flexible
 +++++++++++++
-   
+
 The measurements points (keys) in a ``TimeSeries`` can be in any units as
 long as they can be ordered. The values can be anything.
 
@@ -137,7 +137,7 @@ of a grocery basket by the number of minutes within a shopping trip.
 
 To learn more, check the :ref:`examples <examples>` and the detailed
 :ref:`reference <api>`.
-     
+
 More info
 ---------
 

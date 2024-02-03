@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 
 from infinity import inf
@@ -65,7 +66,7 @@ def convert_args_to_list(args):
         if len(args) == 2:
             list_of_pairs.append(list(args))
         else:
-            msg = "The argument type is invalid. {}".format(args)
+            msg = f"The argument type is invalid. {args}"
             raise TypeError(msg)
 
     return list_of_pairs
@@ -122,12 +123,11 @@ def floor_datetime(dt, unit, n_units=1):
             dt.year, dt.month, dt.day, dt.hour, dt.minute, new_second
         )
     else:
-        msg = "Unknown unit type {}".format(unit)
+        msg = f"Unknown unit type {unit}"
         raise ValueError(msg)
 
 
 def datetime_floor(value, unit="days", n_units=1):
-
     # if it's a date, convert to datetime at start of day
     if type(value) is datetime.date:
         value = datetime.datetime.combine(value, datetime.time())
@@ -139,7 +139,7 @@ def datetime_floor(value, unit="days", n_units=1):
     elif value == inf:
         return inf
     else:
-        msg = "must be date, datetime, or inf; got {}".format(value)
+        msg = f"must be date, datetime, or inf; got {value}"
         raise ValueError(msg)
 
 
@@ -155,7 +155,6 @@ WEEKDAY_LOOKUP = {
 
 
 def weekday_number(value):
-
     if isinstance(value, int):
         if 0 <= value < 7:
             return value
@@ -168,18 +167,16 @@ def weekday_number(value):
         if result:
             return result
         else:
-            try:
+            with contextlib.suppress(TypeError):
                 result = WEEKDAY_LOOKUP.get(value.lower())
-            except TypeError:
-                pass
             if result:
                 return result
-            msg = "must be a valid weekday, got {}".format(value)
+            msg = f"must be a valid weekday, got {value}"
             raise ValueError(msg)
 
 
 def pairwise(iterable):
-    """ given an interable `p1, p2, p3, ...`
+    """given an interable `p1, p2, p3, ...`
     it iterates through pairwise tuples `(p0, p1), (p1, p2), ...`"""
     it = iter(iterable)
     a = next(it, None)

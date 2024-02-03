@@ -1,23 +1,19 @@
-import nose
 import traces
-import unittest
 
 # @unittest.skip("not fully fleshed out yet")
 
 
 def test_missing():
     """example code for dealing with missing datapoints"""
-    router_a = traces.TimeSeries([
-        (-10, 0), (-7, 1), (-5, None), (0, 3), (1, 3), (5, None)
-    ])
+    router_a = traces.TimeSeries(
+        [(-10, 0), (-7, 1), (-5, None), (0, 3), (1, 3), (5, None)]
+    )
 
     assert router_a[-6] == 1
     assert router_a[-15] is None
     assert not router_a[15]
 
-    router_b = traces.TimeSeries([
-        (-8, 0), (-5, 0), (-2, 1), (5, 3)
-    ], default=0)
+    router_b = traces.TimeSeries([(-8, 0), (-5, 0), (-2, 1), (5, 3)], default=0)
 
     assert router_b[7] == 3
 
@@ -26,7 +22,7 @@ def test_missing():
     for timestamp in [-10, -1, 10]:
         if timestamp < router_b.first_key():
             router_b.default = None
-        for start, end, value in router_b.iterperiods():
+        for start, end, _value in router_b.iterperiods():
             if timestamp >= start and timestamp < end:
                 router_b[timestamp] = None
         if timestamp >= router_b.last_key():
@@ -42,8 +38,7 @@ def test_missing():
     # the default here should be the element returned by `count_merge([])`
 
     clients = traces.TimeSeries.merge(
-        router_list,
-        operation=traces.operations.strict_sum
+        router_list, operation=traces.operations.strict_sum
     )
     assert clients[-15] is None
     assert clients[-6] == 1
@@ -57,8 +52,7 @@ def test_missing():
     assert system_uptime[-1] is False
 
     clients = traces.TimeSeries.merge(
-        router_list,
-        operation=traces.operations.ignorant_sum
+        router_list, operation=traces.operations.ignorant_sum
     )
     assert clients[-15] == 0
     assert clients[-6] == 1
