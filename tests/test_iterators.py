@@ -38,7 +38,9 @@ def test_iterperiods():
         (datetime.datetime(2015, 3, 3), datetime.datetime(2015, 3, 4), 1),
     ]
     result = []
-    for t0, t1, v0 in ts.iterperiods(start=datetime.datetime(2015, 3, 1), end=datetime.datetime(2015, 3, 4)):
+    for t0, t1, v0 in ts.iterperiods(
+        start=datetime.datetime(2015, 3, 1), end=datetime.datetime(2015, 3, 4)
+    ):
         result.append((t0, t1, v0))
     assert answer == result
 
@@ -55,7 +57,7 @@ def test_iterperiods():
         result.append((t0, t1, v0))
     assert answer == result
 
-    def filter(t0, t1, value):
+    def filter_function(t0, t1, value):
         return bool(not value)
 
     answer = [
@@ -65,7 +67,7 @@ def test_iterperiods():
     for t0, t1, v0 in ts.iterperiods(
         start=datetime.datetime(2015, 3, 1),
         end=datetime.datetime(2015, 3, 4),
-        value=filter,
+        value=filter_function,
     ):
         result.append((t0, t1, v0))
     assert answer == result

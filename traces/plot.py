@@ -61,9 +61,9 @@ def plot(
     try:
         import matplotlib.pyplot as plt
         from matplotlib import font_manager
-    except ImportError:
+    except ImportError as error:
         msg = "need to install matplotlib for `plot` function"
-        raise ImportError(msg)
+        raise ImportError(msg) from error
 
     if font is None:
         available_fonts = {f.name for f in font_manager.fontManager.ttflist}
@@ -77,14 +77,18 @@ def plot(
         except KeyError:
             n_unique_values = 0
         scaled = min(MAX_ASPECT_POINTS, max(2, n_unique_values) - 2)
-        aspect_ratio = MIN_ASPECT_RATIO + (MAX_ASPECT_RATIO - MIN_ASPECT_RATIO) * (scaled / MAX_ASPECT_POINTS)
+        aspect_ratio = MIN_ASPECT_RATIO + (
+            MAX_ASPECT_RATIO - MIN_ASPECT_RATIO
+        ) * (scaled / MAX_ASPECT_POINTS)
 
     try:
         drawstyle = INTERPOLATE_DRAWSTYLE[interpolate]
-    except KeyError:
-        raise ValueError(
-            f"invalid value for interpolate='{interpolate}', " f"must be in {set(INTERPOLATE_DRAWSTYLE.keys())}"
+    except KeyError as error:
+        msg = (
+            f"invalid value for interpolate='{interpolate}', "
+            f"must be in {set(INTERPOLATE_DRAWSTYLE.keys())}"
         )
+        raise ValueError(msg) from error
 
     with plt.style.context(PLOT_STYLE):
         figure, axes = plt.subplots(

@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.append(os.path.abspath("_themes"))
-from recommonmark.parser import CommonMarkParser
+from recommonmark.parser import CommonMarkParser  # noqa: E402
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -48,7 +48,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "traces"
-copyright = f"2016-{datetime.date.today().year}, Mike Stringer"
+copyright = f"2016-{datetime.date.today().year}, Mike Stringer"  # noqa: A001
 author = "Mike Stringer"
 
 # The version info for the project you're documenting, acts as
@@ -114,7 +114,13 @@ latex_elements = {}
 # start file, target name, title, author, documentclass [howto,
 # manual, or own class]).
 latex_documents = [
-    (master_doc, "traces.tex", "traces Documentation", "Mike Stringer", "manual"),
+    (
+        master_doc,
+        "traces.tex",
+        "traces Documentation",
+        "Mike Stringer",
+        "manual",
+    ),
 ]
 
 # One entry per manual page. List of tuples

@@ -12,7 +12,11 @@ key_list = [
     datetime.datetime(2012, 3, 20),
     datetime.datetime(2012, 4, 10),
 ]
-numeric_types = {int: [1, 2, 3, 0], float: [1.0, 2.0, 3.0, 0.0], bool: [True, False, True, False]}
+numeric_types = {
+    int: [1, 2, 3, 0],
+    float: [1.0, 2.0, 3.0, 0.0],
+    bool: [True, False, True, False],
+}
 non_numeric_hashable_types = {
     str: ["a", "b", "c", ""],
     tuple: [("a", 1), ("b", 2), ("c", 3), ()],
@@ -23,7 +27,9 @@ unhashable_types = {
     set: [{1}, {1, 2}, {1, 2, 3}, set()],
 }
 all_types = dict(
-    list(numeric_types.items()) + list(non_numeric_hashable_types.items()) + list(unhashable_types.items())
+    list(numeric_types.items())
+    + list(non_numeric_hashable_types.items())
+    + list(unhashable_types.items())
 )
 
 
@@ -76,7 +82,9 @@ def test_mean_interpolate():
     mask[1] = True
     mask[3] = False
 
-    assert ts.mean(0, 2, mask=mask, interpolate="linear") == pytest.approx(10 / 3.0)
+    assert ts.mean(0, 2, mask=mask, interpolate="linear") == pytest.approx(
+        10 / 3.0
+    )
 
     assert ts.mean(0, 3, mask=mask, interpolate="linear") == pytest.approx(8.0)
 
@@ -94,9 +102,13 @@ def test_sample():
         return datetime.datetime(2016, 1, 1, 1, 1, i)
 
     # Check first arguments
-    assert dict(ts.sample(1, time_list[0], time_list[-1])) == {curr_time(i): ts[curr_time(i)] for i in range(2, 11)}
+    assert dict(ts.sample(1, time_list[0], time_list[-1])) == {
+        curr_time(i): ts[curr_time(i)] for i in range(2, 11)
+    }
 
-    assert dict(ts.sample(2, time_list[0], time_list[-1])) == {curr_time(i): ts[curr_time(i)] for i in range(2, 11, 2)}
+    assert dict(ts.sample(2, time_list[0], time_list[-1])) == {
+        curr_time(i): ts[curr_time(i)] for i in range(2, 11, 2)
+    }
 
     pytest.raises(ValueError, ts.sample, -1, time_list[0], time_list[-1])
     pytest.raises(ValueError, ts.sample, 20, time_list[0], time_list[-1])
@@ -104,16 +116,24 @@ def test_sample():
     # Check second and third arguments
     pytest.raises(ValueError, ts.sample, 1, time_list[3], time_list[0])
 
-    assert dict(ts.sample(1, curr_time(5), curr_time(10))) == {curr_time(i): ts[curr_time(i)] for i in range(5, 11)}
+    assert dict(ts.sample(1, curr_time(5), curr_time(10))) == {
+        curr_time(i): ts[curr_time(i)] for i in range(5, 11)
+    }
 
-    assert dict(ts.sample(1, curr_time(2), curr_time(5))) == {curr_time(i): ts[curr_time(i)] for i in range(2, 6)}
+    assert dict(ts.sample(1, curr_time(2), curr_time(5))) == {
+        curr_time(i): ts[curr_time(i)] for i in range(2, 6)
+    }
 
-    assert dict(ts.sample(1, curr_time(0), curr_time(13))) == {curr_time(i): ts[curr_time(i)] for i in range(0, 14)}
+    assert dict(ts.sample(1, curr_time(0), curr_time(13))) == {
+        curr_time(i): ts[curr_time(i)] for i in range(0, 14)
+    }
 
     # Check using int
     ts = traces.TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
     assert dict(ts.sample(1, 1, 8)) == {i: ts[i] for i in range(1, 9)}
-    assert dict(ts.sample(0.5, 1, 8)) == {1 + i / 2.0: ts[1 + i / 2.0] for i in range(0, 15)}
+    assert dict(ts.sample(0.5, 1, 8)) == {
+        1 + i / 2.0: ts[1 + i / 2.0] for i in range(0, 15)
+    }
     pytest.raises(ValueError, ts.sample, 0.5, -traces.inf, 8)
     pytest.raises(ValueError, ts.sample, 0.5, 1, traces.inf)
 
@@ -149,23 +169,38 @@ def test_moving_average():
         return answer
 
     # Check first arguments
-    output = dict(ts.moving_average(sampling_period=1, window_size=2, start=time_list[0], end=time_list[-1]))
+    output = dict(
+        ts.moving_average(
+            sampling_period=1,
+            window_size=2,
+            start=time_list[0],
+            end=time_list[-1],
+        )
+    )
     assert output == build_answer(datetime.timedelta(seconds=1), (2, 11))
 
     output = dict(ts.moving_average(1, 0.2, time_list[0], time_list[-1]))
     assert output == build_answer(datetime.timedelta(seconds=0.1), (2, 11))
 
-    pytest.raises(ValueError, ts.moving_average, 1, -1, time_list[0], time_list[-1])
+    pytest.raises(
+        ValueError, ts.moving_average, 1, -1, time_list[0], time_list[-1]
+    )
 
     # Check second arguments
     output = dict(ts.moving_average(2, 1, time_list[0], time_list[-1]))
     assert output == build_answer(datetime.timedelta(seconds=0.5), (2, 11, 2))
 
-    pytest.raises(ValueError, ts.moving_average, -1, 1, time_list[0], time_list[-1])
-    pytest.raises(ValueError, ts.moving_average, 20, 1, time_list[0], time_list[-1])
+    pytest.raises(
+        ValueError, ts.moving_average, -1, 1, time_list[0], time_list[-1]
+    )
+    pytest.raises(
+        ValueError, ts.moving_average, 20, 1, time_list[0], time_list[-1]
+    )
 
     # Check third and fourth arguments
-    pytest.raises(ValueError, ts.moving_average, 1, 1, time_list[3], time_list[0])
+    pytest.raises(
+        ValueError, ts.moving_average, 1, 1, time_list[3], time_list[0]
+    )
 
     output = dict(ts.moving_average(1, 2, curr_time(5), curr_time(10)))
     assert output == build_answer(datetime.timedelta(seconds=1), (5, 11))
@@ -179,9 +214,12 @@ def test_moving_average():
     # Check using int
     ts = traces.TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]])
 
-    assert dict(ts.moving_average(1, 2, 2, 8)) == {i: ts.mean(i - 1, i + 1) for i in range(2, 9)}
+    assert dict(ts.moving_average(1, 2, 2, 8)) == {
+        i: ts.mean(i - 1, i + 1) for i in range(2, 9)
+    }
     assert dict(ts.moving_average(0.5, 2, 2, 8)) == {
-        1 + i / 2.0: ts.mean(1 + i / 2.0 - 1, 1 + i / 2.0 + 1) for i in range(2, 15)
+        1 + i / 2.0: ts.mean(1 + i / 2.0 - 1, 1 + i / 2.0 + 1)
+        for i in range(2, 15)
     }
 
     # Test pandas compatibility
@@ -271,14 +309,30 @@ def test_npoints():
     ts[8] = 4
 
     assert ts.n_points() == 5
-    assert ts.n_points(start=0, end=8, include_start=False, include_end=False) == 3
-    assert ts.n_points(start=0, end=8, include_start=False, include_end=True) == 4
-    assert ts.n_points(start=0, end=8, include_start=True, include_end=False) == 4
-    assert ts.n_points(start=0, end=8, include_start=True, include_end=True) == 5
-    assert ts.n_points(start=1, end=8, include_start=False, include_end=False) == 2
-    assert ts.n_points(start=1, end=8, include_start=False, include_end=True) == 3
-    assert ts.n_points(start=1, end=8, include_start=True, include_end=False) == 3
-    assert ts.n_points(start=1, end=8, include_start=True, include_end=True) == 4
+    assert (
+        ts.n_points(start=0, end=8, include_start=False, include_end=False) == 3
+    )
+    assert (
+        ts.n_points(start=0, end=8, include_start=False, include_end=True) == 4
+    )
+    assert (
+        ts.n_points(start=0, end=8, include_start=True, include_end=False) == 4
+    )
+    assert (
+        ts.n_points(start=0, end=8, include_start=True, include_end=True) == 5
+    )
+    assert (
+        ts.n_points(start=1, end=8, include_start=False, include_end=False) == 2
+    )
+    assert (
+        ts.n_points(start=1, end=8, include_start=False, include_end=True) == 3
+    )
+    assert (
+        ts.n_points(start=1, end=8, include_start=True, include_end=False) == 3
+    )
+    assert (
+        ts.n_points(start=1, end=8, include_start=True, include_end=True) == 4
+    )
 
     ts = traces.TimeSeries()
 

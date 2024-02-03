@@ -35,11 +35,11 @@ class Histogram(sortedcontainers.SortedDict):
             result = 0
         except TypeError as error:
             if "unorderable" in str(error):
-                raise UnorderableElements(error)
+                raise UnorderableElements(error) from error
 
             if "unhashable" in str(error):
                 msg = f"Can't make histogram of unhashable type ({type(key)})"
-                raise UnhashableType(msg)
+                raise UnhashableType(msg) from error
 
             raise
         return result
@@ -49,14 +49,14 @@ class Histogram(sortedcontainers.SortedDict):
             result = super().__setitem__(key, value)
         except TypeError as error:
             if "unorderable" in str(error):
-                raise UnorderableElements(error)
+                raise UnorderableElements(error) from error
 
             if "not supported between instances of" in str(error):
-                raise UnorderableElements(error)
+                raise UnorderableElements(error) from error
 
             if "unhashable" in str(error):
                 msg = f"Can't make histogram of unhashable type ({type(key)})"
-                raise UnhashableType(msg)
+                raise UnhashableType(msg) from error
 
             raise
         return result
@@ -87,7 +87,9 @@ class Histogram(sortedcontainers.SortedDict):
             return None
 
         mean = self.mean()
-        weighted_central_moment = sum(count * (value - mean) ** 2 for value, count in clean.items())
+        weighted_central_moment = sum(
+            count * (value - mean) ** 2 for value, count in clean.items()
+        )
         return weighted_central_moment / total
 
     def standard_deviation(self):
@@ -117,7 +119,9 @@ class Histogram(sortedcontainers.SortedDict):
         if value not in self:
             return self
         else:
-            return self.__class__.from_dict({k: v for k, v in self.items() if k is not value})
+            return self.__class__.from_dict(
+                {k: v for k, v in self.items() if k is not value}
+            )
 
     def max(self, include_zero=False):
         """Maximum observed value with non-zero count."""
@@ -131,7 +135,7 @@ class Histogram(sortedcontainers.SortedDict):
             if value > 0 or include_zero:
                 return key
 
-    def _quantile_function(self, alpha=0.5, smallest_count=None):
+    def _quantile_function(self, alpha=0.5, smallest_count=None):  # noqa: C901
         """Return a function that returns the quantile values for this
         histogram.
 

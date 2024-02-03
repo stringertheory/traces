@@ -54,7 +54,7 @@ def generate_ts(n_days):
 
 def hour_mask(n_days, hours):
     start_time = datetime.datetime(2016, 1, 1)
-    domain = TimeSeries(default=False)
+    domain = traces.TimeSeries(default=False)
     for day in range(n_days):
         start = start_time + datetime.timedelta(days=day, hours=hours)
         end = start + datetime.timedelta(hours=1)
@@ -107,5 +107,7 @@ print(start, value)
 
 print("")
 
-for t, v in sorted(stack.moving_average(60 * 60, 60 * 60, 0, 24 * 60 * 60).items()):
+for t, v in sorted(
+    stack.moving_average(60 * 60, 60 * 60, 0, 24 * 60 * 60).items()
+):
     print(t, v)

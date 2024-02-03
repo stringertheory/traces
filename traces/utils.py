@@ -49,7 +49,9 @@ def convert_args_to_list(args):
         # Domain([(1, 4)])
         # Domain([(1, 4), (5, 8)])
         # Domain([[1, 4], [5, 8]])
-        if len(args) == 1 and any(isinstance(arg, (list, tuple)) for arg in args[0]):
+        if len(args) == 1 and any(
+            isinstance(arg, (list, tuple)) for arg in args[0]
+        ):
             for item in args[0]:
                 list_of_pairs.append(list(item))
         else:
@@ -101,7 +103,9 @@ def floor_datetime(dt, unit, n_units=1):
     elif unit == "weeks":
         _, isoweek, _ = dt.isocalendar()
         new_week = isoweek - (isoweek - 1) % n_units
-        return datetime.datetime.strptime("%d %02d 1" % (dt.year, new_week), "%Y %W %w")
+        return datetime.datetime.strptime(
+            "%d %02d 1" % (dt.year, new_week), "%Y %W %w"
+        )
     elif unit == "days":
         new_day = dt.day - dt.day % n_units
         return datetime.datetime(dt.year, dt.month, new_day, 0, 0, 0)
@@ -110,10 +114,14 @@ def floor_datetime(dt, unit, n_units=1):
         return datetime.datetime(dt.year, dt.month, dt.day, new_hour, 0, 0)
     elif unit == "minutes":
         new_minute = dt.minute - dt.minute % n_units
-        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, new_minute, 0)
+        return datetime.datetime(
+            dt.year, dt.month, dt.day, dt.hour, new_minute, 0
+        )
     elif unit == "seconds":
         new_second = dt.second - dt.second % n_units
-        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, new_second)
+        return datetime.datetime(
+            dt.year, dt.month, dt.day, dt.hour, dt.minute, new_second
+        )
     else:
         msg = f"Unknown unit type {unit}"
         raise ValueError(msg)

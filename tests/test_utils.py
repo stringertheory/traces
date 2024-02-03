@@ -5,7 +5,12 @@ from infinity import inf
 
 import traces.utils as utils
 
-timedelta_list = [timedelta(hours=1), timedelta(minutes=2), timedelta(seconds=5), timedelta(milliseconds=5)]
+timedelta_list = [
+    timedelta(hours=1),
+    timedelta(minutes=2),
+    timedelta(seconds=5),
+    timedelta(milliseconds=5),
+]
 
 numeric_types = {int: [1, 2, 3, 0], float: [1.0, 2.0, 3.0, 0.0]}
 
@@ -15,7 +20,9 @@ non_numeric_types = [[2], {"a": 4}, (2, 4), "df", "a"]
 def test_duration_to_number():
     for tdelta in timedelta_list:
         assert utils.duration_to_number(tdelta) == tdelta.total_seconds()
-        pytest.raises(NotImplementedError, utils.duration_to_number, tdelta, "hours")
+        pytest.raises(
+            NotImplementedError, utils.duration_to_number, tdelta, "hours"
+        )
 
     for _type, item in numeric_types.items():
         for num in item:
@@ -69,21 +76,33 @@ def test_convert_args_to_list():
 
 def test_datetime_range():
     # test default options
-    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), "days"))
+    dt_range = list(
+        utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), "days")
+    )
     assert dt_range[0] == datetime(2016, 1, 1)
     assert dt_range[-1] == datetime(2016, 1, 31)
     assert dt_range[10] == datetime(2016, 1, 11)
 
     # test non-default options
     dt_range = list(
-        utils.datetime_range(datetime(2016, 1, 2), datetime(2016, 2, 1), "days", n_units=2, inclusive_end=True)
+        utils.datetime_range(
+            datetime(2016, 1, 2),
+            datetime(2016, 2, 1),
+            "days",
+            n_units=2,
+            inclusive_end=True,
+        )
     )
     assert dt_range[0] == datetime(2016, 1, 2)
     assert dt_range[-1] == datetime(2016, 2, 1)
     assert dt_range[10] == datetime(2016, 1, 22)
 
     # test units
-    dt_range = list(utils.datetime_range(datetime(2016, 1, 1), datetime(2016, 2, 1), "hours"))
+    dt_range = list(
+        utils.datetime_range(
+            datetime(2016, 1, 1), datetime(2016, 2, 1), "hours"
+        )
+    )
     assert dt_range[1] - dt_range[0] == timedelta(hours=1)
     dt_range = list(
         utils.datetime_range(
@@ -96,30 +115,46 @@ def test_datetime_range():
     assert dt_range[1] - dt_range[0] == timedelta(minutes=10)
 
     # test end < start
-    dt_range = list(utils.datetime_range(datetime(2016, 2, 1), datetime(2016, 1, 1), "days"))
+    dt_range = list(
+        utils.datetime_range(datetime(2016, 2, 1), datetime(2016, 1, 1), "days")
+    )
     assert dt_range == []
 
 
 def test_datetime_floor():
     # the date here is May 6th, 2016 (week 18)
 
-    assert utils.datetime_floor(date(2016, 5, 6), "years") == datetime(2016, 1, 1)
+    assert utils.datetime_floor(date(2016, 5, 6), "years") == datetime(
+        2016, 1, 1
+    )
 
     assert utils.datetime_floor(inf) == inf
 
     test_dt = datetime(2016, 5, 6, 11, 45, 6)
-    assert utils.datetime_floor(test_dt, "months", n_units=3) == datetime(2016, 4, 1)
+    assert utils.datetime_floor(test_dt, "months", n_units=3) == datetime(
+        2016, 4, 1
+    )
 
-    assert utils.datetime_floor(test_dt, "weeks", n_units=3) == datetime(2016, 4, 18)
+    assert utils.datetime_floor(test_dt, "weeks", n_units=3) == datetime(
+        2016, 4, 18
+    )
 
-    assert utils.datetime_floor(test_dt, "hours", n_units=10) == datetime(2016, 5, 6, 10)
+    assert utils.datetime_floor(test_dt, "hours", n_units=10) == datetime(
+        2016, 5, 6, 10
+    )
 
-    assert utils.datetime_floor(test_dt, "minutes", n_units=15) == datetime(2016, 5, 6, 11, 45)
+    assert utils.datetime_floor(test_dt, "minutes", n_units=15) == datetime(
+        2016, 5, 6, 11, 45
+    )
 
-    assert utils.datetime_floor(test_dt, "seconds", n_units=30) == datetime(2016, 5, 6, 11, 45)
+    assert utils.datetime_floor(test_dt, "seconds", n_units=30) == datetime(
+        2016, 5, 6, 11, 45
+    )
 
     pytest.raises(ValueError, utils.datetime_floor, "2016-6-7")
-    pytest.raises(ValueError, utils.datetime_floor, test_dt, "sleconds", n_units=3)
+    pytest.raises(
+        ValueError, utils.datetime_floor, test_dt, "sleconds", n_units=3
+    )
 
 
 def test_weekday_number():

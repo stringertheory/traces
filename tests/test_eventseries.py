@@ -73,22 +73,62 @@ def test_events_between():
     ]
     es = EventSeries(pd.to_datetime(data))
 
-    assert es.events_between(pd.Timestamp("2018-01-01"), pd.Timestamp("2020-01-01")) == 12
-    assert es.events_between(pd.Timestamp("2018-01-01"), pd.Timestamp("2019-01-01")) == 1
-    assert es.events_between(pd.Timestamp("2020-01-01"), pd.Timestamp("2020-02-01")) == 0
-    assert es.events_between(pd.Timestamp("2016-01-01"), pd.Timestamp("2017-02-01")) == 0
+    assert (
+        es.events_between(
+            pd.Timestamp("2018-01-01"), pd.Timestamp("2020-01-01")
+        )
+        == 12
+    )
+    assert (
+        es.events_between(
+            pd.Timestamp("2018-01-01"), pd.Timestamp("2019-01-01")
+        )
+        == 1
+    )
+    assert (
+        es.events_between(
+            pd.Timestamp("2020-01-01"), pd.Timestamp("2020-02-01")
+        )
+        == 0
+    )
+    assert (
+        es.events_between(
+            pd.Timestamp("2016-01-01"), pd.Timestamp("2017-02-01")
+        )
+        == 0
+    )
 
     # Test closed boundaries on end points
     # left
-    assert es.events_between(pd.Timestamp("2018-10-15 16:45:01"), pd.Timestamp("2019-04-15 12:00:00")) == 3
+    assert (
+        es.events_between(
+            pd.Timestamp("2018-10-15 16:45:01"),
+            pd.Timestamp("2019-04-15 12:00:00"),
+        )
+        == 3
+    )
     # right
-    assert es.events_between(pd.Timestamp("2019-02-28 12:00:00"), pd.Timestamp("2019-04-16 13:10:20")) == 9
+    assert (
+        es.events_between(
+            pd.Timestamp("2019-02-28 12:00:00"),
+            pd.Timestamp("2019-04-16 13:10:20"),
+        )
+        == 9
+    )
     # both
-    assert es.events_between(pd.Timestamp("2019-02-22 12:05:08"), pd.Timestamp("2019-04-16 13:10:20")) == 10
+    assert (
+        es.events_between(
+            pd.Timestamp("2019-02-22 12:05:08"),
+            pd.Timestamp("2019-04-16 13:10:20"),
+        )
+        == 10
+    )
 
 
 def test_count_active():
-    es_open = EventSeries(["08:00", "09:00", "13:00", "07:00", "06:30", "13:00"])
+    es_open = EventSeries(
+        ["08:00", "09:00", "13:00", "07:00", "06:30", "13:00"]
+    )
     es_closed = EventSeries(["08:00", "08:30", "12:00", "12:00", "12:00"])
     ts = EventSeries.count_active(es_open, es_closed)
 
@@ -100,7 +140,14 @@ def test_count_active():
 
 
 def test_time_lag():
-    data = ["2019-02-01", "2019-02-28", "2019-02-22", "2019-02-16", "2019-02-26", "2019-02-16"]
+    data = [
+        "2019-02-01",
+        "2019-02-28",
+        "2019-02-22",
+        "2019-02-16",
+        "2019-02-26",
+        "2019-02-16",
+    ]
     es = EventSeries(pd.to_datetime(data))
 
     time_lag = es.time_lag()

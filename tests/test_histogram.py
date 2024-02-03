@@ -15,7 +15,9 @@ def test_quantiles():
     alpha = 0.5
     q_list = [0.05, 0.25, 0.5, 0.75, 0.95]
     q_values = histogram.quantiles(q_list, alpha=alpha, smallest_count=1)
-    reference = stats.mstats.mquantiles(data, prob=q_list, alphap=0.5, betap=0.5)
+    reference = stats.mstats.mquantiles(
+        data, prob=q_list, alphap=0.5, betap=0.5
+    )
 
     for i, j in zip(q_values, reference):
         assert i == j
@@ -93,7 +95,9 @@ def test_quantile_interpolation():
         assert i == pytest.approx(j)
 
     # same thing with normalized
-    result = normalized.quantiles(q_list, alpha=0, smallest_count=1.0 / len(data))
+    result = normalized.quantiles(
+        q_list, alpha=0, smallest_count=1.0 / len(data)
+    )
     for i, j in zip(result, answer):
         assert i == pytest.approx(j)
 

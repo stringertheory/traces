@@ -125,8 +125,7 @@ def test_distribution_empty():
 
     # no matter what is passed in to distribution, if the default
     # value is not set on an empty TimeSeries this should be an error
-    ts.distribution(mask=mask) == Histogram.from_dict({None: 1.0})
-    # pytest.raises(KeyError, ts.distribution, mask=mask)
+    assert ts.distribution(mask=mask) == Histogram.from_dict({None: 1.0})
 
     ts = TimeSeries(default=0)
 

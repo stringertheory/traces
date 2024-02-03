@@ -108,7 +108,14 @@ def test_set_interval():
     tsc = TimeSeries(ts)
 
     ts.set_interval(3, 4, 4)
-    assert list(ts.items()) == [(1.2, 1), (2, 5), (3, 4), (4, 4), (5, 0), (6, 2)]
+    assert list(ts.items()) == [
+        (1.2, 1),
+        (2, 5),
+        (3, 4),
+        (4, 4),
+        (5, 0),
+        (6, 2),
+    ]
 
     tsc.set_interval(3, 4, 4, compact=True)
     assert list(tsc.items()) == [(1.2, 1), (2, 5), (3, 4), (5, 0), (6, 2)]
@@ -162,7 +169,7 @@ def test_pickle():
     ts[1] = True
     ts[2] = False
     dump_string = pickle.dumps(ts)
-    unpickled = pickle.loads(dump_string)
+    unpickled = pickle.loads(dump_string)  # noqa: S301
     assert unpickled == ts
 
     unpickled[3] = unpickled[1]
@@ -191,7 +198,12 @@ def test_csv():
         writer.writerow(["15", "nan"])
 
     ts = TimeSeries.from_csv(
-        filename, time_column=0, time_transform=time_parse, value_column=1, value_transform=value_parse, default=None
+        filename,
+        time_column=0,
+        time_transform=time_parse,
+        value_column=1,
+        value_transform=value_parse,
+        default=None,
     )
     os.remove(filename)
 

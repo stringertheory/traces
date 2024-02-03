@@ -55,7 +55,7 @@ def print_results(*args):
                 msg = f"{name_a} is {1 / ratio:.1f}x faster than {name_b}"
             else:
                 msg = f"{name_b} is {ratio:.1f}x faster than {name_a}"
-            print >> sys.stderr, msg
+            print(msg, file=sys.stderr)
 
     return result
 
@@ -63,5 +63,5 @@ def print_results(*args):
 def timing_loop(n, mod=1000):
     for index, i in enumerate(range(n)):
         if not index % mod:
-            print >> sys.stderr, "iteration %i" % index
+            print("iteration %i" % index, file=sys.stderr)
         yield i

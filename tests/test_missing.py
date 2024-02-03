@@ -5,7 +5,9 @@ import traces
 
 def test_missing():
     """example code for dealing with missing datapoints"""
-    router_a = traces.TimeSeries([(-10, 0), (-7, 1), (-5, None), (0, 3), (1, 3), (5, None)])
+    router_a = traces.TimeSeries(
+        [(-10, 0), (-7, 1), (-5, None), (0, 3), (1, 3), (5, None)]
+    )
 
     assert router_a[-6] == 1
     assert router_a[-15] is None
@@ -35,7 +37,9 @@ def test_missing():
 
     # the default here should be the element returned by `count_merge([])`
 
-    clients = traces.TimeSeries.merge(router_list, operation=traces.operations.strict_sum)
+    clients = traces.TimeSeries.merge(
+        router_list, operation=traces.operations.strict_sum
+    )
     assert clients[-15] is None
     assert clients[-6] == 1
     assert clients[-0.5] is None
@@ -47,7 +51,9 @@ def test_missing():
     assert system_uptime[-6] is True
     assert system_uptime[-1] is False
 
-    clients = traces.TimeSeries.merge(router_list, operation=traces.operations.ignorant_sum)
+    clients = traces.TimeSeries.merge(
+        router_list, operation=traces.operations.ignorant_sum
+    )
     assert clients[-15] == 0
     assert clients[-6] == 1
     assert clients[-0.5] == 0
