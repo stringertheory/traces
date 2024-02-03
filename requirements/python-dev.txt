@@ -6,7 +6,7 @@ cprofilev
 # from cookiecutter
 pip
 bumpversion
-wheel
+wheel==0.42.0
 tox
 flake8
 coverage
