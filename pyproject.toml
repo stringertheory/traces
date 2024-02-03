@@ -55,6 +55,31 @@ sphinx = [
 sphinx-autobuild = "^2021.3.14"
 recommonmark = "^0.7.1"
 
+[tool.bumpversion]
+current_version = "0.6.1"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+tag = false
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = true
+commit = false
+message = "Bump version: {current_version} → {new_version}"
+commit_args = "--no-verify"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+
+[[tool.bumpversion.files]]
+filename = "traces/__init__.py"
+
+[[tool.bumpversion.files]]
+filename = "docs/conf.py"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
