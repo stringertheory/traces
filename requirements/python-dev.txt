@@ -11,4 +11,4 @@ tox
 flake8
 coverage
 cryptography
-PyYAML
+PyYAML==6.0.1
