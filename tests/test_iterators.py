@@ -4,7 +4,7 @@ import sys
 import pprint
 
 from infinity import inf
-import nose
+import pytest
 
 from traces import TimeSeries
 
@@ -28,7 +28,7 @@ def test_iterperiods():
 
     # timeseries with no points raises a KeyError
     ts = TimeSeries()
-    with nose.tools.assert_raises(KeyError):
+    with pytest.raises(KeyError):
         next(ts.iterperiods())
 
     ts.set(datetime.datetime(2015, 3, 1), 1)
@@ -90,7 +90,7 @@ def test_slice():
     assert list(ts.slice(-1, 1).items()) == [(-1, 1), (0, 1), (1, 5)]
     assert list(ts.slice(-1, 0.5).items()) == [(-1, 1), (0, 1), (0.5, 1)]
 
-    nose.tools.assert_raises(ValueError, ts.slice, 2.5, 0)
+    pytest.raises(ValueError, ts.slice, 2.5, 0)
 
 
 def make_random_timeseries():

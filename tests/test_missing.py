@@ -1,4 +1,3 @@
-import nose
 import traces
 import unittest
 

@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime, date
-import nose
 from infinity import inf
+import pytest
 
 import traces.utils as utils
 
@@ -25,7 +25,7 @@ non_numeric_types = [
 def test_duration_to_number():
     for tdelta in timedelta_list:
         assert utils.duration_to_number(tdelta) == tdelta.total_seconds()
-        nose.tools.assert_raises(
+        pytest.raises(
             NotImplementedError, utils.duration_to_number, tdelta, 'hours')
 
     for _type, item in numeric_types.items():
@@ -33,7 +33,7 @@ def test_duration_to_number():
             assert utils.duration_to_number(num) == num
 
     for item in non_numeric_types:
-        nose.tools.assert_raises(TypeError, utils.duration_to_number, item)
+        pytest.raises(TypeError, utils.duration_to_number, item)
 
 
 def test_convert_args_to_list():
@@ -74,8 +74,8 @@ def test_convert_args_to_list():
     for inputs, answers in zip(iterable_inputs, iterable_inputs_answers):
         assert utils.convert_args_to_list(inputs) == answers
 
-    nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2, 3, 4])
-    nose.tools.assert_raises(TypeError, utils.convert_args_to_list, [2])
+    pytest.raises(TypeError, utils.convert_args_to_list, [2, 3, 4])
+    pytest.raises(TypeError, utils.convert_args_to_list, [2])
 
 
 def test_datetime_range():
@@ -117,45 +117,28 @@ def test_datetime_range():
 def test_datetime_floor():
     # the date here is May 6th, 2016 (week 18)
 
-    nose.tools.eq_(
-        utils.datetime_floor(date(2016, 5, 6), 'years'),
-        datetime(2016, 1, 1)
-    )
-    nose.tools.eq_(utils.datetime_floor(inf), inf)
+    assert utils.datetime_floor(date(2016, 5, 6), 'years') == datetime(2016, 1, 1)
+
+    assert utils.datetime_floor(inf) == inf
 
     test_dt = datetime(2016, 5, 6, 11, 45, 6)
-    nose.tools.eq_(
-        utils.datetime_floor(test_dt, 'months', n_units=3),
-        datetime(2016, 4, 1)
-    )
-    nose.tools.eq_(
-        utils.datetime_floor(test_dt, 'weeks', n_units=3),
-        datetime(2016, 4, 18)
-    )
-    nose.tools.eq_(
-        utils.datetime_floor(test_dt, 'hours', n_units=10),
-        datetime(2016, 5, 6, 10)
-    )
-    nose.tools.eq_(
-        utils.datetime_floor(test_dt, 'minutes', n_units=15),
-        datetime(2016, 5, 6, 11, 45)
-    )
-    nose.tools.eq_(
-        utils.datetime_floor(test_dt, 'seconds', n_units=30),
-        datetime(2016, 5, 6, 11, 45)
-    )
-    nose.tools.assert_raises(
-        ValueError, utils.datetime_floor, "2016-6-7"
-    )
-    nose.tools.assert_raises(
-        ValueError, utils.datetime_floor,
-        test_dt, 'sleconds', n_units=3
-    )
+    assert utils.datetime_floor(test_dt, 'months', n_units=3) == datetime(2016, 4, 1)
+
+    assert utils.datetime_floor(test_dt, 'weeks', n_units=3) == datetime(2016, 4, 18)
+
+    assert utils.datetime_floor(test_dt, 'hours', n_units=10) == datetime(2016, 5, 6, 10)
+
+    assert utils.datetime_floor(test_dt, 'minutes', n_units=15) == datetime(2016, 5, 6, 11, 45)
+
+    assert utils.datetime_floor(test_dt, 'seconds', n_units=30) == datetime(2016, 5, 6, 11, 45)
+
+    pytest.raises(ValueError, utils.datetime_floor, "2016-6-7")
+    pytest.raises(ValueError, utils.datetime_floor, test_dt, 'sleconds', n_units=3)
 
 
 def test_weekday_number():
     assert utils.weekday_number(5) == 5
-    nose.tools.assert_raises(ValueError, utils.weekday_number, 7)
+    pytest.raises(ValueError, utils.weekday_number, 7)
     print(utils.weekday_number("Tuesday"))
     assert utils.weekday_number("Tuesday") == 1
-    nose.tools.assert_raises(ValueError, utils.weekday_number, 'Mooday')
+    pytest.raises(ValueError, utils.weekday_number, 'Mooday')
