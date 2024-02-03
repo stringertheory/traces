@@ -1,6 +1,9 @@
 # traces
 
-[![Version](https://img.shields.io/pypi/v/traces.svg?)](https://pypi.python.org/pypi/traces) [![PyVersions](https://img.shields.io/pypi/pyversions/traces.svg)](https://pypi.python.org/pypi/traces) [![CircleCI](https://circleci.com/gh/datascopeanalytics/traces/tree/master.svg?style=shield)](https://circleci.com/gh/datascopeanalytics/traces/tree/master) [![Documentation Status](https://readthedocs.org/projects/traces/badge/?version=master)](https://traces.readthedocs.io/en/master/?badge=master) [![Coverage Status](https://coveralls.io/repos/github/datascopeanalytics/traces/badge.svg?branch=master)](https://coveralls.io/github/datascopeanalytics/traces?branch=master)
+[![Version](https://img.shields.io/pypi/v/traces.svg?)](https://pypi.python.org/pypi/traces)
+[![PyVersions](https://img.shields.io/pypi/pyversions/traces.svg)](https://pypi.python.org/pypi/traces)
+[![Documentation Status](https://readthedocs.org/projects/traces/badge/?version=master)](https://traces.readthedocs.io/en/master/?badge=master)
+[![Coverage Status](https://coveralls.io/repos/github/datascopeanalytics/traces/badge.svg?branch=master)](https://coveralls.io/github/datascopeanalytics/traces?branch=master)
 
 A Python library for unevenly-spaced time series analysis.
 
@@ -13,10 +16,10 @@ series with different frequencies: it can be useful to model these as
 unevenly-spaced.
 
 Traces was designed by the team at
-[Datascope](https://datascopeanalytics.com/) based on several practical
+[Datascope]([https://datascopeanalytics.com/](https://en.wikipedia.org/wiki/Datascope_Analytics)) based on several practical
 applications in different domains, because it turns out [unevenly-spaced
 data is actually pretty great, particularly for sensor data
-analysis](https://datascopeanalytics.com/blog/unevenly-spaced-time-series/).
+analysis](https://traces.readthedocs.io/).
 
 ## Installation
 
