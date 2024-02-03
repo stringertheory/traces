@@ -4,7 +4,7 @@
 cprofilev
 
 # from cookiecutter
-pip
+pip==23.3.2
 bumpversion
 wheel
 tox
