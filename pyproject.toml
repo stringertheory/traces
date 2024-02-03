@@ -42,6 +42,7 @@ matplotlib = [
 ]
 pytest-mpl = "^0.16.1"
 pyarrow = "^15.0.0"
+bump-my-version = "^0.17.3"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.2"
