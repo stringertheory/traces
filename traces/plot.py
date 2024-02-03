@@ -58,16 +58,15 @@ def plot(
     aspect_ratio=None,
     font=None,
 ):
-
     try:
         import matplotlib.pyplot as plt
         from matplotlib import font_manager
-    except ImportError:
+    except ImportError as error:
         msg = "need to install matplotlib for `plot` function"
-        raise ImportError(msg)
+        raise ImportError(msg) from error
 
     if font is None:
-        available_fonts = set(f.name for f in font_manager.fontManager.ttflist)
+        available_fonts = {f.name for f in font_manager.fontManager.ttflist}
         for font in FONTS:
             if font in available_fonts:
                 break
@@ -84,14 +83,14 @@ def plot(
 
     try:
         drawstyle = INTERPOLATE_DRAWSTYLE[interpolate]
-    except KeyError:
-        raise ValueError((
-            "invalid value for interpolate='{}', "
-            "must be in {}"
-        ).format(interpolate, set(INTERPOLATE_DRAWSTYLE.keys())))
+    except KeyError as error:
+        msg = (
+            f"invalid value for interpolate='{interpolate}', "
+            f"must be in {set(INTERPOLATE_DRAWSTYLE.keys())}"
+        )
+        raise ValueError(msg) from error
 
     with plt.style.context(PLOT_STYLE):
-
         figure, axes = plt.subplots(
             figsize=(figure_width, aspect_ratio * figure_width),
         )
@@ -102,7 +101,7 @@ def plot(
         else:
             x, y = [], []
 
-        plot = axes.plot(
+        axes.plot(
             x,
             y,
             linewidth=linewidth,

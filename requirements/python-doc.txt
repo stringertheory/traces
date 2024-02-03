@@ -1,5 +1,0 @@
--r python.txt
-Sphinx
-sphinxcontrib-napoleon
-recommonmark
-sphinx-autobuild

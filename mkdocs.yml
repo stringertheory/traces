@@ -1,15 +1,54 @@
 site_name: traces
-repo_url: https://github.com/datascopeanalytics/traces/tree/master
-theme: readthedocs
-site_description: Tools for unevenly-spaced time series data
+repo_url: https://github.com/stringertheory/traces
+site_url: https://stringertheory.github.io/traces
+site_description: A Python library for unevenly-spaced time series analysis
 site_author: Mike Stringer
-site_favicon: http://datascopeanalytics.com/static/main/img/favicon.ico
-copyright:
-extra_javascript:
-    - http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+edit_uri: edit/main/docs/
+repo_name: stringertheory/traces
+copyright: Maintained by <a href="https://github.com/stringertheory">Mike</a>.
+
+nav:
+  - Home: index.md
+  - Modules: modules.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys
+            - sys.path.append('../')
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/stringertheory/traces
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/traces
+
 markdown_extensions:
-    - smarty
-    - mdx_math
-pages:
-- Home: 'index.md'
-- Installation: 'installation.md'
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true

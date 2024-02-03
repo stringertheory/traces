@@ -1,7 +1,7 @@
-import traces
-import random
 import datetime
-from infinity import inf
+import random
+
+import traces
 
 
 def average(values):
@@ -15,13 +15,12 @@ def average(values):
 
 
 class Test(traces.TimeSeries):
-
     def stack(self, duration, start_times, operation):
         ts_list = []
         for start in start_times:
             end = start + duration
             ts = traces.TimeSeries()
-            for t0, dur, value in self.iterperiods(start, end):
+            for t0, _dur, value in self.iterperiods(start, end):
                 offset = t0 - start
                 if isinstance(offset, datetime.timedelta):
                     offset = offset.total_seconds()
@@ -33,7 +32,7 @@ class Test(traces.TimeSeries):
 def xmprint(ts):
     for t, v in ts:
         # print t.isoformat(), v
-        print(t, v)
+        print((t, v))
 
 
 def generate_ts(n_days):
@@ -55,7 +54,7 @@ def generate_ts(n_days):
 
 def hour_mask(n_days, hours):
     start_time = datetime.datetime(2016, 1, 1)
-    domain = TimeSeries(default=False)
+    domain = traces.TimeSeries(default=False)
     for day in range(n_days):
         start = start_time + datetime.timedelta(days=day, hours=hours)
         end = start + datetime.timedelta(hours=1)
@@ -87,26 +86,28 @@ for i in range(n_days):
 stack = ts.stack(datetime.timedelta(days=1), start_times, average)
 xmprint(stack)
 
-print ''
+print("")
 
 for hour in range(24):
     mask = hour_mask(n_days, hour)
-    print hour * 60 * 60, ts.distribution(mask=mask).mean()
-print (hour + 1) * 60 * 60, ts.distribution(mask=mask).mean()
+    print(hour * 60 * 60, ts.distribution(mask=mask).mean())
+print((hour + 1) * 60 * 60, ts.distribution(mask=mask).mean())
 
-print ''
+print("")
 
 unit = 60 * 60
 start = 0
 end = start + unit
 while end <= 24 * 60 * 60:
     value = stack.mean(start, end)
-    print start, value
+    print(start, value)
     start += unit
     end += unit
-print start, value
+print(start, value)
 
-print ''
+print("")
 
-for t, v in sorted(stack.moving_average(60 * 60, 60 * 60, 0, 24 * 60 * 60).items()):
-    print t, v
+for t, v in sorted(
+    stack.moving_average(60 * 60, 60 * 60, 0, 24 * 60 * 60).items()
+):
+    print(t, v)

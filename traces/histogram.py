@@ -21,50 +21,44 @@ class Histogram(sortedcontainers.SortedDict):
 
     def __init__(self, data=(), **kwargs):
         if "key" in kwargs:
-            super(Histogram, self).__init__(kwargs["key"])
+            super().__init__(kwargs["key"])
         else:
-            super(Histogram, self).__init__()
+            super().__init__()
 
         for datum in data:
             self[datum] += 1
 
     def __getitem__(self, key):
         try:
-            result = super(Histogram, self).__getitem__(key)
+            result = super().__getitem__(key)
         except KeyError:
             result = 0
         except TypeError as error:
-
             if "unorderable" in str(error):
-                raise UnorderableElements(error)
+                raise UnorderableElements(error) from error
 
             if "unhashable" in str(error):
-                msg = "Can't make histogram of unhashable type ({})".format(
-                    type(key)
-                )
-                raise UnhashableType(msg)
+                msg = f"Can't make histogram of unhashable type ({type(key)})"
+                raise UnhashableType(msg) from error
 
-            raise error
+            raise
         return result
 
     def __setitem__(self, key, value):
         try:
-            result = super(Histogram, self).__setitem__(key, value)
+            result = super().__setitem__(key, value)
         except TypeError as error:
-
             if "unorderable" in str(error):
-                raise UnorderableElements(error)
+                raise UnorderableElements(error) from error
 
             if "not supported between instances of" in str(error):
-                raise UnorderableElements(error)
+                raise UnorderableElements(error) from error
 
             if "unhashable" in str(error):
-                msg = "Can't make histogram of unhashable type ({})".format(
-                    type(key)
-                )
-                raise UnhashableType(msg)
+                msg = f"Can't make histogram of unhashable type ({type(key)})"
+                raise UnhashableType(msg) from error
 
-            raise error
+            raise
         return result
 
     def total(self):
@@ -131,17 +125,19 @@ class Histogram(sortedcontainers.SortedDict):
 
     def max(self, include_zero=False):
         """Maximum observed value with non-zero count."""
-        for key, value in reversed(self.items()):
+        clean, total = self._prepare_for_stats()
+        for key, value in reversed(clean.items()):
             if value > 0 or include_zero:
                 return key
 
     def min(self, include_zero=False):
         """Minimum observed value with non-zero count."""
-        for key, value in self.items():
+        clean, total = self._prepare_for_stats()
+        for key, value in clean.items():
             if value > 0 or include_zero:
                 return key
 
-    def _quantile_function(self, alpha=0.5, smallest_count=None):
+    def _quantile_function(self, alpha=0.5, smallest_count=None):  # noqa: C901
         """Return a function that returns the quantile values for this
         histogram.
 
@@ -181,9 +177,8 @@ class Histogram(sortedcontainers.SortedDict):
         # print ''
 
         def function(q):
-
             if q < 0.0 or q > 1.0:
-                msg = "invalid quantile {}, need `0 <= q <= 1`".format(q)
+                msg = f"invalid quantile {q}, need `0 <= q <= 1`"
                 raise ValueError(msg)
             elif q < q_min:
                 q = q_min
@@ -228,7 +223,9 @@ class Histogram(sortedcontainers.SortedDict):
 
     def quantile(self, q, alpha=0.5, smallest_count=None):
         return self.quantiles(
-            [q], alpha=alpha, smallest_count=smallest_count,
+            [q],
+            alpha=alpha,
+            smallest_count=smallest_count,
         )[0]
 
     def add(self, other):
