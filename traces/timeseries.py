@@ -180,7 +180,7 @@ class TimeSeries:
 
         """
         # for each interval to render
-        for i, (s, _e, v) in enumerate(self.iterperiods(start, end)):  # noqa: B007
+        for i, (s, _e, v) in enumerate(list(self.iterperiods(start, end))):  # noqa: B007
             # look at all intervals included in the current interval
             # (always at least 1)
             if i == 0:
