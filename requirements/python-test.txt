@@ -2,7 +2,7 @@
 
 # testing
 pycodestyle
-coveralls
+coveralls==3.3.1
 codecov
 nose
 pytest
