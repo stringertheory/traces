@@ -16,7 +16,7 @@ series with different frequencies: it can be useful to model these as
 unevenly-spaced.
 
 Traces was designed by the team at
-[Datascope]([https://datascopeanalytics.com/](https://en.wikipedia.org/wiki/Datascope_Analytics)) based on several practical
+[Datascope](<[https://datascopeanalytics.com/](https://en.wikipedia.org/wiki/Datascope_Analytics)>) based on several practical
 applications in different domains, because it turns out [unevenly-spaced
 data is actually pretty great, particularly for sensor data
 analysis](https://traces.readthedocs.io/).
