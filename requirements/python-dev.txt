@@ -10,5 +10,5 @@ wheel
 tox
 flake8
 coverage
-cryptography
+cryptography==42.0.2
 PyYAML
