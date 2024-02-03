@@ -3,7 +3,7 @@
 # testing
 pycodestyle
 coveralls
-codecov
+codecov==2.1.13
 nose
 pytest
 pytest-mpl
