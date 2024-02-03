@@ -125,13 +125,15 @@ class Histogram(sortedcontainers.SortedDict):
 
     def max(self, include_zero=False):
         """Maximum observed value with non-zero count."""
-        for key, value in reversed(self.items()):
+        clean, total = self._prepare_for_stats()
+        for key, value in reversed(clean.items()):
             if value > 0 or include_zero:
                 return key
 
     def min(self, include_zero=False):
         """Minimum observed value with non-zero count."""
-        for key, value in self.items():
+        clean, total = self._prepare_for_stats()
+        for key, value in clean.items():
             if value > 0 or include_zero:
                 return key
 
