@@ -9,6 +9,6 @@ bumpversion
 wheel
 tox
 flake8
-coverage
+coverage==7.4.1
 cryptography
 PyYAML
