@@ -17,6 +17,8 @@ from infinity import inf
 
 from . import histogram, operations, plot, utils
 
+NotGiven = object()
+
 
 class TimeSeries:
     """A class to help manipulate and analyze time series that are the
@@ -868,19 +870,44 @@ class TimeSeries:
                 result[time] = function(value, other)
         return result
 
-    def to_bool(self, invert=False):
-        """Return the truth value of each element."""
+    def to_bool(self, invert=False, default=NotGiven):
+        """Return the truth value of each element.
+
+
+        Args:
+
+            invert: opposite truth values
+
+            default: If default is not explicitly given, keep it as
+             None if it's None (which often means "undefined" rather
+             than "false"), otherwise cast to bool
+
+        Returns:
+
+            :obj:`TimeSeries` with the results.
+
+        """
+        if default is NotGiven:
+            if self.default is None:
+                new_default = None
+            else:
+                new_default = bool(self.default)
+                if invert:
+                    new_default = not (new_default)
+        else:
+            # should this complain if default not in {None, True, False}?
+            new_default = default
+
         if invert:
 
             def function(x, y):
                 return not bool(x)
-
         else:
 
             def function(x, y):
                 return bool(x)
 
-        return self.operation(None, function)
+        return self.operation(None, function, default=new_default)
 
     def threshold(self, value, inclusive=False):
         """Return True if > than treshold value (or >= threshold value if

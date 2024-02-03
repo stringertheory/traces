@@ -117,3 +117,51 @@ def test_difference():
 
     c = a - b
     assert list(c.items()) == [(0, 0), (1, -1), (2, 1), (3, 0)]
+
+
+def test_to_bool_default():
+    data = [(0, 0), (2, 5), (3, 0), (4, 7), (10, 3)]
+
+    assert TimeSeries(data=data, default=None).to_bool().default is None
+    assert TimeSeries(data=data, default=None).to_bool()[-1] is None
+    assert TimeSeries(data=data, default=0).to_bool().default == 0
+    assert TimeSeries(data=data, default=0).to_bool()[-1] == 0
+    assert TimeSeries(data=data, default=5).to_bool().default == 1
+    assert TimeSeries(data=data, default=5).to_bool()[-1] == 1
+
+    assert (
+        TimeSeries(data=data, default=None).to_bool(default=None).default
+        is None
+    )
+    assert (
+        TimeSeries(data=data, default=0).to_bool(default=None).default is None
+    )
+    assert (
+        TimeSeries(data=data, default=5).to_bool(default=None).default is None
+    )
+
+    assert (
+        TimeSeries(data=data, default=None).to_bool(default=False).default
+        is False
+    )
+    assert (
+        TimeSeries(data=data, default=0).to_bool(default=False).default is False
+    )
+    assert (
+        TimeSeries(data=data, default=5).to_bool(default=False).default is False
+    )
+
+    assert (
+        TimeSeries(data=data, default=None).to_bool(default=True).default
+        is True
+    )
+    assert (
+        TimeSeries(data=data, default=0).to_bool(default=True).default is True
+    )
+    assert (
+        TimeSeries(data=data, default=5).to_bool(default=True).default is True
+    )
+
+    assert TimeSeries(data=data, default=None).to_bool(default=10).default == 10
+    assert TimeSeries(data=data, default=0).to_bool(default=10).default == 10
+    assert TimeSeries(data=data, default=5).to_bool(default=10).default == 10
