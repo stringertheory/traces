@@ -5,7 +5,7 @@ cprofilev
 
 # from cookiecutter
 pip
-bumpversion
+bumpversion==0.6.0
 wheel
 tox
 flake8
