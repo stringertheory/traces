@@ -124,9 +124,10 @@ class TimeSeries:
         try:
             getter = self.getter_functions[interpolate]
         except KeyError as error:
+            getter_string = ", ".join(self.getter_functions)
             msg = (
                 f"unknown value '{interpolate}' for interpolate, "
-                f"valid values are in [{", ".join(self.getter_functions)}]"
+                f"valid values are in [{getter_string}]"
             )
             raise ValueError(msg) from error
         else:
@@ -228,8 +229,8 @@ class TimeSeries:
         try:
             del self._d[time]
         except KeyError as error:
-            error.add_note(f"no measurement at {time}")
-            raise
+            msg = f"no measurement at {time}"
+            raise KeyError(msg) from error
 
     def remove_points_from_interval(self, start, end):
         """Allow removal of all points from the time series within a interval
@@ -499,10 +500,8 @@ class TimeSeries:
             try:
                 import pandas as pd
             except ImportError as error:
-                error.add_note(
-                    "can't have pandas=True if pandas is not installed"
-                )
-                raise
+                msg = "can't have pandas=True if pandas is not installed"
+                raise ImportError(msg) from error
 
             result = pd.Series(
                 [v for t, v in result],
