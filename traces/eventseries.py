@@ -1,7 +1,8 @@
-import collections
+import itertools
 
-import numpy as np
 import sortedcontainers
+
+from . import utils
 
 
 class EventSeries(sortedcontainers.SortedList):
@@ -9,39 +10,40 @@ class EventSeries(sortedcontainers.SortedList):
         super().__init__(data)
 
     def cumsum(self):
-        """
-        Returns a TimeSeries with each unique time in the EventSeries as an
-        index point and with the cumulative number of events that have occured
-        since the earliest time in the EventSeries as the value
+        """Alias for cumulative_sum"""
+        return self.cumulative_sum()
+
+    def cumulative_sum(self):
+        """Returns a TimeSeries with each unique time in the
+        EventSeries as an index point and with the cumulative number
+        of events that have occured since the earliest time in the
+        EventSeries as the value
+
         """
         from traces import TimeSeries
 
-        # Multiple events can happen at the same time so we need to hash them
-        # as counts
-        c = collections.Counter(self)
-        # Then we want to sort them and calculate the cumsum
-        c = sortedcontainers.SortedDict(c)
-        keys = c.keys()
-        values = np.cumsum(list(c.values()))
+        ts = TimeSeries(default=0)
+        running_total = 0
+        for t, event_group in itertools.groupby(self):
+            running_total += len(list(event_group))
+            ts[t] = running_total
 
-        return TimeSeries(zip(keys, values), default=0)
+        return ts
 
     def events_between(self, start, end):
-        """
-        Returns the number of events that occured between `start and `end.
-        Calculates on a closed interval, so start and end are included in the
-        range
+        """Returns the number of events that occured between `start
+        and `end.  Calculates on a closed interval, so start and end
+        are included in the range
+
         """
         start_idx = self.bisect_left(start)
         end_idx = self.bisect_right(end)
         return end_idx - start_idx
 
-    def time_lag(self):
-        """
-        Returns a `np.array` of inter event arrival times. This will only work
-        for EventSeries of a type that have a minus operation implemented.
-        """
-        return np.array(self[1:]) - np.array(self[0:-1])
+    def iter_interevent_times(self):
+        """Returns a list of inter-event arrival times."""
+        for t0, t1 in utils.pairwise(self):
+            yield t1 - t0
 
     @staticmethod
     def count_active(es_open, es_closed):
