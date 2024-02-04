@@ -68,7 +68,7 @@ class Histogram(sortedcontainers.SortedDict):
     def _prepare_for_stats(self):
         """Removes None values and calculates total."""
         clean = self._discard_value(None)
-        total = float(clean.total())
+        total = clean.total()
         return clean, total
 
     def mean(self):
@@ -109,10 +109,10 @@ class Histogram(sortedcontainers.SortedDict):
         result = Histogram()
         for value, count in self.items():
             try:
-                result[value] = count / float(total)
+                result[value] = count / total
             except UnorderableElements:
                 result = Histogram.from_dict(dict(result), key=hash)
-                result[value] = count / float(total)
+                result[value] = count / total
         return result
 
     def _discard_value(self, value):
@@ -195,7 +195,7 @@ class Histogram(sortedcontainers.SortedDict):
                     x2 = inverse.keys()[previous_index + 1]
                     y1 = inverse[x1]
                     y2 = inverse[x2]
-                    result = (y2 - y1) * (q - x1) / float(x2 - x1) + y1
+                    result = (y2 - y1) * (q - x1) / (x2 - x1) + y1
 
             else:
                 if q in inverse:
@@ -210,7 +210,7 @@ class Histogram(sortedcontainers.SortedDict):
                     x1 = inverse.keys()[previous_index]
                     result = inverse[x1]
 
-            return float(result)
+            return result
 
         return function
 

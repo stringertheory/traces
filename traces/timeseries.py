@@ -101,7 +101,7 @@ class TimeSeries:
             if isinstance(dt_interval, datetime.timedelta):
                 dt_interval = dt_interval.total_seconds()
                 dt_start = dt_start.total_seconds()
-            slope = float(right_value - left_value) / dt_interval
+            slope = (right_value - left_value) / dt_interval
             value = slope * dt_start + left_value
             return value
 
@@ -692,7 +692,7 @@ class TimeSeries:
             count += end_count - start_count
 
         if normalized:
-            count /= float(self.n_measurements())
+            count /= self.n_measurements()
 
         return count
 
