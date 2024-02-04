@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "traces"
-version  = "0.6.1"
+version  = "0.6.2"
 description = "A Python library for unevenly-spaced time series analysis"
 authors = ["Mike Stringer <mike.stringer.internet@gmail.com>"]
 repository = "https://github.com/stringertheory/traces"
@@ -57,7 +57,7 @@ sphinx-autobuild = "^2021.3.14"
 recommonmark = "^0.7.1"
 
 [tool.bumpversion]
-current_version = "0.6.1"
+current_version = "0.6.2"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
