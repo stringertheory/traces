@@ -147,12 +147,14 @@ def test_time_lag():
         "2019-02-16",
         "2019-02-26",
         "2019-02-16",
+        "2019-02-16",
     ]
     es = EventSeries(pd.to_datetime(data))
 
-    time_lag = es.time_lag()
+    time_lag = list(es.iter_interevent_times())
     assert time_lag[0] == pd.Timedelta(days=15)
     assert time_lag[1] == pd.Timedelta(days=0)
 
     # Make sure we got the right shape
-    assert time_lag.shape[0] == len(data) - 1
+    assert len(time_lag) == len(data) - 1
+    print(time_lag)
