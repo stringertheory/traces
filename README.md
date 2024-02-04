@@ -1,5 +1,3 @@
-# traces
-
 <!-- [![Version](https://img.shields.io/pypi/v/traces.svg?)](https://pypi.python.org/pypi/traces) -->
 <!-- [![PyVersions](https://img.shields.io/pypi/pyversions/traces.svg)](https://pypi.python.org/pypi/traces) -->
 <!-- [![Documentation Status](https://readthedocs.org/projects/traces/badge/?version=master)](https://traces.readthedocs.io/en/master/?badge=master) -->
@@ -8,6 +6,8 @@
 [![Build status](https://img.shields.io/github/actions/workflow/status/stringertheory/traces/main.yml?branch=main)](https://github.com/stringertheory/traces/actions/workflows/main.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/stringertheory/traces/branch/main/graph/badge.svg)](https://codecov.io/gh/stringertheory/traces)
 [![Commit activity](https://img.shields.io/github/commit-activity/y/stringertheory/traces)](https://img.shields.io/github/commit-activity/m/stringertheory/traces)
+
+# traces
 
 A Python library for unevenly-spaced time series analysis.
 
@@ -29,7 +29,7 @@ analysis](https://traces.readthedocs.io/).
 
 To install traces, run this command in your terminal:
 
-```bash
+```shell
 $ pip install traces
 ```
 
@@ -44,7 +44,7 @@ The main object in traces is a [TimeSeries](https://traces.readthedocs.io/en/mas
 create just like a dictionary, adding the five measurements at 6:00am,
 7:45:56am, etc.
 
-```python
+```pycon
 >>> time_series = traces.TimeSeries()
 >>> time_series[datetime(2042, 2, 1,  6,  0,  0)] = 0 #  6:00:00am
 >>> time_series[datetime(2042, 2, 1,  7, 45, 56)] = 1 #  7:45:56am
@@ -57,7 +57,7 @@ What if you want to know if the light was on at 11am? Unlike a python
 dictionary, you can look up the value at any time even if it's not one
 of the measurement times.
 
-```python
+```pycon
 >>> time_series[datetime(2042, 2, 1, 11,  0, 0)] # 11:00am
 0
 ```
@@ -65,7 +65,7 @@ of the measurement times.
 The `distribution` function gives you the fraction of time that the
 `TimeSeries` is in each state.
 
-```python
+```pycon
 >>> time_series.distribution(
 >>>   start=datetime(2042, 2, 1,  6,  0,  0), # 6:00am
 >>>   end=datetime(2042, 2, 1,  13,  0,  0)   # 1:00pm
@@ -86,7 +86,7 @@ How many lights are on throughout the day? The merge function takes the
 forty individual `TimeSeries` and efficiently merges them into one
 `TimeSeries` where the each value is a list of all lights.
 
-```python
+```pycon
 >>> trace_list = [... list of forty traces.TimeSeries ...]
 >>> count = traces.TimeSeries.merge(trace_list, operation=sum)
 ```
@@ -99,7 +99,7 @@ We also applied a `sum` operation to the list of states to get the
 How many lights are on in the building on average during business hours,
 from 8am to 6pm?
 
-```python
+```pycon
 >>> histogram = count.distribution(
 >>>   start=datetime(2042, 2, 1,  8,  0,  0),   # 8:00am
 >>>   end=datetime(2042, 2, 1,  12 + 6,  0,  0) # 6:00pm
@@ -119,7 +119,7 @@ long as they can be ordered. The values can be anything.
 For example, you can use a `TimeSeries` to keep track the contents of a
 grocery basket by the number of minutes within a shopping trip.
 
-```python
+```pycon
 >>> time_series = traces.TimeSeries()
 >>> time_series[1.2] = {'broccoli'}
 >>> time_series[1.7] = {'broccoli', 'apple'}
@@ -127,9 +127,9 @@ grocery basket by the number of minutes within a shopping trip.
 >>> time_series[3.5] = {'apple', 'beets'} # mmm, beets
 ```
 
-To learn more, check the [examples](https://traces.readthedocs.io/en/master/examples.html) and the detailed [reference](https://traces.readthedocs.io/en/master/api_reference.html#).
-
 ## More info
+
+To learn more, check the [examples](https://traces.readthedocs.io/en/master/examples.html) and the detailed [reference](https://traces.readthedocs.io/en/master/api_reference.html#).
 
 ## Contributing
 
