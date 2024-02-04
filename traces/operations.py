@@ -1,11 +1,11 @@
-from traces import decorators
+from .decorators import ignorant, strict
 
 
-@decorators.ignorant
+@ignorant
 def ignorant_sum(*args, **kwargs):
     return sum(*args, **kwargs)
 
 
-@decorators.strict
+@strict
 def strict_sum(*args, **kwargs):
     return sum(*args, **kwargs)

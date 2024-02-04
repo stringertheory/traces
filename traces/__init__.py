@@ -1,7 +1,6 @@
 from infinity import inf
 
-from traces import decorators, operations
-
+from . import decorators, operations
 from .eventseries import EventSeries
 from .histogram import Histogram
 from .timeseries import TimeSeries

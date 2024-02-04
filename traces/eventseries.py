@@ -3,6 +3,7 @@ import itertools
 import sortedcontainers
 
 from . import utils
+from .timeseries import TimeSeries
 
 
 class EventSeries(sortedcontainers.SortedList):
@@ -20,8 +21,6 @@ class EventSeries(sortedcontainers.SortedList):
         EventSeries as the value
 
         """
-        from traces import TimeSeries
-
         ts = TimeSeries(default=0)
         running_total = 0
         for t, event_group in itertools.groupby(self):
