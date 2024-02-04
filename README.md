@@ -1,9 +1,13 @@
 # traces
 
-[![Version](https://img.shields.io/pypi/v/traces.svg?)](https://pypi.python.org/pypi/traces)
-[![PyVersions](https://img.shields.io/pypi/pyversions/traces.svg)](https://pypi.python.org/pypi/traces)
-[![Documentation Status](https://readthedocs.org/projects/traces/badge/?version=master)](https://traces.readthedocs.io/en/master/?badge=master)
-[![Coverage Status](https://coveralls.io/repos/github/datascopeanalytics/traces/badge.svg?branch=master)](https://coveralls.io/github/datascopeanalytics/traces?branch=master)
+<!-- [![Version](https://img.shields.io/pypi/v/traces.svg?)](https://pypi.python.org/pypi/traces) -->
+<!-- [![PyVersions](https://img.shields.io/pypi/pyversions/traces.svg)](https://pypi.python.org/pypi/traces) -->
+<!-- [![Documentation Status](https://readthedocs.org/projects/traces/badge/?version=master)](https://traces.readthedocs.io/en/master/?badge=master) -->
+<!-- [![Release](https://img.shields.io/github/v/release/stringertheory/traces)](https://img.shields.io/github/v/release/stringertheory/traces) -->
+
+[![Build status](https://img.shields.io/github/actions/workflow/status/stringertheory/traces/main.yml?branch=main)](https://github.com/stringertheory/traces/actions/workflows/main.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/stringertheory/traces/branch/main/graph/badge.svg)](https://codecov.io/gh/stringertheory/traces)
+[![Commit activity](https://img.shields.io/github/commit-activity/y/stringertheory/traces)](https://img.shields.io/github/commit-activity/m/stringertheory/traces)
 
 A Python library for unevenly-spaced time series analysis.
 
