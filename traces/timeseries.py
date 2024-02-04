@@ -12,7 +12,6 @@ import itertools
 from queue import PriorityQueue
 
 import sortedcontainers
-from dateutil.parser import parse as date_parse
 from infinity import inf
 
 from . import histogram, operations, plot, utils
@@ -809,7 +808,9 @@ class TimeSeries:
 
     @staticmethod
     def csv_time_transform(raw):
-        return date_parse(raw)
+        from dateutil.parser import parse
+
+        return parse(raw)
 
     @staticmethod
     def csv_value_transform(raw):
