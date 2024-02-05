@@ -35,6 +35,9 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-poetry-env-only-main
 
+      - name: just add pytest for running tests
+        run: poetry add pytest
+
       - name: Check if documentation can be built
         run: make test-only-main
 
