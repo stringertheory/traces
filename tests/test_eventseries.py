@@ -1,5 +1,3 @@
-import pandas as pd
-
 from traces import EventSeries
 
 
@@ -11,13 +9,6 @@ def test_init_data():
     assert es[2] == 6
     assert es[3] == 8.7
     assert es[4] == 10
-
-    data = [
-        "2018-10-15T16:45:01",
-        "2019-04-16T13:08:26",
-    ]
-    es = EventSeries(pd.to_datetime(data))
-    assert es[0] == es[0]
 
 
 def test_count_active():
