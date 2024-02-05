@@ -425,16 +425,23 @@ class TimeSeries:
         """Sampling at regular time periods."""
         start, end, mask = self._check_boundaries(start, end)
 
-        sampling_period = self._check_regularization(
-            start, end, sampling_period
-        )
+        sampling_period = \
+            self._check_regularization(start, end, sampling_period)
+        
+        if isinstance(mask, TimeSeries):
+            mask = mask.to_domain()
+
+        distribution_mask = Domain([start, end])
+        if mask:
+            distribution_mask &= mask
 
         result = []
-        current_time = start
-        while current_time <= end:
-            value = self.get(current_time, interpolate=interpolate)
-            result.append((current_time, value))
-            current_time += sampling_period
+        for start, end in distribution_mask.intervals():
+            current_time = start
+            while current_time <= end:
+                value = self.get(current_time, interpolate=interpolate)
+                result.append((current_time, value))
+                current_time += sampling_period
         return result
 
     def moving_average(  # noqa: C901
