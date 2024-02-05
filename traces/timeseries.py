@@ -112,11 +112,10 @@ class TimeSeries:
             return left_value
         elif right_index == 0:
             return self.default
-        else:
+        else:  # pragma: no cover
             msg = (
                 f"self._d.bisect_right({time}) returned a negative value. "
-                """This "can't" happen: please file an issue at """
-                "https://github.com/datascopeanalytics/traces/issues"
+                """This "can't" happen: please help by filing an issue."""
             )
             raise ValueError(msg)
 
@@ -1007,6 +1006,10 @@ class TimeSeries:
     def __xor__(self, other):
         """Allow a ^ b syntax"""
         return self.logical_xor(other)
+
+    def __invert__(self):
+        """Allow ~a syntax"""
+        return self.to_bool(invert=True)
 
     def __eq__(self, other):
         return self.items() == other.items()

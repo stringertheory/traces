@@ -165,3 +165,33 @@ def test_to_bool_default():
     assert TimeSeries(data=data, default=None).to_bool(default=10).default == 10
     assert TimeSeries(data=data, default=0).to_bool(default=10).default == 10
     assert TimeSeries(data=data, default=5).to_bool(default=10).default == 10
+
+
+def test_truthiness():
+    data = [(0, 0), (2, 5), (3, 0), (4, 7), (10, 3)]
+    assert bool(TimeSeries()) is False
+    assert bool(TimeSeries(data=data)) is True
+
+    if TimeSeries():
+        assert "should not be here"
+
+
+def test_logical_operations():
+    ts1 = TimeSeries([(0, 0), (2, 5), (3, 0), (4, 7), (10, 3)])
+    ts2 = TimeSeries([(0, 0), (1, 1), (2, 3), (4, 0), (5, 5), (10, 1), (11, 0)])
+
+    a_or = [(0, 0), (1, 1), (2, 5), (3, 3), (4, 7), (5, 7), (10, 3), (11, 3)]
+    assert list(ts1.logical_or(ts2).items()) == a_or
+    assert list((ts1 | ts2).items()) == a_or
+
+    a_and = [(0, 0), (1, 0), (2, 3), (3, 0), (4, 0), (5, 5), (10, 1), (11, 0)]
+    assert list(ts1.logical_and(ts2).items()) == a_and
+    assert list((ts1 & ts2).items()) == a_and
+
+    a_xor = [(0, 0), (1, 1), (2, 0), (3, 1), (4, 1), (5, 0), (10, 0), (11, 1)]
+    assert list(ts1.logical_xor(ts2).items()) == a_xor
+    assert list((ts1 ^ ts2).items()) == a_xor
+
+    a_not = [(0, True), (2, False), (3, True), (4, False), (10, False)]
+    assert list(ts1.to_bool(invert=True).items()) == a_not
+    assert list((~ts1).items()) == a_not

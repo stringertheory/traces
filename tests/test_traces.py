@@ -244,3 +244,15 @@ def test_set_same_interval_twice():
 
     tr[17:42] = 0
     assert list(tr.items()) == [(0, 10), (17, 0), (42, 10), (100, 10)]
+
+
+def test_convenience_access_methods():
+    ts = TimeSeries([(1, 2), (2, 3), (6, 1), (8, 4)])
+    assert ts.first_key() == 1
+    assert ts.first_value() == 2
+    assert ts.first_item() == (1, 2)
+    assert ts.last_key() == 8
+    assert ts.last_value() == 4
+    assert ts.last_item() == (8, 4)
+    assert ts.get_item_by_index(0) == (1, 2)
+    assert ts.get_item_by_index(-1) == (8, 4)
