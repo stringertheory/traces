@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -24,6 +25,18 @@ jobs:
 
       - name: Run checks
         run: make check
+
+  tests-only-main-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-poetry-env-only-main
+
+      - name: Check if documentation can be built
+        run: make test-only-main
 
   tox:
     runs-on: ubuntu-latest
@@ -57,7 +70,7 @@ jobs:
       - name: Test with tox
         run: tox
 
-      - name: Upload coverage reports to Codecov with GitHub Action on Python 3.11
+      - name: Upload coverage reports to Codecov with GitHub Action on Python 3.12
         uses: codecov/codecov-action@v3
         if: ${{ matrix.python-version == '3.12' }}
 
