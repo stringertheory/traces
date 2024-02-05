@@ -180,19 +180,18 @@ class TimeSeries:
         be anyway.
 
         """
-        # for each interval to render
-        for i, (s, _e, v) in enumerate(list(self.iterperiods(start, end))):  # noqa: B007
-            # look at all intervals included in the current interval
-            # (always at least 1)
-            if i == 0:
-                # if the first, set initial value to new value of range
-                self.set(s, value, compact)
-            else:
-                # otherwise, remove intermediate key
-                del self[s]
+        if start >= end:
+            msg = f"start must be less than end, got start={start!r} and end={end!r}"
+            raise ValueError(msg)
 
-        # finish by setting the end of the interval to the previous value
-        self.set(end, v, compact)
+        end_value = self[end]
+
+        # delete all intermediate items between start and end
+        for t in list(self._d.irange(start, end, inclusive=(False, False))):
+            del self[t]
+
+        self.set(start, value, compact)
+        self.set(end, end_value, compact)
 
     def compact(self):
         """Convert this instance to a compact version: the value will be the

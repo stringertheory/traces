@@ -123,6 +123,9 @@ def test_set_interval():
     tsd = TimeSeries()
     pytest.raises(ValueError, tsd.set_interval, 4, 4, 4)
 
+    tsd = TimeSeries()
+    pytest.raises(ValueError, tsd.set_interval, 4, 3, 4)
+
 
 def test_set_interval_datetime():
     ts = TimeSeries(default=400)
@@ -231,3 +234,13 @@ def test_csv():
     assert ts[datetime(2000, 1, 1, 9)] is None
     assert ts[datetime(2000, 1, 1, 10, 30)] == "15"
     assert ts[datetime(2000, 1, 1, 20)] == "nan"
+
+
+def test_set_same_interval_twice():
+    tr = TimeSeries({0: 10, 100: 10})
+
+    tr[17:42] = 0
+    assert list(tr.items()) == [(0, 10), (17, 0), (42, 10), (100, 10)]
+
+    tr[17:42] = 0
+    assert list(tr.items()) == [(0, 10), (17, 0), (42, 10), (100, 10)]
