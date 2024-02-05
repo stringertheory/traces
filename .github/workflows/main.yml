@@ -38,7 +38,7 @@ jobs:
       - name: just add pytest for running tests
         run: poetry run python -m pip install -U pytest
 
-      - name: Check if documentation can be built
+      - name: run the tests that don't require development dependencies
         run: make test-only-main
 
   tox:
