@@ -939,15 +939,15 @@ class TimeSeries:
 
     def logical_and(self, other):
         """logical_and(t) = self(t) and other(t)."""
-        return self.operation(other, lambda x, y: int(x and y))
+        return self.operation(other, lambda x, y: x and y)
 
     def logical_or(self, other):
         """logical_or(t) = self(t) or other(t)."""
-        return self.operation(other, lambda x, y: int(x or y))
+        return self.operation(other, lambda x, y: x or y)
 
     def logical_xor(self, other):
         """logical_xor(t) = self(t) ^ other(t)."""
-        return self.operation(other, lambda x, y: int(bool(x) ^ bool(y)))
+        return self.operation(other, lambda x, y: bool(x) ^ bool(y))
 
     def __setitem__(self, time, value):
         """Allow a[time] = value syntax or a a[start:end]=value."""

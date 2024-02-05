@@ -188,7 +188,16 @@ def test_logical_operations():
     assert list(ts1.logical_and(ts2).items()) == a_and
     assert list((ts1 & ts2).items()) == a_and
 
-    a_xor = [(0, 0), (1, 1), (2, 0), (3, 1), (4, 1), (5, 0), (10, 0), (11, 1)]
+    a_xor = [
+        (0, False),
+        (1, True),
+        (2, False),
+        (3, True),
+        (4, True),
+        (5, False),
+        (10, False),
+        (11, True),
+    ]
     assert list(ts1.logical_xor(ts2).items()) == a_xor
     assert list((ts1 ^ ts2).items()) == a_xor
 
