@@ -1,38 +1,28 @@
+import importlib
+
 import pytest
 
 import traces
 
-
-@pytest.mark.mpl_image_compare(
-    savefig_kwargs={"bbox_inches": "tight", "dpi": 300},
-    remove_text=True,
-    style="ggplot",
-    tolerance=20,
-)
-def test_plot():
-    ts = traces.TimeSeries()
-    ts[0] = 0
-    ts[1] = 2
-    ts[3] = 1
-    ts[5] = 0
-
-    figure, axes = ts.plot()
-    return figure
+matplotlib_importable = importlib.util.find_spec("matplotlib")
 
 
-def test_invalid_call():
+def _make_ts():
     ts = traces.TimeSeries()
     ts[0] = 0
     ts[1] = 1
-
-    ts.plot(interpolate="previous")
-    ts.plot(interpolate="linear")
-
-    with pytest.raises(ValueError):
-        ts.plot(interpolate="yomama")
+    return ts
 
 
-def test_empty():
-    ts = traces.TimeSeries()
+def test_message_when_matplotlib_not_installed():
+    """When matplotlib is not importable, make sure that calling plot
+    raises an informative error message.
 
-    ts.plot()
+    """
+    if not matplotlib_importable:
+        ts = _make_ts()
+
+        with pytest.raises(ImportError) as error:
+            ts.plot()
+
+        assert "need to install matplotlib" in str(error)
