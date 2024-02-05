@@ -20,11 +20,6 @@ def test_plot():
     return figure
 
 
-def test_optional_import():
-    # TODO: something like this https://stackoverflow.com/a/51048604/1431778
-    pass
-
-
 def test_invalid_call():
     ts = traces.TimeSeries()
     ts[0] = 0

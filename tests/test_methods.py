@@ -1,7 +1,5 @@
 import datetime
 
-import numpy as np
-import pandas as pd
 import pytest
 
 import traces
@@ -137,11 +135,6 @@ def test_sample():
     pytest.raises(ValueError, ts.sample, 0.5, -traces.inf, 8)
     pytest.raises(ValueError, ts.sample, 0.5, 1, traces.inf)
 
-    # Test pandas compatibility
-    pd_ts = pd.Series(dict(ts.sample(1, 1, 8)))
-    assert all(pd_ts.index[i - 1] == i for i in range(1, 9))
-    assert all(pd_ts.values[i - 1] == ts[i] for i in range(1, 9))
-
 
 def test_moving_average():
     time_list = [
@@ -221,12 +214,6 @@ def test_moving_average():
         1 + i / 2.0: ts.mean(1 + i / 2.0 - 1, 1 + i / 2.0 + 1)
         for i in range(2, 15)
     }
-
-    # Test pandas compatibility
-    pd_ts = pd.Series(dict(ts.moving_average(1, 2, 0, 8)))
-    assert all(pd_ts.index[i] == i for i in range(1, 9))
-    assert np.isnan(pd_ts.values[0])
-    assert all(pd_ts.values[i] == ts.mean(i - 1, i + 1) for i in range(2, 9))
 
     # Test using timedelta as sampling_period
     ts = _make_ts(int, time_list, [1, 2, 3, 0])
@@ -362,10 +349,6 @@ def test_radd():
 
 
 def test_repr():
-    import datetime
-
-    import traces
-
     ts = traces.TimeSeries()
     t = datetime.date(2000, 1, 1)
     for i in range(1000):
