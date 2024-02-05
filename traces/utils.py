@@ -1,10 +1,11 @@
+import contextlib
 import datetime
-from past.builtins import long
-from collections import Iterable
+import numbers
+
 from infinity import inf
 
 
-def duration_to_number(duration, units='seconds'):
+def duration_to_number(duration, units="seconds"):
     """If duration is already a numeric type, then just return
     duration. If duration is a timedelta, return a duration in
     seconds.
@@ -12,20 +13,30 @@ def duration_to_number(duration, units='seconds'):
     TODO: allow for multiple types of units.
 
     """
-    if isinstance(duration, (int, float, long)):
+    if isinstance(duration, (numbers.Integral, numbers.Real)):
         return duration
     elif isinstance(duration, (datetime.timedelta,)):
-        if units == 'seconds':
+        if units == "seconds":
             return duration.total_seconds()
         else:
             msg = 'unit "%s" is not supported' % units
             raise NotImplementedError(msg)
-    elif duration == inf or duration == -inf:
+    elif duration in (inf, -inf):
         msg = "Can't convert infinite duration to number"
         raise ValueError(msg)
     else:
-        msg = 'duration is an unknown type (%s)' % duration
+        msg = "duration is an unknown type (%s)" % duration
         raise TypeError(msg)
+
+
+def time_midpoint(t0, t1):
+    """Return the midpoint between two time values."""
+    duration = t1 - t0
+    if isinstance(duration, (datetime.timedelta,)):
+        half = duration.total_seconds() / 2.0
+        return t0 + datetime.timedelta(seconds=half)
+    else:
+        return t0 + duration / 2.0
 
 
 def convert_args_to_list(args):
@@ -39,8 +50,9 @@ def convert_args_to_list(args):
         # Domain([(1, 4)])
         # Domain([(1, 4), (5, 8)])
         # Domain([[1, 4], [5, 8]])
-        if len(args) == 1 and \
-                any(isinstance(arg, (list, tuple)) for arg in args[0]):
+        if len(args) == 1 and any(
+            isinstance(arg, (list, tuple)) for arg in args[0]
+        ):
             for item in args[0]:
                 list_of_pairs.append(list(item))
         else:
@@ -55,14 +67,13 @@ def convert_args_to_list(args):
         if len(args) == 2:
             list_of_pairs.append(list(args))
         else:
-            msg = "The argument type is invalid. ".format(args)
+            msg = f"The argument type is invalid. {args}"
             raise TypeError(msg)
 
     return list_of_pairs
 
 
-def datetime_range(start_dt, end_dt, unit,
-                   n_units=1, inclusive_end=False):
+def datetime_range(start_dt, end_dt, unit, n_units=1, inclusive_end=False):
     """A range of datetimes/dates."""
 
     def done(a, b, inclusive_end):
@@ -84,39 +95,40 @@ def floor_datetime(dt, unit, n_units=1):
     and rounding to nearest fifteen minutes, it will result in
     2016-05-06-11:45:00.
     """
-    if unit == 'years':
+    if unit == "years":
         new_year = dt.year - (dt.year - 1) % n_units
         return datetime.datetime(new_year, 1, 1, 0, 0, 0)
-    elif unit == 'months':
+    elif unit == "months":
         new_month = dt.month - (dt.month - 1) % n_units
         return datetime.datetime(dt.year, new_month, 1, 0, 0, 0)
-    elif unit == 'weeks':
-        rounded_to_day = floor_datetime(dt, 'days', 1)
-        delta_from_monday = datetime.timedelta(days=rounded_to_day.weekday())
-        # days_from_sunday = (rounded_to_day.weekday() + 1) % 7
-        # delta_from_sunday = datetime.timedelta(days=days_from_sunday)
-        return rounded_to_day - delta_from_monday
-    elif unit == 'days':
+    elif unit == "weeks":
+        _, isoweek, _ = dt.isocalendar()
+        new_week = isoweek - (isoweek - 1) % n_units
+        return datetime.datetime.strptime(
+            "%d %02d 1" % (dt.year, new_week), "%Y %W %w"
+        )
+    elif unit == "days":
         new_day = dt.day - dt.day % n_units
         return datetime.datetime(dt.year, dt.month, new_day, 0, 0, 0)
-    elif unit == 'hours':
+    elif unit == "hours":
         new_hour = dt.hour - dt.hour % n_units
         return datetime.datetime(dt.year, dt.month, dt.day, new_hour, 0, 0)
-    elif unit == 'minutes':
+    elif unit == "minutes":
         new_minute = dt.minute - dt.minute % n_units
-        return datetime.datetime(dt.year, dt.month, dt.day,
-                                 dt.hour, new_minute, 0)
-    elif unit == 'seconds':
+        return datetime.datetime(
+            dt.year, dt.month, dt.day, dt.hour, new_minute, 0
+        )
+    elif unit == "seconds":
         new_second = dt.second - dt.second % n_units
-        return datetime.datetime(dt.year, dt.month, dt.day,
-                                 dt.hour, dt.minute, new_second)
+        return datetime.datetime(
+            dt.year, dt.month, dt.day, dt.hour, dt.minute, new_second
+        )
     else:
-        msg = 'Unknown unit type {}'.format(unit)
+        msg = f"Unknown unit type {unit}"
         raise ValueError(msg)
 
 
-def datetime_floor(value, unit='days', n_units=1):
-
+def datetime_floor(value, unit="days", n_units=1):
     # if it's a date, convert to datetime at start of day
     if type(value) is datetime.date:
         value = datetime.datetime.combine(value, datetime.time())
@@ -128,31 +140,48 @@ def datetime_floor(value, unit='days', n_units=1):
     elif value == inf:
         return inf
     else:
-        msg = 'must be date, datetime, or inf; got {}'.format(value)
+        msg = f"must be date, datetime, or inf; got {value}"
         raise ValueError(msg)
 
+
 WEEKDAY_LOOKUP = {
-    'monday': 0,
-    'tuesday': 1,
-    'wednesday': 2,
-    'thursday': 3,
-    'friday': 4,
-    'saturday': 5,
-    'sunday': 6,
+    "monday": 0,
+    "tuesday": 1,
+    "wednesday": 2,
+    "thursday": 3,
+    "friday": 4,
+    "saturday": 5,
+    "sunday": 6,
 }
 
 
 def weekday_number(value):
-
     if isinstance(value, int):
         if 0 <= value < 7:
             return value
         else:
-            msg = 'must be value from 0-6'
+            msg = "must be value from 0-6"
             raise ValueError(msg)
 
-    elif isinstance(value, str):
-        result = WEEKDAY_NUMBER.get(value.lower())
-        if result is None:
-            msg = 'must be a valid weekday, got {}'.format(value)
+    else:
+        result = WEEKDAY_LOOKUP.get(value)
+        if result:
+            return result
+        else:
+            with contextlib.suppress(TypeError):
+                result = WEEKDAY_LOOKUP.get(value.lower())
+            if result:
+                return result
+            msg = f"must be a valid weekday, got {value}"
             raise ValueError(msg)
+
+
+def pairwise(iterable):
+    """given an interable `p1, p2, p3, ...`
+    it iterates through pairwise tuples `(p0, p1), (p1, p2), ...`"""
+    it = iter(iterable)
+    a = next(it, None)
+
+    for b in it:
+        yield (a, b)
+        a = b
