@@ -808,9 +808,7 @@ class TimeSeries:
 
     @staticmethod
     def csv_time_transform(raw):
-        from dateutil.parser import parse
-
-        return parse(raw)
+        return datetime.datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
 
     @staticmethod
     def csv_value_transform(raw):
