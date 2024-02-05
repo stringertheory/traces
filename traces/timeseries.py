@@ -14,7 +14,6 @@ from queue import PriorityQueue
 import sortedcontainers
 from infinity import inf
 
-
 from . import histogram, operations, plot, utils
 
 NotGiven = object()
@@ -422,23 +421,22 @@ class TimeSeries:
         return sampling_period
 
     def sample(
-        self, sampling_period, start=None, end=None, interpolate="previous"
+        self,
+        sampling_period,
+        start=None,
+        end=None,
+        interpolate="previous",
+        mask=None,
     ):
         """Sampling at regular time periods."""
         start, end, mask = self._check_boundaries(start, end)
 
-        sampling_period = \
-            self._check_regularization(start, end, sampling_period)
-        
-        if isinstance(mask, TimeSeries):
-            mask = mask.to_domain()
-
-        distribution_mask = Domain([start, end])
-        if mask:
-            distribution_mask &= mask
+        sampling_period = self._check_regularization(
+            start, end, sampling_period
+        )
 
         result = []
-        for start, end in distribution_mask.intervals():
+        for start, end, _ in mask.iterperiods(value=True):
             current_time = start
             while current_time <= end:
                 value = self.get(current_time, interpolate=interpolate)
@@ -446,10 +444,14 @@ class TimeSeries:
                 current_time += sampling_period
         return result
 
-    def sample_interval(self, sampling_period=None,
-                        start=None, end=None,
-                        idx=None,
-                        operation="mean"):
+    def sample_interval(  # noqa: C901
+        self,
+        sampling_period=None,
+        start=None,
+        end=None,
+        idx=None,
+        operation="mean",
+    ):
         """Sampling on intervals by using some operation (mean,max,min).
 
         It can be called either with sampling_period, [start], [end]
@@ -468,16 +470,19 @@ class TimeSeries:
 
         try:
             import pandas as pd
-        except ImportError:
+        except ImportError as error:
             msg = "sample_interval need pandas to be installed"
-            raise ImportError(msg)
+            raise ImportError(msg) from error
 
         if idx is None:
             start, end, mask = self._check_boundaries(start, end)
-            sampling_period = self._check_regularization(start, end,
-                                                         sampling_period)
+            sampling_period = self._check_regularization(
+                start, end, sampling_period
+            )
             # create index on [start, end)
-            idx = pd.date_range(start, end, freq=sampling_period, closed=None)
+            idx = pd.date_range(
+                start, end, freq=sampling_period, inclusive="both"
+            )
         else:
             start, end, mask = self._check_boundaries(idx[0], idx[-1])
 
@@ -499,11 +504,7 @@ class TimeSeries:
         inflexion_times = pd.DatetimeIndex(inflexion_times)
 
         # identify all inflexion intervals
-        # by index: point i is in interval [idx[ifl_int[i]], idx[ifl_int[i]+1]
-        # TODO: look to use searchsorted as it operates more
-        # TODO: efficienly (but offset of 1 in most cases)
-        inflexion_intervals = inflexion_times.map(
-            lambda t: idx.get_loc(t, method="ffill"))
+        inflexion_intervals = idx.get_indexer(inflexion_times, method="ffill")
 
         # convert DatetimeIndex to numpy array for faster indexation
         inflexion_times = inflexion_times.values
@@ -512,8 +513,8 @@ class TimeSeries:
 
         # convert to timestamp
         # (to make interval arithmetic faster, no need for total_seconds)
-        inflexion_times = (inflexion_times.astype("int64"))
-        idx_times = (idx.astype("int64"))
+        inflexion_times = inflexion_times.astype("int64")
+        idx_times = idx.astype("int64")
 
         # initialise init, update and finish functions depending
         # on the aggregation operator
@@ -541,9 +542,9 @@ class TimeSeries:
         agg = init(t0, v0)
 
         result = []
-        for i1, t1, v1 in zip(inflexion_intervals,
-                              inflexion_times,
-                              inflexion_values):
+        for i1, t1, v1 in zip(
+            inflexion_intervals, inflexion_times, inflexion_values
+        ):
             if i0 != i1:
                 # change of interval
 
@@ -561,7 +562,7 @@ class TimeSeries:
                     break
 
                 # set up new interval
-                t_start, t_end = idx_times[i1:i1 + 2]
+                t_start, t_end = idx_times[i1 : i1 + 2]
                 i0, t0 = i1, t_start
                 agg = init(t0, v0)
 
@@ -993,14 +994,12 @@ class TimeSeries:
         """
         result = TimeSeries(**kwargs)
         if isinstance(other, TimeSeries):
-            result.default = function(self.default, other.default)
             for time, value in self:
                 result[time] = function(value, other[time])
             for time, value in other:
                 result[time] = function(self[time], value)
         else:
             for time, value in self:
-                result.default = function(self.default, other)
                 result[time] = function(value, other)
         return result
 
