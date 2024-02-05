@@ -1,147 +1,146 @@
-Authors (chronological)
-=======================
+# Authors
 
--   [Mike Stringer](https://datascopeanalytics.com/team/mike-stringer/)
--   [Vlad Seghete](https://datascopeanalytics.com/team/vlad-seghete/)
--   [Yoke Peng
-    Leong](https://datascopeanalytics.com/team/yoke-peng-leong/)
+Created by [Mike Stringer](https://github.com/stringertheory/), [Vlad Seghete](https://github.com/vlsd/), and [Yoke Peng Leong](https://github.com/ypleong/) while working at Datascope. [Mike](https://github.com/stringertheory/) is most recently maintaining traces.
 
-Contributing
-============
+With merged pull requests by [sdementen](https://github.com/sdementen), [nsteins](https://github.com/nsteins), [zzrcxb](https://github.com/zzrcxb), [gokturksm](https://github.com/gokturksm). Thank you!
 
-Contributions are welcome, and they are greatly appreciated! Every
-little bit helps, and credit will always be given. You can contribute in
-many ways.
+# Design Philosophy
 
-Design Philosophy
------------------
+- "Simplicity is better than functionality." - Pieter Hintjens
+- "The API matters most, everything else is secondary." - Kenneth
+  Reitz
 
--   "Simplicity is better than functionality." - Pieter Hintjens
--   "The API matters most, everything else is secondary." - Kenneth
-    Reitz
+# Contributing to `traces`
 
-Types of Contributions
-----------------------
+Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given. You can contribute in many ways.
 
-### Report Bugs
+# Types of Contributions
 
-Report bugs at <https://github.com/datascopeanalytics/traces/issues>.
+## Report Bugs
+
+Report bugs at https://github.com/stringertheory/traces/issues
 
 If you are reporting a bug, please include:
 
--   Your operating system name and version.
--   Any details about your local setup that might be helpful
-    in troubleshooting.
--   Detailed steps to reproduce the bug.
+- Your operating system name and version.
+- Any details about your local setup that might be helpful in troubleshooting.
+- Detailed steps to reproduce the bug.
 
-### Fix Bugs
+## Fix Bugs
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and
-"help wanted" is open to whoever wants to implement it.
+Look through the GitHub issues for bugs. Anything tagged with "bug"
+and "help wanted" is open to whoever wants to implement a fix for it.
 
-### Implement Features
+## Implement Features
 
 Look through the GitHub issues for features. Anything tagged with
 "enhancement" and "help wanted" is open to whoever wants to implement
 it.
 
-### Write Documentation
+## Write Documentation
 
-traces could always use more documentation, whether as part of the
-official traces docs, in docstrings, or even on the web in blog posts,
+Traces could always use more documentation, whether as part of the
+official docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
-### Submit Feedback
+## Submit Feedback
 
 The best way to send feedback is to file an issue at
-<https://github.com/datascopeanalytics/traces/issues>.
+https://github.com/stringertheory/traces/issues.
 
-If you are proposing a feature:
+If you are proposing a new feature:
 
--   Explain in detail how it would work.
--   Keep the scope as narrow as possible, to make it easier
-    to implement.
--   Remember that this is a volunteer-driven project, and that
-    contributions are welcome :)
+- Explain in detail how it would work.
+- Keep the scope as narrow as possible, to make it easier to implement.
+- Remember that this is a volunteer-driven project, and that contributions
+  are welcome :)
 
-When you are suggesting an enhancement, please include specific use
-cases that demonstrate why the proposed enhancement is useful and make
-sure that the proposed enhancement is aligned with the goals of the
-project.
+# Get Started!
 
-Get Started!
-------------
+Ready to contribute? Here's how to set up `traces` for local development.
+Please note this documentation assumes you already have `poetry` and `Git` installed and ready to go.
 
-Ready to contribute? Here's how to set up `traces` for local
-development.
+1. Fork the `traces` repo on GitHub.
 
-1.  Fork the `traces` repo on GitHub.
-2.  Clone your fork locally:
+2. Clone your fork locally:
 
-    ``` {.sourceCode .bash}
-    $ git clone git@github.com:your_name_here/traces.git
-    ```
+```bash
+cd <directory_in_which_repo_should_be_created>
+git clone git@github.com:YOUR_NAME/traces.git
+```
 
-3.  Install your local copy into a virtualenv. Assuming you have
-    virtualenvwrapper installed, this is how you set up your fork for
-    local development:
+3. Now we need to install the environment. Navigate into the directory
 
-    ``` {.sourceCode .bash}
-    $ mkvirtualenv traces
-    $ cd traces/
-    $ python setup.py develop
-    ```
+```bash
+cd traces
+```
 
-4.  Create a branch for local development:
+If you are using `pyenv`, select a version to use locally. (See installed versions with `pyenv versions`)
 
-    ``` {.sourceCode .bash}
-    $ git checkout -b name-of-your-bugfix-or-feature
-    ```
+```bash
+pyenv local <x.y.z>
+```
+
+Then, install and activate the environment with:
+
+```bash
+poetry install
+poetry shell
+```
+
+4. Install pre-commit to run linters/formatters at commit time:
+
+```bash
+poetry run pre-commit install
+```
+
+5. Create a branch for local development:
+
+```bash
+git checkout -b name-of-your-bugfix-or-feature
+```
 
 Now you can make your changes locally.
 
-5.  When you're done making changes, check that your changes pass flake8
-    and the tests, including testing other Python versions with tox:
+6. Don't forget to add test cases for your added functionality to the `tests` directory.
 
-        .. code:: bash
+7. When you're done making changes, check that your changes pass the formatting tests.
 
-    > \$ flake8 traces tests \$ python setup.py test or py.test \$ tox
+```bash
+make check
+```
 
-To get flake8 and tox, just pip install them into your virtualenv.
+Now, validate that all unit tests are passing:
 
-6.  Commit your changes and push your branch to GitHub:
+```bash
+make test
+```
 
-    ``` {.sourceCode .bash}
-    $ git add .
-    $ git commit -m "Your detailed description of your changes."
-    $ git push origin name-of-your-bugfix-or-feature
-    ```
+9. Before raising a pull request you should also run tox.
+   This will run the tests across different versions of Python:
 
-7.  Submit a pull request through the GitHub website.
+```bash
+tox
+```
 
-Pull Request Guidelines
------------------------
+This requires you to have multiple versions of python installed.
+This step is also triggered in the CI/CD pipeline, so you could also choose to skip this step locally.
 
-Pull requests are welcome! If the pull request is in response to an
-existing Bug Report or Enhancement Request, please refer to it in the
-description. Otherwise, if the pull request is a bug fix then make sure
-to describe the bug just like if it were a bug report issue. If it's an
-enhancement, describe the uses cases like you would when creating an
-enhancement request.
+10. Commit your changes and push your branch to GitHub:
+
+```bash
+git add .
+git commit -m "Your detailed description of your changes."
+git push origin name-of-your-bugfix-or-feature
+```
+
+11. Submit a pull request through the GitHub website.
+
+# Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1.  The pull request should include tests.
-2.  If the pull request adds functionality, the docs should be updated.
-    Put your new functionality into a function with a docstring, and add
-    the feature to the list in README.rst.
-3.  The pull request should work for Python 2.7, 3.4 and 3.5, and
-    for PyPy. Check <https://circleci.com/gh/datascopeanalytics/traces>
-    and make sure that the tests pass for all supported Python versions.
+1. The pull request should include tests.
 
-Tips
-----
-
-To run a subset of tests:
-
-    $ python -m unittest tests.test_traces
+2. If the pull request adds functionality, the docs should be updated.
+   Put your new functionality into a function with a docstring, and add the feature to the list in `README.md`.
