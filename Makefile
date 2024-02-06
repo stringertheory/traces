@@ -15,6 +15,8 @@ check: ## Run code quality tools.
 	# @poetry run mypy
 	# @echo "🚀 Checking for obsolete dependencies: Running deptry"
 	# @poetry run deptry traces
+	@echo "🚀 Check if using dev dependencies outside of tests marked external"
+	@./.check_external_deps.sh
 
 .PHONY: test
 test: ## Test the code with pytest
