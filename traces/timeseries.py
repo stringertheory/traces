@@ -11,8 +11,8 @@ import datetime
 import itertools
 from queue import PriorityQueue
 
-import sortedcontainers
 from infinity import inf
+from sortedcontainers import SortedDict
 
 from . import histogram, operations, plot, utils
 
@@ -47,9 +47,8 @@ class TimeSeries:
     """
 
     def __init__(self, data=None, default=None):
-        self._d = sortedcontainers.SortedDict(data)
+        self._d = SortedDict(data)
         self.default = default
-
         self.getter_functions = {
             "previous": self._get_previous,
             "linear": self._get_linear_interpolate,
@@ -66,7 +65,7 @@ class TimeSeries:
 
     def __iter__(self):
         """Iterate over sorted (time, value) pairs."""
-        return iter(self._d.items())
+        return iter(self.items())
 
     def __bool__(self):
         return bool(self._d)
@@ -74,35 +73,26 @@ class TimeSeries:
     def is_empty(self):
         return len(self) == 0
 
-    @property
-    def default(self):
-        """Return the default value of the time series."""
-        return self._default
+    @staticmethod
+    def linear_interpolate(v0, v1, t):
+        return v0 + t * (v1 - v0)
 
-    @default.setter
-    def default(self, value):
-        """Set the default value of the time series."""
-        self._default = value
+    @staticmethod
+    def scaled_time(t0, t1, time):
+        return (time - t0) / (t1 - t0)
 
     def _get_linear_interpolate(self, time):
         right_index = self._d.bisect_right(time)
         left_index = right_index - 1
-        if left_index < 0:
+        if left_index < 0:  # before first measurement
             return self.default
-        elif right_index == len(self._d):
-            # right of last measurement
-            return self.last_item()[1]
+        elif right_index == len(self._d):  # after last measurement
+            return self.last_value()
         else:
             left_time, left_value = self._d.peekitem(left_index)
             right_time, right_value = self._d.peekitem(right_index)
-            dt_interval = right_time - left_time
-            dt_start = time - left_time
-            if isinstance(dt_interval, datetime.timedelta):
-                dt_interval = dt_interval.total_seconds()
-                dt_start = dt_start.total_seconds()
-            slope = (right_value - left_value) / dt_interval
-            value = slope * dt_start + left_value
-            return value
+            t = self.scaled_time(left_time, right_time, time)
+            return self.linear_interpolate(left_value, right_value, t)
 
     def _get_previous(self, time):
         right_index = self._d.bisect_right(time)
@@ -197,6 +187,9 @@ class TimeSeries:
         same at all times, but repeated measurements are discarded.
 
         """
+
+        # todo: change to to_compact, do not modify in place. mark as deprecated
+
         previous_value = object()
         redundant = []
         for time, value in self:
@@ -215,6 +208,9 @@ class TimeSeries:
         otherwise
 
         """
+
+        # todo: this needs a better name. mark exists as deprecated
+
         result = TimeSeries(default=self.default is not None)
         for t, v in self:
             result[t] = v is not None
@@ -236,6 +232,9 @@ class TimeSeries:
         [start:end].
 
         """
+
+        # todo: consider whether this key error should be suppressed
+
         for s, _e, _v in self.iterperiods(start, end):
             with contextlib.suppress(KeyError):
                 del self._d[s]
@@ -251,6 +250,8 @@ class TimeSeries:
     def __repr__(self):
         """A detailed string representation for debugging."""
 
+        # todo: show default in string representation
+
         def format_item(item):
             return "{!r}: {!r}".format(*item)
 
@@ -264,6 +265,8 @@ class TimeSeries:
         long).
 
         """
+
+        # todo: show default in string representation
 
         def format_item(item):
             return "{!s}: {!s}".format(*item)
@@ -309,6 +312,9 @@ class TimeSeries:
 
     @staticmethod
     def _value_function(value):
+        # todo: should this be able to take NotGiven, so that it would
+        # be possible to filter for None explicitly?
+
         # if value is None, don't filter
         if value is None:
 
@@ -333,9 +339,11 @@ class TimeSeries:
         """This iterates over the periods (optionally, within a given time
         span) and yields (interval start, interval end, value) tuples.
 
-        TODO: add mask argument here.
-
         """
+
+        # todo: add mask argument here.
+        # todo: check whether this can be simplified with newer SortedDict
+
         start, end, mask = self._check_boundaries(
             start, end, allow_infinite=False
         )
@@ -647,7 +655,7 @@ class TimeSeries:
 
     @staticmethod
     def rebin(binned, key_function):
-        result = sortedcontainers.SortedDict()
+        result = SortedDict()
         for bin_start, value in binned.items():
             new_bin_start = key_function(bin_start)
             try:
@@ -668,10 +676,10 @@ class TimeSeries:
         transform="distribution",
     ):
         if mask is not None and mask.is_empty():
-            return sortedcontainers.SortedDict()
+            return SortedDict()
 
         if start is not None and start == end:
-            return sortedcontainers.SortedDict()
+            return SortedDict()
 
         # use smaller if available
         if smaller:
@@ -685,7 +693,7 @@ class TimeSeries:
         start = utils.datetime_floor(start, unit=unit, n_units=n_units)
 
         function = getattr(self, transform)
-        result = sortedcontainers.SortedDict()
+        result = SortedDict()
         dt_range = utils.datetime_range(start, end, unit, n_units=n_units)
         for bin_start, bin_end in utils.pairwise(dt_range):
             result[bin_start] = function(
@@ -898,11 +906,6 @@ class TimeSeries:
         if not timeseries_list:
             return
 
-        # for ts in timeseries_list:
-        #     if ts.is_floating():
-        #         msg = "can't merge empty TimeSeries with no default value"
-        #         raise KeyError(msg)
-
         # This function mostly wraps _iter_merge, the main point of
         # this is to deal with the case of tied times, where we only
         # want to yield the last list of values that occurs for any
@@ -940,14 +943,6 @@ class TimeSeries:
             result.set(t, value, compact=compact)
         return result
 
-    @staticmethod
-    def csv_time_transform(raw):
-        return datetime.datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
-
-    @staticmethod
-    def csv_value_transform(raw):
-        return str(raw)
-
     @classmethod
     def from_csv(
         cls,
@@ -959,11 +954,15 @@ class TimeSeries:
         skip_header=True,
         default=None,
     ):
+        # todo: allowing skipping n header rows
+
         # use default on class if not given
         if time_transform is None:
-            time_transform = cls.csv_time_transform
+            time_transform = lambda s: datetime.datetime.strptime(
+                s, "%Y-%m-%d %H:%M:%S"
+            )
         if value_transform is None:
-            value_transform = cls.csv_value_transform
+            value_transform = lambda s: s
 
         result = cls(default=default)
         with open(filename) as infile:
@@ -976,7 +975,7 @@ class TimeSeries:
                 result[time] = value
         return result
 
-    def operation(self, other, function, **kwargs):
+    def operation(self, other, function, default=None):
         """Calculate "elementwise" operation either between this TimeSeries
         and another one, i.e.
 
@@ -992,7 +991,11 @@ class TimeSeries:
         constant, the measurement times will not change.
 
         """
-        result = TimeSeries(**kwargs)
+
+        # todo: consider the best way to deal with default, and make
+        # consistent with other methods. check to_bool maybe
+
+        result = TimeSeries(default=default)
         if isinstance(other, TimeSeries):
             for time, value in self:
                 result[time] = function(value, other[time])
@@ -1047,6 +1050,10 @@ class TimeSeries:
         inclusive=True).
 
         """
+
+        # todo: this seems like it's wrong... make a test to check (and fix if so!)
+        # todo: deal with default
+
         if inclusive:
 
             def function(x, y):
@@ -1061,6 +1068,9 @@ class TimeSeries:
 
     def sum(self, other):
         """sum(x, y) = x(t) + y(t)."""
+
+        # todo: better consistency and documentation about when Nones are ignored
+
         return TimeSeries.merge(
             [self, other], operation=operations.ignorant_sum
         )

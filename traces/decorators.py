@@ -3,7 +3,7 @@ from itertools import filterfalse
 
 
 def _is_none(obj):
-    return bool(obj is None)
+    return obj is None
 
 
 def ignorant(func):
