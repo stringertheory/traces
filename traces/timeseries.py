@@ -281,7 +281,9 @@ class TimeSeries:
         else:
             items = ", ".join(format_item(_) for _ in self._d.items())
 
-        return f"{type(self).__name__}({{{items}}})"
+        default = f", default={self.default!r}".format(self.default) if self.default else ""
+
+        return f"{type(self).__name__}({{{items}}}{default})"
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
