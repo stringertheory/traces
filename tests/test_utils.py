@@ -1,9 +1,9 @@
 from datetime import date, datetime, timedelta
 
 import pytest
-from infinity import inf
 
 import traces.utils as utils
+from traces.infinity import inf
 
 timedelta_list = [
     timedelta(hours=1),

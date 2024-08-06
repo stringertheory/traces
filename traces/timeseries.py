@@ -11,10 +11,9 @@ import datetime
 import itertools
 from queue import PriorityQueue
 
-from infinity import inf
 from sortedcontainers import SortedDict
 
-from . import histogram, operations, plot, utils
+from . import histogram, infinity, operations, plot, utils
 
 NotGiven = object()
 
@@ -164,9 +163,36 @@ class TimeSeries:
             self._d[time] = value
 
     def set_interval(self, start, end, value, compact=False):
-        """Set the value for the time series on an interval. If compact is
-        True, only set the value if it's different from what it would
-        be anyway.
+        """Sets the value for the time series within a specified time
+        interval.
+
+        Args:
+
+            start: The start time of the interval, inclusive
+            end: The end time of the interval, exclusive.
+            value: The value to set within the interval.
+            compact (optional): If compact is True, only set the value
+                if it's different from what it would be anyway. Defaults
+                to False.
+
+        Raises:
+
+            ValueError: If the start time is equal or after the end
+            time, indicating an invalid interval.
+
+        Example:
+
+            >>> ts = TimeSeries(data=[(1, 5), (3, 2), (5, 4), (6, 1)])
+            >>> ts.set_interval(2, 6, 3)
+            >>> ts
+            TimeSeries({1: 5, 2: 3, 6: 1})
+
+        Note:
+
+            The method sets the value over the interval by removing
+            measurements points from the time series between start and
+            end (exclusive), rather than changing the value of any
+            intermediate points to equal the value.
 
         """
         if start >= end:
@@ -183,13 +209,23 @@ class TimeSeries:
         self.set(end, end_value, compact)
 
     def compact(self):
-        """Convert this instance to a compact version: the value will be the
-        same at all times, but repeated measurements are discarded.
+        """Convert this instance to a "compact" version: the value
+        will be the same at all times, but repeated measurements are
+        discarded.
+
+        Compacting the time series can significantly reduce the length
+        and memory usage for data with many repeated values.
+
+        No arguments are required for this method, and it modifies the
+        time series in place.
+
+        Example:
+          >>> ts = TimeSeries(data=[(1, 5), (2, 5), (5, 5), (6, 1)])
+          >>> ts.compact()
+          >>> ts
+          TimeSeries({1: 5, 6: 1})
 
         """
-
-        # todo: change to to_compact, do not modify in place. mark as deprecated
-
         previous_value = object()
         redundant = []
         for time, value in self:
@@ -255,10 +291,8 @@ class TimeSeries:
         def format_item(item):
             return "{!r}: {!r}".format(*item)
 
-        return "{name}({{{items}}})".format(
-            name=type(self).__name__,
-            items=", ".join(format_item(_) for _ in self._d.items()),
-        )
+        items = dict(self._d.items())
+        return f"{type(self).__name__}(default={self.default!r}, {items!r})"
 
     def __str__(self):
         """A human-readable string representation (truncated if it gets too
@@ -284,7 +318,9 @@ class TimeSeries:
         else:
             items = ", ".join(format_item(_) for _ in self._d.items())
 
-        return f"{type(self).__name__}({{{items}}})"
+        return f"{type(self).__name__}(default={self.default!r}, {{{items}}})"
+
+        # return f"{type(self).__name__}({{{items}}})"
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
@@ -781,8 +817,8 @@ class TimeSeries:
 
     def n_points(
         self,
-        start=-inf,
-        end=+inf,
+        start=-infinity.inf,
+        end=+infinity.inf,
         mask=None,
         include_start=True,
         include_end=False,
@@ -1165,10 +1201,10 @@ class TimeSeries:
 
     def _check_boundary(self, value, allow_infinite, lower_or_upper):
         if lower_or_upper == "lower":
-            infinity_value = -inf
+            infinity_value = -infinity.inf
             method_name = "first_key"
         elif lower_or_upper == "upper":
-            infinity_value = inf
+            infinity_value = infinity.inf
             method_name = "last_key"
         else:
             msg = (

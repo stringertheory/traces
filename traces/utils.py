@@ -2,7 +2,7 @@ import contextlib
 import datetime
 import numbers
 
-from infinity import inf
+from .infinity import inf
 
 
 def duration_to_number(duration, units="seconds"):

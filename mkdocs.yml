@@ -1,4 +1,5 @@
 site_name: traces
+docs_dir: ./docs-md
 repo_url: https://github.com/stringertheory/traces
 site_url: https://stringertheory.github.io/traces
 site_description: A Python library for unevenly-spaced time series analysis
@@ -48,6 +49,7 @@ extra:
       link: https://pypi.org/project/traces
 
 markdown_extensions:
+  - mkautodoc
   - toc:
       permalink: true
   - pymdownx.arithmatex:

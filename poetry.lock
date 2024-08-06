@@ -1092,19 +1092,6 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff", "zipp (>=3.17)"]
 
 [[package]]
-name = "infinity"
-version = "1.5"
-description = "All-in-one infinity value for Python. Can be compared to any object."
-optional = false
-python-versions = "*"
-files = [
-    {file = "infinity-1.5.tar.gz", hash = "sha256:8daa7c15ce2100fdccfde212337e0cd5cf085869f54dc2634b6c30d61461ecda"},
-]
-
-[package.extras]
-test = ["Pygments (>=1.2)", "flake8 (>=2.4.0)", "isort (>=4.2.2)", "pytest (>=2.2.3)", "six (>=1.4.1)"]
-
-[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -1918,6 +1905,19 @@ files = [
     {file = "mistune-3.0.2-py3-none-any.whl", hash = "sha256:71481854c30fdbc938963d3605b72501f5c10a9320ecd412c121c163a1c7d205"},
     {file = "mistune-3.0.2.tar.gz", hash = "sha256:fc7f93ded930c92394ef2cb6f04a8aabab4117a91449e72dcc8dfa646a508be8"},
 ]
+
+[[package]]
+name = "mkautodoc"
+version = "0.2.0"
+description = "AutoDoc for MarkDown"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "mkautodoc-0.2.0.tar.gz", hash = "sha256:b6e0c89804ba39d453ce5795eb040e5615756f90438ac04f47e97893a86a10cd"},
+]
+
+[package.dependencies]
+Markdown = "*"
 
 [[package]]
 name = "mkdocs"
@@ -4447,4 +4447,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<4.0"
-content-hash = "6b78777677526c41d20fc7303321f99491f082b52fd545c4c848b7d6b8625468"
+content-hash = "b97188062ad184ea7a761f3bf4a28bf664626e1faf28f949e2f558c224e97037"

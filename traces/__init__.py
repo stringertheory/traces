@@ -1,8 +1,7 @@
-from infinity import inf
-
 from . import decorators, operations
 from .eventseries import EventSeries
 from .histogram import Histogram
+from .infinity import inf
 from .timeseries import TimeSeries
 from .utils import datetime_range
 
