@@ -7,4 +7,4 @@ from .utils import datetime_range
 
 __author__ = "Mike Stringer"
 __email__ = "mike.stringer@datascopeanalytics.com"
-__version__ = "0.6.4"
+__version__ = "0.6.5"

@@ -94,22 +94,57 @@ class TimeSeries:
             return self.linear_interpolate(left_value, right_value, t)
 
     def _get_previous(self, time):
+        """Get the value at the latest measurement time before 'time'.
+        
+        Args:
+            time: The time at which to get the value
+            
+        Returns:
+            The value at the most recent measurement time before 'time',
+            or the default value if there are no measurements before 'time'
+        """
         right_index = self._d.bisect_right(time)
         left_index = right_index - 1
+        
         if right_index > 0:
+            # There is at least one measurement at or before 'time'
             _, left_value = self._d.peekitem(left_index)
             return left_value
-        elif right_index == 0:
+        else:
+            # No measurements at or before 'time'
             return self.default
-        else:  # pragma: no cover
-            msg = (
-                f"self._d.bisect_right({time}) returned a negative value. "
-                """This "can't" happen: please help by filing an issue."""
-            )
-            raise ValueError(msg)
 
     def get(self, time, interpolate="previous"):
-        """Get the value of the time series, even in-between measured values."""
+        """Get the value of the time series at any time point.
+        
+        This method retrieves the value at any time point, even between actual
+        measurement times. The interpolation method determines how values between
+        measurements are calculated.
+        
+        Args:
+            time: The time at which to get the value
+            interpolate (str): The interpolation method to use. Available options:
+                - "previous": Use the value from the most recent measurement time 
+                   (step function / zero-order hold)
+                - "linear": Use linear interpolation between adjacent measurements
+        
+        Returns:
+            The interpolated value at the specified time
+            
+        Raises:
+            ValueError: If an invalid interpolation method is specified
+            
+        Examples:
+            >>> ts = TimeSeries()
+            >>> ts[0] = 0
+            >>> ts[10] = 10
+            >>> 
+            >>> # Previous value interpolation (default)
+            >>> ts.get(5)  # Returns 0
+            >>> 
+            >>> # Linear interpolation
+            >>> ts.get(5, interpolate="linear")  # Returns 5
+        """
         try:
             getter = self.getter_functions[interpolate]
         except KeyError as error:
@@ -240,13 +275,53 @@ class TimeSeries:
         return self._d.items()
 
     def exists(self):
-        """returns False when the timeseries has a None value, True
-        otherwise
-
+        """Returns a new TimeSeries where values are True when the original value is not None.
+        
+        Deprecated: Use `is_not_none()` instead, which has a clearer name.
+        
+        Returns:
+            TimeSeries: A new TimeSeries with boolean values (True where original values 
+                        are not None, False where they are None)
+        
+        Examples:
+            >>> ts = TimeSeries()
+            >>> ts[0] = "data"
+            >>> ts[1] = None
+            >>> ts[2] = 42
+            >>> exists_ts = ts.exists()
+            >>> exists_ts[0]  # Returns True
+            >>> exists_ts[1]  # Returns False 
+            >>> exists_ts[2]  # Returns True
         """
-
-        # todo: this needs a better name. mark exists as deprecated
-
+        import warnings
+        warnings.warn(
+            "The 'exists' method is deprecated. Use 'is_not_none' instead.", 
+            DeprecationWarning, 
+            stacklevel=2
+        )
+        return self.is_not_none()
+    
+    def is_not_none(self):
+        """Returns a new TimeSeries where values are True when the original value is not None.
+        
+        This method checks for None values in the TimeSeries and creates a new
+        TimeSeries with boolean values indicating presence (not None) or absence (None)
+        of values.
+        
+        Returns:
+            TimeSeries: A new TimeSeries with boolean values (True where original values 
+                        are not None, False where they are None)
+        
+        Examples:
+            >>> ts = TimeSeries()
+            >>> ts[0] = "data"
+            >>> ts[1] = None
+            >>> ts[2] = 42
+            >>> exists_ts = ts.is_not_none()
+            >>> exists_ts[0]  # Returns True
+            >>> exists_ts[1]  # Returns False 
+            >>> exists_ts[2]  # Returns True
+        """
         result = TimeSeries(default=self.default is not None)
         for t, v in self:
             result[t] = v is not None
@@ -264,13 +339,24 @@ class TimeSeries:
             raise KeyError(msg) from error
 
     def remove_points_from_interval(self, start, end):
-        """Allow removal of all points from the time series within a interval
-        [start:end].
-
+        """Remove all measurement points within a specified time interval.
+        
+        This method removes all measurement points that fall within the interval
+        [start, end), not including the end point. Unlike `remove()`, this method
+        won't raise KeyError if there are no points in the interval.
+        
+        Args:
+            start: The start time of the interval (inclusive)
+            end: The end time of the interval (exclusive)
+            
+        Examples:
+            >>> ts = TimeSeries()
+            >>> ts[0] = 0
+            >>> ts[5] = 5
+            >>> ts[10] = 10
+            >>> ts.remove_points_from_interval(4, 7)
+            >>> # Now ts contains only points at t=0 and t=10
         """
-
-        # todo: consider whether this key error should be suppressed
-
         for s, _e, _v in self.iterperiods(start, end):
             with contextlib.suppress(KeyError):
                 del self._d[s]
@@ -284,10 +370,12 @@ class TimeSeries:
         return self.n_measurements()
 
     def __repr__(self):
-        """A detailed string representation for debugging."""
-
-        # todo: show default in string representation
-
+        """A detailed string representation for debugging.
+        
+        Returns:
+            str: A string representation showing the class name, default value,
+                 and all time-value pairs
+        """
         def format_item(item):
             return "{!r}: {!r}".format(*item)
 
@@ -295,32 +383,35 @@ class TimeSeries:
         return f"{type(self).__name__}(default={self.default!r}, {items!r})"
 
     def __str__(self):
-        """A human-readable string representation (truncated if it gets too
-        long).
-
+        """A human-readable string representation (truncated if it gets too long).
+        
+        Returns a string showing the class name, default value, and time-value pairs.
+        If there are more than MAX_LENGTH items, the middle section is truncated.
+        
+        Returns:
+            str: A formatted string representation of the TimeSeries
         """
-
-        # todo: show default in string representation
-
         def format_item(item):
             return "{!s}: {!s}".format(*item)
 
         MAX_LENGTH = 20
         half = MAX_LENGTH // 2
+        
+        # If we have too many items, truncate the middle section
         if len(self) > MAX_LENGTH:
-            one = ", ".join(format_item(_) for _ in self._d.items()[:half])
-            two = ", ".join(format_item(_) for _ in self._d.items()[half:-half])
-            three = ", ".join(format_item(_) for _ in self._d.items()[-half:])
+            first_part = ", ".join(format_item(_) for _ in self._d.items()[:half])
+            middle_part = ", ".join(format_item(_) for _ in self._d.items()[half:-half])
+            last_part = ", ".join(format_item(_) for _ in self._d.items()[-half:])
+            
             truncate_string = f"<...{len(self) - MAX_LENGTH} items...>"
-            if len(truncate_string) < len(two):
-                two = truncate_string
-            items = ", ".join([one, two, three])
+            if len(truncate_string) < len(middle_part):
+                middle_part = truncate_string
+                
+            items = ", ".join([first_part, middle_part, last_part])
         else:
             items = ", ".join(format_item(_) for _ in self._d.items())
 
         return f"{type(self).__name__}(default={self.default!r}, {{{items}}})"
-
-        # return f"{type(self).__name__}({{{items}}})"
 
     def iterintervals(self, n=2):
         """Iterate over groups of `n` consecutive measurement points in the
@@ -989,10 +1080,44 @@ class TimeSeries:
         value_transform=None,
         skip_header=True,
         default=None,
+        delimiter=",",
     ):
-        # todo: allowing skipping n header rows
-
-        # use default on class if not given
+        """Load time series data from a CSV file.
+        
+        Args:
+            filename (str): Path to the CSV file to read
+            time_column (int): Index of the column containing time values (default: 0)
+            value_column (int): Index of the column containing measurement values (default: 1)
+            time_transform (callable, optional): Function to transform time strings to desired format.
+                Default converts strings like "2020-01-01 12:00:00" to datetime objects.
+            value_transform (callable, optional): Function to transform value strings.
+                Default leaves values as strings.
+            skip_header (bool): Whether to skip the first row of the file (default: True)
+            default (any): Default value for the time series
+            delimiter (str): CSV delimiter character (default: ",")
+            
+        Returns:
+            TimeSeries: A new TimeSeries object with the data from the CSV
+            
+        Examples:
+            >>> # Basic usage with default settings
+            >>> ts = TimeSeries.from_csv("data.csv")
+            >>>
+            >>> # Custom time parsing
+            >>> import datetime
+            >>> ts = TimeSeries.from_csv(
+            ...     "data.csv",
+            ...     time_transform=lambda s: datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+            ... )
+            >>>
+            >>> # Convert values to integers
+            >>> ts = TimeSeries.from_csv(
+            ...     "data.csv",
+            ...     value_transform=int,
+            ...     default=0
+            ... )
+        """
+        # use default transformations if not specified
         if time_transform is None:
             time_transform = lambda s: datetime.datetime.strptime(
                 s, "%Y-%m-%d %H:%M:%S"
@@ -1002,7 +1127,7 @@ class TimeSeries:
 
         result = cls(default=default)
         with open(filename) as infile:
-            reader = csv.reader(infile)
+            reader = csv.reader(infile, delimiter=delimiter)
             if skip_header:
                 next(reader)
             for row in reader:
@@ -1010,6 +1135,159 @@ class TimeSeries:
                 value = value_transform(row[value_column])
                 result[time] = value
         return result
+        
+    @classmethod
+    def from_json(
+        cls,
+        filename=None,
+        json_string=None,
+        time_key="time",
+        value_key="value",
+        time_transform=None,
+        value_transform=None,
+        default=None,
+    ):
+        """Load time series data from a JSON file or string.
+        
+        The JSON should be either:
+        1. A list of objects/dictionaries with time and value keys
+        2. A single object/dictionary with time keys and value values
+        
+        Args:
+            filename (str, optional): Path to the JSON file
+            json_string (str, optional): JSON string (used if filename not provided)
+            time_key (str): The key for time values in each record (default: "time")
+            value_key (str): The key for measurement values in each record (default: "value")
+            time_transform (callable, optional): Function to transform time values to desired format
+                Default converts ISO format strings to datetime objects.
+            value_transform (callable, optional): Function to transform measurement values
+            default (any): Default value for the time series
+            
+        Returns:
+            TimeSeries: A new TimeSeries object with the data from the JSON
+            
+        Examples:
+            >>> # From a list of records
+            >>> ts = TimeSeries.from_json('data.json')
+            >>>
+            >>> # From a JSON string with custom keys
+            >>> ts = TimeSeries.from_json(
+            ...     json_string='[{"timestamp": "2020-01-01T00:00:00", "temp": 20.5}]',
+            ...     time_key="timestamp", 
+            ...     value_key="temp"
+            ... )
+            >>>
+            >>> # With custom time parsing
+            >>> ts = TimeSeries.from_json(
+            ...     'data.json',
+            ...     time_transform=lambda t: datetime.datetime.fromtimestamp(float(t))
+            ... )
+        """
+        import json
+        
+        # Set default transformations if not specified
+        if time_transform is None:
+            time_transform = lambda t: (
+                datetime.datetime.fromisoformat(t.replace('Z', '+00:00'))
+                if isinstance(t, str) else t
+            )
+        if value_transform is None:
+            value_transform = lambda v: v
+            
+        result = cls(default=default)
+        
+        # Load JSON from either file or string
+        if filename is not None:
+            with open(filename) as infile:
+                data = json.load(infile)
+        elif json_string is not None:
+            data = json.loads(json_string)
+        else:
+            raise ValueError("Either filename or json_string must be provided")
+            
+        # Handle list format [{"time": t1, "value": v1}, ...]
+        if isinstance(data, list):
+            for record in data:
+                time = time_transform(record[time_key])
+                value = value_transform(record[value_key])
+                result[time] = value
+                
+        # Handle dictionary format {"t1": v1, "t2": v2, ...}
+        elif isinstance(data, dict):
+            for time_str, value in data.items():
+                time = time_transform(time_str)
+                value = value_transform(value)
+                result[time] = value
+                
+        else:
+            raise ValueError("JSON data must be either a list or dictionary")
+            
+        return result
+        
+    def to_json(
+        self,
+        filename=None,
+        time_transform=None,
+        value_transform=None,
+        dict_format=False,
+    ):
+        """Export time series data to a JSON file or return as a JSON string.
+        
+        Args:
+            filename (str, optional): Path where JSON file will be written.
+                If None, returns a JSON string instead.
+            time_transform (callable, optional): Function to transform time values before serializing.
+                Default converts datetime objects to ISO format strings.
+            value_transform (callable, optional): Function to transform values before serializing.
+            dict_format (bool): If True, uses a dictionary format with times as keys.
+                If False (default), uses a list of objects with time and value keys.
+                
+        Returns:
+            str or None: If filename is None, returns the JSON string.
+                Otherwise, writes to the file and returns None.
+                
+        Examples:
+            >>> # Export to a file using default settings
+            >>> ts.to_json('output.json')
+            >>>
+            >>> # Get JSON as a string and customize time formatting
+            >>> json_str = ts.to_json(
+            ...     time_transform=lambda dt: dt.timestamp()
+            ... )
+            >>>
+            >>> # Use dictionary format instead of list format
+            >>> ts.to_json('output.json', dict_format=True)
+        """
+        import json
+        
+        # Set default transformations if not specified
+        if time_transform is None:
+            time_transform = lambda t: (
+                t.isoformat() if hasattr(t, 'isoformat') else t
+            )
+        if value_transform is None:
+            value_transform = lambda v: v
+            
+        # Create the JSON data structure
+        if dict_format:
+            # Dictionary format: {"t1": v1, "t2": v2, ...}
+            data = {
+                time_transform(t): value_transform(v)
+                for t, v in self.items()
+            }
+        else:
+            # List format: [{"time": t1, "value": v1}, ...]
+            data = [
+                {"time": time_transform(t), "value": value_transform(v)}
+                for t, v in self.items()
+            ]
+            
+        if filename is not None:
+            with open(filename, 'w') as outfile:
+                json.dump(data, outfile, indent=2)
+            return None
+        else:
+            return json.dumps(data, indent=2)
 
     def operation(self, other, function, default=None):
         """Calculate "elementwise" operation either between this TimeSeries
