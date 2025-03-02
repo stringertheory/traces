@@ -49,6 +49,32 @@ power consumption varies by time of day.
 .. literalinclude:: ../examples/helloworld.py
    :lines: 49-50
 
+Visualizing Time Series
+----------------------
+
+You can easily visualize time series data using the built-in `plot()` method:
+
+.. code-block:: python
+
+   # Create a plot of the total power usage
+   fig, ax = merged.plot(
+       interpolate="previous",  # Use previous-value interpolation (default)
+       figure_width=12,         # Width of the figure in inches
+       linewidth=1.5,           # Line thickness
+       marker="o",              # Circular markers
+       markersize=3,            # Size of markers
+       color="#007ACC"          # Blue color for the line
+   )
+   
+   # Customize the plot
+   ax.set_title("Total Home Power Usage")
+   ax.set_xlabel("Time")
+   ax.set_ylabel("Power (watts)")
+   
+   # Save or display the plot
+   fig.savefig("power_usage.png")  # Save to file
+   # plt.show()  # Or display it interactively
+
 Or day of week.
 
 .. literalinclude:: ../examples/helloworld.py

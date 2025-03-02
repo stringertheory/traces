@@ -10,9 +10,11 @@
   - Support for different JSON formats (list or dictionary)
 - Added `is_not_none()` method as an improved replacement for the `exists()` method
 - Added comprehensive docstrings for all public methods
-- Added two new advanced examples:
+- Added comprehensive documentation for `EventSeries` class
+- Added three new advanced examples:
   - `financial_analysis.py`: Demonstrating financial time series use cases
   - `iot_sensor_analysis.py`: Demonstrating IoT sensor data analysis
+  - `event_analysis.py`: Demonstrating EventSeries use cases
 - Added deprecation warning to `exists()` method
 
 ### Fixed

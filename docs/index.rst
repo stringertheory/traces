@@ -115,6 +115,29 @@ How many lights are typically on during business hours, from 8am to
 The ``distribution`` function returns a :ref:`Histogram <histogram>`
 that can be used to get summary metrics such as the mean or quantiles.
 
+Tracking discrete events
++++++++++++++++++++++++
+
+The traces library also provides an :ref:`EventSeries <eventseries>` class
+for tracking discrete events that occur at specific times, like system
+logins, errors, or customer interactions.
+
+.. code:: python
+
+    >>> logins = traces.EventSeries([
+    ...     datetime(2042, 2, 1, 8, 15, 0),
+    ...     datetime(2042, 2, 1, 9, 30, 0),
+    ...     datetime(2042, 2, 1, 10, 45, 0),
+    ... ])
+    >>> logins.events_between(
+    ...     datetime(2042, 2, 1, 8, 0, 0),
+    ...     datetime(2042, 2, 1, 10, 0, 0)
+    ... )
+    2
+
+EventSeries is especially useful for analyzing event frequencies, inter-event times,
+and tracking active cases over time.
+
 It's flexible
 +++++++++++++
 

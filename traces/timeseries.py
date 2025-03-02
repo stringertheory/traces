@@ -1564,6 +1564,54 @@ class TimeSeries:
         markersize=3,
         color="#222222",
     ):
+        """Create a plot of the time series data.
+        
+        Creates a visualization of the time series using matplotlib. The plot shows
+        data points at each measurement time and connects them with lines using
+        the specified interpolation method.
+        
+        Args:
+            interpolate (str): Interpolation method between points. Options are:
+                - "previous": Step-like plot where each value stays constant until
+                  the next value (default)
+                - "linear": Straight lines between data points
+            figure_width (float): Width of the figure in inches (default: 12)
+            linewidth (float): Width of the connecting lines (default: 1)
+            marker (str): Marker style for data points, using matplotlib marker
+                notation (default: "o" for circular markers)
+            markersize (float): Size of the markers for data points (default: 3)
+            color (str): Color of the line and markers (default: "#222222")
+                
+        Returns:
+            tuple: A tuple containing (figure, axes) matplotlib objects that can
+            be further customized or saved to a file.
+            
+        Raises:
+            ImportError: If matplotlib is not installed
+            ValueError: If an invalid interpolation method is specified
+            
+        Examples:
+            >>> ts = TimeSeries()
+            >>> ts[0] = 0
+            >>> ts[1] = 2
+            >>> ts[3] = 1
+            >>> 
+            >>> # Basic plot with default settings
+            >>> fig, ax = ts.plot()
+            >>> 
+            >>> # Custom plot with linear interpolation
+            >>> fig, ax = ts.plot(
+            ...     interpolate="linear",
+            ...     figure_width=10,
+            ...     linewidth=2,
+            ...     marker="s",
+            ...     markersize=5,
+            ...     color="#FF5733"
+            ... )
+            >>> 
+            >>> # Save the plot to a file
+            >>> fig.savefig("my_timeseries.png")
+        """
         return plot.plot(
             self,
             interpolate=interpolate,

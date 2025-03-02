@@ -53,6 +53,48 @@ since it uses the excellent `sortedcontainers.SortedDict
 <http://www.grantjenks.com/docs/sortedcontainers/introduction.html#sorteddict>`__
 under the hood to store sparse time series.
 
+Visualizing Time Series
+++++++++++++++++++++++
+
+The TimeSeries class provides a :code:`plot()` method for easy visualization of your data:
+
+.. code:: python
+
+    >>> ts = traces.TimeSeries()
+    >>> ts[0] = 0
+    >>> ts[1] = 2
+    >>> ts[3] = 1
+    >>> ts[5] = 0
+    >>> 
+    >>> # Create a basic plot with default settings
+    >>> fig, ax = ts.plot()
+    
+You can customize the plot appearance with various parameters:
+
+.. code:: python
+
+    >>> # Create a plot with linear interpolation and custom styling
+    >>> fig, ax = ts.plot(
+    ...     interpolate="linear",  # Use linear interpolation between points
+    ...     figure_width=10,       # Set figure width in inches
+    ...     linewidth=2,           # Set line thickness
+    ...     marker="s",            # Use square markers
+    ...     markersize=5,          # Set marker size
+    ...     color="#FF5733"        # Use custom color
+    ... )
+
+The plot method returns matplotlib objects that you can further customize or save to a file:
+
+.. code:: python
+
+    >>> # Add title and labels
+    >>> ax.set_title("My Time Series Data")
+    >>> ax.set_xlabel("Time")
+    >>> ax.set_ylabel("Value")
+    >>> 
+    >>> # Save the plot to a file
+    >>> fig.savefig("my_timeseries.png")
+
 .. autoclass:: traces.TimeSeries
     :members:
 
@@ -62,4 +104,44 @@ Histogram
 ---------
 
 .. autoclass:: traces.Histogram
+    :members:
+
+.. _eventseries:
+
+EventSeries
+-----------
+
+An EventSeries represents a sequence of events that occur at specific times. 
+Unlike TimeSeries which tracks measurements (values) over time, EventSeries
+only tracks when events occur, without associated values.
+
+.. code:: python
+
+    >>> # Track website login events
+    >>> logins = traces.EventSeries([
+    ...     "2023-05-01 08:15",
+    ...     "2023-05-01 09:30",
+    ...     "2023-05-01 10:45",
+    ...     "2023-05-01 12:00"
+    ... ])
+    
+EventSeries is useful for analyzing:
+
+* Event frequencies and patterns
+* Time intervals between events
+* Event counts within specific time ranges
+* Active cases over time (like support tickets, hospital stays)
+
+.. code:: python
+
+    >>> # Count events in a time range
+    >>> logins.events_between("2023-05-01 08:00", "2023-05-01 10:00")
+    2
+    
+    >>> # Get cumulative count of events over time
+    >>> cumulative = logins.cumulative_sum()
+    >>> cumulative["2023-05-01 11:00"]
+    3
+
+.. autoclass:: traces.EventSeries
     :members:
