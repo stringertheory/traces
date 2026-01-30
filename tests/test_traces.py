@@ -56,7 +56,7 @@ def test_get():
 def test_exists():
     ts = TimeSeries([(-5, 0), (0, 23), (5, None)])
 
-    ts_exists = ts.exists()
+    ts_exists = ts.is_not_none()
     assert ts_exists[-10] is False
     assert ts_exists[-2] is True
     assert ts_exists[3] is True

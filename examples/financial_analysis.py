@@ -14,12 +14,11 @@ import json
 from datetime import timedelta
 
 import traces
-from traces.utils import datetime_range
 
 
 def parse_datetime(date_string):
     """Parse ISO format datetime string with optional timezone"""
-    return datetime.datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+    return datetime.datetime.fromisoformat(date_string.replace("Z", "+00:00"))
 
 
 # Sample stock price data with irregular intervals
@@ -39,17 +38,19 @@ sample_data = [
     {"time": "2023-03-02T15:55:00Z", "price": 162.25, "volume": 4500},
 ]
 
+
 # 1. Create TimeSeries from irregular stock price data
 def create_price_series():
     price_series = traces.TimeSeries(default=None)
     volume_series = traces.TimeSeries(default=0)
-    
+
     for record in sample_data:
         time = parse_datetime(record["time"])
         price_series[time] = record["price"]
         volume_series[time] = record["volume"]
-    
+
     return price_series, volume_series
+
 
 price_ts, volume_ts = create_price_series()
 
@@ -61,11 +62,17 @@ print(f"Last price: ${price_ts.last_value()}")
 
 
 # 2. Define a function to create trading hours mask
-def create_trading_hours_mask(start_date, end_date, start_hour=9, start_minute=30, 
-                             end_hour=16, end_minute=0):
+def create_trading_hours_mask(
+    start_date,
+    end_date,
+    start_hour=9,
+    start_minute=30,
+    end_hour=16,
+    end_minute=0,
+):
     """Create a mask for regular trading hours (e.g., 9:30 AM to 4:00 PM)"""
     mask = traces.TimeSeries(default=False)
-    
+
     # Iterate through each day
     current_date = start_date
     while current_date <= end_date:
@@ -73,22 +80,21 @@ def create_trading_hours_mask(start_date, end_date, start_hour=9, start_minute=3
         if current_date.weekday() < 5:  # Monday through Friday
             # Set trading hours for this day
             market_open = datetime.datetime.combine(
-                current_date, 
-                datetime.time(start_hour, start_minute)
+                current_date, datetime.time(start_hour, start_minute)
             )
             market_close = datetime.datetime.combine(
-                current_date,
-                datetime.time(end_hour, end_minute)
+                current_date, datetime.time(end_hour, end_minute)
             )
-            
+
             # Set mask to True during trading hours
             mask[market_open] = True
             mask[market_close] = False
-        
+
         # Move to next day
         current_date += datetime.timedelta(days=1)
-    
+
     return mask
+
 
 # Create a mask for trading hours across our date range
 start_date = parse_datetime("2023-03-01T00:00:00Z").date()
@@ -107,6 +113,7 @@ print(f"Median price: ${price_distribution.median():.2f}")
 print(f"Min price: ${price_distribution.min():.2f}")
 print(f"Max price: ${price_distribution.max():.2f}")
 
+
 # Calculate volume-weighted average price (VWAP)
 def calculate_vwap(price_ts, volume_ts):
     """Calculate volume-weighted average price"""
@@ -114,6 +121,7 @@ def calculate_vwap(price_ts, volume_ts):
     total_volume = sum(volume_ts.values())
     total_weighted = sum(weighted_ts.values())
     return total_weighted / total_volume
+
 
 vwap = calculate_vwap(price_ts, volume_ts)
 print(f"Volume-weighted average price (VWAP): ${vwap:.2f}")
@@ -127,10 +135,10 @@ interval = timedelta(minutes=30)
 
 # Using moving average to prevent aliasing
 regular_prices = price_ts.moving_average(
-    sampling_period=interval, 
+    sampling_period=interval,
     window_size=interval,
     start=start_time,
-    end=end_time
+    end=end_time,
 )
 
 print("\n== Resampled Price Data (30-minute intervals) ==")
@@ -142,18 +150,17 @@ for time, price in regular_prices:
 def calculate_returns(price_ts):
     """Calculate percentage returns between consecutive prices"""
     returns_ts = traces.TimeSeries(default=0)
-    
-    prev_time = None
+
     prev_price = None
-    
+
     for t, price in price_ts:
         if prev_price is not None:
             returns_ts[t] = (price - prev_price) / prev_price * 100
-        
-        prev_time = t
+
         prev_price = price
-    
+
     return returns_ts
+
 
 returns_ts = calculate_returns(price_ts)
 
@@ -165,8 +172,7 @@ for t, ret in returns_ts:
 
 # 6. Export the data to JSON for use in other tools
 json_data = price_ts.to_json(
-    time_transform=lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S"),
-    dict_format=True
+    time_transform=lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S"), dict_format=True
 )
 
 print("\n== Sample of JSON Export ==")
@@ -181,10 +187,10 @@ print(json.dumps(sample_json, indent=2))
 # This is useful for analyzing patterns by hour
 print("\n== Price Distribution by Hour ==")
 for hour in range(9, 17):  # 9 AM to 4 PM
-    mask = traces.day_of_week(start_time, end_time, "Wednesday") 
+    mask = traces.day_of_week(start_time, end_time, "Wednesday")
     hour_mask = traces.hour_of_day(start_time, end_time, hour)
     combined_mask = mask & hour_mask
-    
+
     # Only calculate if we have data for this hour
     if price_ts.distribution(mask=combined_mask).total() > 0:
         hour_avg = price_ts.mean(mask=combined_mask)

@@ -65,12 +65,12 @@ You can easily visualize time series data using the built-in `plot()` method:
        markersize=3,            # Size of markers
        color="#007ACC"          # Blue color for the line
    )
-   
+
    # Customize the plot
    ax.set_title("Total Home Power Usage")
    ax.set_xlabel("Time")
    ax.set_ylabel("Power (watts)")
-   
+
    # Save or display the plot
    fig.savefig("power_usage.png")  # Save to file
    # plt.show()  # Or display it interactively

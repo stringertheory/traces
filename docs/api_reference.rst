@@ -65,10 +65,10 @@ The TimeSeries class provides a :code:`plot()` method for easy visualization of 
     >>> ts[1] = 2
     >>> ts[3] = 1
     >>> ts[5] = 0
-    >>> 
+    >>>
     >>> # Create a basic plot with default settings
     >>> fig, ax = ts.plot()
-    
+
 You can customize the plot appearance with various parameters:
 
 .. code:: python
@@ -91,7 +91,7 @@ The plot method returns matplotlib objects that you can further customize or sav
     >>> ax.set_title("My Time Series Data")
     >>> ax.set_xlabel("Time")
     >>> ax.set_ylabel("Value")
-    >>> 
+    >>>
     >>> # Save the plot to a file
     >>> fig.savefig("my_timeseries.png")
 
@@ -111,7 +111,7 @@ Histogram
 EventSeries
 -----------
 
-An EventSeries represents a sequence of events that occur at specific times. 
+An EventSeries represents a sequence of events that occur at specific times.
 Unlike TimeSeries which tracks measurements (values) over time, EventSeries
 only tracks when events occur, without associated values.
 
@@ -124,7 +124,7 @@ only tracks when events occur, without associated values.
     ...     "2023-05-01 10:45",
     ...     "2023-05-01 12:00"
     ... ])
-    
+
 EventSeries is useful for analyzing:
 
 * Event frequencies and patterns
@@ -137,7 +137,7 @@ EventSeries is useful for analyzing:
     >>> # Count events in a time range
     >>> logins.events_between("2023-05-01 08:00", "2023-05-01 10:00")
     2
-    
+
     >>> # Get cumulative count of events over time
     >>> cumulative = logins.cumulative_sum()
     >>> cumulative["2023-05-01 11:00"]

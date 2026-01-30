@@ -3,6 +3,7 @@
 ## [0.6.5] - In Development
 
 ### Added
+
 - Added JSON import/export functionality:
   - `TimeSeries.from_json()` method to load from JSON files or strings
   - `TimeSeries.to_json()` method to export to JSON files or strings
@@ -18,6 +19,7 @@
 - Added deprecation warning to `exists()` method
 
 ### Fixed
+
 - Fixed incorrect error handling in `_get_previous()` method
 - Fixed string representation (`__str__` and `__repr__`) to consistently include default value
 - Improved variable naming in string representation methods for clarity

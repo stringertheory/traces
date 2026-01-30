@@ -46,7 +46,7 @@ def test_missing():
     assert clients[3] is None
     assert clients[15] is None
 
-    system_uptime = clients.exists()
+    system_uptime = clients.is_not_none()
     assert system_uptime[-15] is False
     assert system_uptime[-6] is True
     assert system_uptime[-1] is False
@@ -60,7 +60,7 @@ def test_missing():
     assert clients[3] == 3
     assert clients[15] == 0
 
-    system_uptime = clients.exists()
+    system_uptime = clients.is_not_none()
     assert system_uptime[-15] is True
     assert system_uptime[-5] is True
     assert system_uptime[-1] is True
