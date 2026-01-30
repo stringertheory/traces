@@ -903,13 +903,7 @@ class TimeSeries:
                 )
                 midpoint = utils.time_midpoint(t0, t1)
                 value = self.get(midpoint, interpolate=interpolate)
-                try:
-                    counter[value] += duration
-                except histogram.UnorderableElements:
-                    counter = histogram.Histogram.from_dict(
-                        dict(counter), key=hash
-                    )
-                    counter[value] += duration
+                counter[value] += duration
 
         # divide by total duration if result needs to be normalized
         if normalized:

@@ -1,7 +1,8 @@
 """Lightweight sorted dictionary using dict + sorted list + bisect.
 
-This provides the subset of the sortedcontainers.SortedDict API used by
-TimeSeries and Histogram, without the external dependency.
+This is a very lightweight alternative to sortedcontainers.SortedDict,
+but is a little faster for read operations on TimeSeries.
+
 """
 
 import bisect
@@ -10,73 +11,26 @@ import bisect
 class SortedDict:
     """A dictionary that maintains keys in sorted order.
 
-    Uses a plain dict for O(1) key/value access and a sorted list of
+    Uses a plain dict for O(1) key-value access and a sorted list of
     keys for ordered iteration and bisect operations.
-
-    Args:
-        key: Optional key function for sorting (e.g. hash for
-            unorderable elements). Mirrors sortedcontainers API.
-        data: Optional initial data (dict, iterable of pairs, or
-            another SortedDict).
     """
 
-    def __init__(self, *args):
-        # Match sortedcontainers.SortedDict constructor:
-        # SortedDict() -> empty
-        # SortedDict(data) -> from dict or iterable of pairs
-        # SortedDict(key_func) -> empty with key function
-        # SortedDict(key_func, data) -> from data with key function
-        self._key = None
+    def __init__(self, data=None):
         self._dict = {}
         self._keys = []
-        data = None
-        for arg in args:
-            if callable(arg):
-                self._key = arg
-            else:
-                data = arg
         if data is not None:
             self.update(data)
 
-    def _sort_keys(self):
-        if self._key is not None:
-            self._keys = sorted(self._dict, key=self._key)
-        else:
-            self._keys = sorted(self._dict)
-
-    def _insort(self, key):
-        if self._key is not None:
-            bisect.insort_left(self._keys, key, key=self._key)
-        else:
-            bisect.insort(self._keys, key)
-
-    def _bisect_left(self, key):
-        if self._key is not None:
-            return bisect.bisect_left(self._keys, self._key(key), key=self._key)
-        return bisect.bisect_left(self._keys, key)
-
-    def _bisect_right(self, key):
-        if self._key is not None:
-            return bisect.bisect_right(
-                self._keys, self._key(key), key=self._key
-            )
-        return bisect.bisect_right(self._keys, key)
-
     def update(self, data):
-        if isinstance(data, dict):
-            self._dict.update(data)
-        elif isinstance(data, SortedDict):
+        if isinstance(data, SortedDict):
             self._dict.update(data._dict)
         else:
-            for k, v in data:
-                self._dict[k] = v
-        self._sort_keys()
-
-    # -- dict-like access ---------------------------------------------------
+            self._dict.update(data)
+        self._keys = sorted(self._dict)
 
     def __setitem__(self, key, value):
         if key not in self._dict:
-            self._insort(key)
+            bisect.insort(self._keys, key)
         self._dict[key] = value
 
     def __getitem__(self, key):
@@ -84,7 +38,7 @@ class SortedDict:
 
     def __delitem__(self, key):
         del self._dict[key]
-        idx = self._bisect_left(key)
+        idx = bisect.bisect_left(self._keys, key)
         self._keys.pop(idx)
 
     def __contains__(self, key):
@@ -108,8 +62,6 @@ class SortedDict:
         items = ", ".join(f"{k!r}: {v!r}" for k, v in self.items())
         return f"SortedDict({{{items}}})"
 
-    # -- ordered access -----------------------------------------------------
-
     def keys(self):
         """Return the sorted keys list (supports indexing)."""
         return self._keys
@@ -129,19 +81,28 @@ class SortedDict:
         k = self._keys[index]
         return (k, self._dict[k])
 
-    # -- bisect operations --------------------------------------------------
-
     def bisect_left(self, key):
-        return self._bisect_left(key)
+        return bisect.bisect_left(self._keys, key)
 
     def bisect_right(self, key):
-        return self._bisect_right(key)
-
-    # -- iteration helpers --------------------------------------------------
+        return bisect.bisect_right(self._keys, key)
 
     def islice(self, start=None, stop=None):
         """Iterate over keys from index start to stop."""
         return iter(self._keys[start:stop])
+
+    def _range_indices(self, minimum, maximum, inclusive=(True, True)):
+        """Return (lo, hi) slice indices for keys in the given range."""
+        inc_min, inc_max = inclusive
+        if inc_min:
+            lo = bisect.bisect_left(self._keys, minimum)
+        else:
+            lo = bisect.bisect_right(self._keys, minimum)
+        if inc_max:
+            hi = bisect.bisect_right(self._keys, maximum)
+        else:
+            hi = bisect.bisect_left(self._keys, maximum)
+        return lo, hi
 
     def delete_range(self, minimum, maximum, inclusive=(True, True)):
         """Delete all keys in the range [minimum, maximum].
@@ -154,15 +115,7 @@ class SortedDict:
             maximum: Upper bound.
             inclusive: Tuple of (include_min, include_max).
         """
-        inc_min, inc_max = inclusive
-        if inc_min:
-            lo = self._bisect_left(minimum)
-        else:
-            lo = self._bisect_right(minimum)
-        if inc_max:
-            hi = self._bisect_right(maximum)
-        else:
-            hi = self._bisect_left(maximum)
+        lo, hi = self._range_indices(minimum, maximum, inclusive)
         for k in self._keys[lo:hi]:
             del self._dict[k]
         del self._keys[lo:hi]
@@ -175,13 +128,5 @@ class SortedDict:
             maximum: Upper bound.
             inclusive: Tuple of (include_min, include_max).
         """
-        inc_min, inc_max = inclusive
-        if inc_min:
-            lo = self._bisect_left(minimum)
-        else:
-            lo = self._bisect_right(minimum)
-        if inc_max:
-            hi = self._bisect_right(maximum)
-        else:
-            hi = self._bisect_left(maximum)
-        return iter(self._keys[lo:hi])
+        lo, hi = self._range_indices(minimum, maximum, inclusive)
+        return self.islice(lo, hi)

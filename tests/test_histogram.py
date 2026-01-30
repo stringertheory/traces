@@ -39,7 +39,7 @@ def test_histogram_stats_with_nones():
     assert histogram.max() is None
     assert histogram.median() is None
 
-    histogram = traces.Histogram.from_dict({None: 1}, key=hash)
+    histogram = traces.Histogram.from_dict({None: 1})
 
     assert histogram.mean() is None
     assert histogram.variance() is None

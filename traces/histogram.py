@@ -13,20 +13,21 @@ class UnhashableType(TypeError):
 
 class Histogram:
     @classmethod
-    def from_dict(cls, in_dict, *args, **kwargs):
-        self = cls(*args, **kwargs)
+    def from_dict(cls, in_dict):
+        self = cls()
         for key, value in in_dict.items():
             self[key] = value
         return self
 
-    def __init__(self, data=(), **kwargs):
-        if "key" in kwargs:
-            self._d = SortedDict(kwargs["key"])
-        else:
-            self._d = SortedDict()
+    def __init__(self, data=()):
+        self._d = SortedDict()
 
         for datum in data:
             self[datum] += 1
+
+    def _use_unsorted(self):
+        """Switch to a plain dict when keys are unorderable."""
+        self._d = dict(self._d.items())
 
     def __getitem__(self, key):
         try:
@@ -34,9 +35,6 @@ class Histogram:
         except KeyError:
             result = 0
         except TypeError as error:
-            if "unorderable" in str(error):
-                raise UnorderableElements(error) from error
-
             if "unhashable" in str(error):
                 msg = f"Can't make histogram of unhashable type ({type(key)})"
                 raise UnhashableType(msg) from error
@@ -48,11 +46,12 @@ class Histogram:
         try:
             self._d[key] = value
         except TypeError as error:
-            if "unorderable" in str(error):
-                raise UnorderableElements(error) from error
-
-            if "not supported between instances of" in str(error):
-                raise UnorderableElements(error) from error
+            if "unorderable" in str(
+                error
+            ) or "not supported between instances of" in str(error):
+                self._use_unsorted()
+                self._d[key] = value
+                return
 
             if "unhashable" in str(error):
                 msg = f"Can't make histogram of unhashable type ({type(key)})"
@@ -74,7 +73,7 @@ class Histogram:
 
     def __eq__(self, other):
         if isinstance(other, Histogram):
-            return self._d == other._d
+            return dict(self.items()) == dict(other.items())
         return NotImplemented
 
     def __ne__(self, other):
@@ -84,17 +83,23 @@ class Histogram:
         return not result
 
     def keys(self):
+        if isinstance(self._d, dict):
+            return list(self._d.keys())
         return self._d.keys()
 
     def values(self):
+        if isinstance(self._d, dict):
+            return list(self._d.values())
         return self._d.values()
 
     def items(self):
+        if isinstance(self._d, dict):
+            return list(self._d.items())
         return self._d.items()
 
     def total(self):
         """Sum of values."""
-        return sum(self._d.values())
+        return sum(self.values())
 
     def _prepare_for_stats(self):
         """Removes None values and calculates total."""
@@ -139,11 +144,7 @@ class Histogram:
         total = self.total()
         result = Histogram()
         for value, count in self.items():
-            try:
-                result[value] = count / total
-            except UnorderableElements:
-                result = Histogram.from_dict(dict(result), key=hash)
-                result[value] = count / total
+            result[value] = count / total
         return result
 
     def _discard_value(self, value):
