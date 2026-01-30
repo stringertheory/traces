@@ -5,20 +5,19 @@ occurring at specific times. Unlike TimeSeries which tracks measurements over ti
 EventSeries represents discrete events without associated values.
 """
 
+import bisect
 import itertools
-
-import sortedcontainers
 
 from . import utils
 from .timeseries import TimeSeries
 
 
-class EventSeries(sortedcontainers.SortedList):
+class EventSeries(list):
     """A sorted collection of event times.
 
     EventSeries is a specialized data structure for representing a sequence of events
-    that occur at specific times. It inherits from sortedcontainers.SortedList and
-    keeps event times in chronological order.
+    that occur at specific times. It subclasses list and keeps event times in
+    chronological order.
 
     This class is useful for:
     - Tracking when events occur (like clicks, logins, system events, etc.)
@@ -58,7 +57,27 @@ class EventSeries(sortedcontainers.SortedList):
         Args:
             data (iterable, optional): An optional iterable of time points.
         """
-        super().__init__(data)
+        if data is not None:
+            super().__init__(sorted(data))
+        else:
+            super().__init__()
+
+    def append(self, value):
+        """Add a single event, maintaining sorted order."""
+        bisect.insort(self, value)
+
+    def extend(self, values):
+        """Add multiple events, maintaining sorted order."""
+        super().extend(values)
+        self.sort()
+
+    def bisect_left(self, value):
+        """Return the leftmost index where value can be inserted."""
+        return bisect.bisect_left(self, value)
+
+    def bisect_right(self, value):
+        """Return the rightmost index where value can be inserted."""
+        return bisect.bisect_right(self, value)
 
     def cumsum(self):
         """Alias for cumulative_sum()
