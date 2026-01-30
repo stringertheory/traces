@@ -163,6 +163,27 @@ for t, v in zip(times, values):
         lo, sc = bench(setup, stmt_local, stmt_sc)
         results.append(("Build incrementally", lo, sc))
 
+        # --- Build with set_many ---
+        setup_set_many = (
+            common_setup
+            + f"""
+pairs = list(zip(
+    [random.random() * {n} for _ in range({n})],
+    [random.randint(0, 10) for _ in range({n})],
+))
+"""
+        )
+        stmt_local = """
+ts = make_local_ts(default=0)
+ts.set_many(pairs)
+"""
+        stmt_sc = """
+ts = make_sc_ts(default=0)
+ts.set_many(pairs)
+"""
+        lo, sc = bench(setup_set_many, stmt_local, stmt_sc)
+        results.append(("Build w/ set_many", lo, sc))
+
         # --- Random lookups (get/interpolation) ---
         setup = (
             common_setup
