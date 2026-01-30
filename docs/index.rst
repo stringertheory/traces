@@ -166,6 +166,7 @@ More info
 
    examples
    api_reference
+   sorted_dict
 
 Contributing
 -------------

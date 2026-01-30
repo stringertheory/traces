@@ -1,6 +1,6 @@
 import math
 
-import sortedcontainers
+from .sorted_dict import SortedDict
 
 
 class UnorderableElements(TypeError):
@@ -11,7 +11,7 @@ class UnhashableType(TypeError):
     pass
 
 
-class Histogram(sortedcontainers.SortedDict):
+class Histogram:
     @classmethod
     def from_dict(cls, in_dict, *args, **kwargs):
         self = cls(*args, **kwargs)
@@ -21,16 +21,16 @@ class Histogram(sortedcontainers.SortedDict):
 
     def __init__(self, data=(), **kwargs):
         if "key" in kwargs:
-            super().__init__(kwargs["key"])
+            self._d = SortedDict(kwargs["key"])
         else:
-            super().__init__()
+            self._d = SortedDict()
 
         for datum in data:
             self[datum] += 1
 
     def __getitem__(self, key):
         try:
-            result = super().__getitem__(key)
+            result = self._d[key]
         except KeyError:
             result = 0
         except TypeError as error:
@@ -46,7 +46,7 @@ class Histogram(sortedcontainers.SortedDict):
 
     def __setitem__(self, key, value):
         try:
-            result = super().__setitem__(key, value)
+            self._d[key] = value
         except TypeError as error:
             if "unorderable" in str(error):
                 raise UnorderableElements(error) from error
@@ -59,11 +59,42 @@ class Histogram(sortedcontainers.SortedDict):
                 raise UnhashableType(msg) from error
 
             raise
-        return result
+
+    def __contains__(self, key):
+        return key in self._d
+
+    def __len__(self):
+        return len(self._d)
+
+    def __bool__(self):
+        return bool(self._d)
+
+    def __iter__(self):
+        return iter(self._d)
+
+    def __eq__(self, other):
+        if isinstance(other, Histogram):
+            return self._d == other._d
+        return NotImplemented
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return result
+        return not result
+
+    def keys(self):
+        return self._d.keys()
+
+    def values(self):
+        return self._d.values()
+
+    def items(self):
+        return self._d.items()
 
     def total(self):
         """Sum of values."""
-        return sum(self.values())
+        return sum(self._d.values())
 
     def _prepare_for_stats(self):
         """Removes None values and calculates total."""
@@ -156,7 +187,7 @@ class Histogram(sortedcontainers.SortedDict):
 
         debug_plot = []
         cumulative_sum = 0.0
-        inverse = sortedcontainers.SortedDict()
+        inverse = SortedDict()
         for value, count in clean.items():
             debug_plot.append((cumulative_sum / total, value))
             inverse[(cumulative_sum + beta) / total] = value

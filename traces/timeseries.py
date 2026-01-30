@@ -11,9 +11,8 @@ import datetime
 import itertools
 from queue import PriorityQueue
 
-from sortedcontainers import SortedDict
-
 from . import histogram, infinity, operations, plot, utils
+from .sorted_dict import SortedDict
 
 NotGiven = object()
 
@@ -237,8 +236,11 @@ class TimeSeries:
         end_value = self[end]
 
         # delete all intermediate items between start and end
-        for t in list(self._d.irange(start, end, inclusive=(False, False))):
-            del self[t]
+        if hasattr(self._d, "delete_range"):
+            self._d.delete_range(start, end, inclusive=(False, False))
+        else:
+            for t in list(self._d.irange(start, end, inclusive=(False, False))):
+                del self._d[t]
 
         self.set(start, value, compact)
         self.set(end, end_value, compact)
