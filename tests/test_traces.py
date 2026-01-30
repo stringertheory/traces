@@ -246,6 +246,39 @@ def test_set_same_interval_twice():
     assert list(tr.items()) == [(0, 10), (17, 0), (42, 10), (100, 10)]
 
 
+def test_set_many_from_pairs():
+    ts = TimeSeries(default=0)
+    ts.set_many([(3, "c"), (1, "a"), (2, "b")])
+    assert list(ts.items()) == [(1, "a"), (2, "b"), (3, "c")]
+
+
+def test_set_many_from_dict():
+    ts = TimeSeries(default=0)
+    ts.set_many({3: "c", 1: "a", 2: "b"})
+    assert list(ts.items()) == [(1, "a"), (2, "b"), (3, "c")]
+
+
+def test_set_many_merges_with_existing():
+    ts = TimeSeries([(1, "a"), (3, "c")], default=0)
+    ts.set_many([(2, "b"), (4, "d")])
+    assert list(ts.items()) == [(1, "a"), (2, "b"), (3, "c"), (4, "d")]
+
+
+def test_set_many_overwrites():
+    ts = TimeSeries([(1, "old"), (2, "keep")], default=0)
+    ts.set_many([(1, "new")])
+    assert ts[1] == "new"
+    assert ts[2] == "keep"
+
+
+def test_set_many_equivalent_to_init():
+    data = [(8, 4), (2, 3), (6, 1), (1, 2)]
+    ts_init = TimeSeries(data)
+    ts_many = TimeSeries()
+    ts_many.set_many(data)
+    assert list(ts_init.items()) == list(ts_many.items())
+
+
 def test_convenience_access_methods():
     ts = TimeSeries([(1, 2), (2, 3), (6, 1), (8, 4)])
     assert ts.first_key() == 1

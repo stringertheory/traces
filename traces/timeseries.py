@@ -196,6 +196,16 @@ class TimeSeries:
         ):
             self._d[time] = value
 
+    def set_many(self, data):
+        """Set many values at once from an iterable of (time, value) pairs
+        or a dictionary mapping times to values.
+
+        This is more efficient than calling set() in a loop because it
+        avoids per-element bisect.insort calls.
+
+        """
+        self._d.update(data)
+
     def set_interval(self, start, end, value, compact=False):
         """Sets the value for the time series within a specified time
         interval.
@@ -1135,10 +1145,13 @@ class TimeSeries:
             reader = csv.reader(infile, delimiter=delimiter)
             if skip_header:
                 next(reader)
-            for row in reader:
-                time = time_transform(row[time_column])
-                value = value_transform(row[value_column])
-                result[time] = value
+            result.set_many(
+                (
+                    time_transform(row[time_column]),
+                    value_transform(row[value_column]),
+                )
+                for row in reader
+            )
         return result
 
     @classmethod
@@ -1214,17 +1227,20 @@ class TimeSeries:
 
         # Handle list format [{"time": t1, "value": v1}, ...]
         if isinstance(data, list):
-            for record in data:
-                time = time_transform(record[time_key])
-                value = value_transform(record[value_key])
-                result[time] = value
+            result.set_many(
+                (
+                    time_transform(record[time_key]),
+                    value_transform(record[value_key]),
+                )
+                for record in data
+            )
 
         # Handle dictionary format {"t1": v1, "t2": v2, ...}
         elif isinstance(data, dict):
-            for time_str, value in data.items():
-                time = time_transform(time_str)
-                value = value_transform(value)
-                result[time] = value
+            result.set_many(
+                (time_transform(time_str), value_transform(value))
+                for time_str, value in data.items()
+            )
 
         else:
             msg = "JSON data must be either a list or dictionary"

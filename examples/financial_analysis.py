@@ -44,10 +44,12 @@ def create_price_series():
     price_series = traces.TimeSeries(default=None)
     volume_series = traces.TimeSeries(default=0)
 
-    for record in sample_data:
-        time = parse_datetime(record["time"])
-        price_series[time] = record["price"]
-        volume_series[time] = record["volume"]
+    price_series.set_many(
+        (parse_datetime(r["time"]), r["price"]) for r in sample_data
+    )
+    volume_series.set_many(
+        (parse_datetime(r["time"]), r["volume"]) for r in sample_data
+    )
 
     return price_series, volume_series
 
@@ -73,26 +75,24 @@ def create_trading_hours_mask(
     """Create a mask for regular trading hours (e.g., 9:30 AM to 4:00 PM)"""
     mask = traces.TimeSeries(default=False)
 
-    # Iterate through each day
+    # Build trading hours for all weekdays in the range
+    pairs = []
     current_date = start_date
     while current_date <= end_date:
         # Skip weekends (Saturday=5, Sunday=6)
         if current_date.weekday() < 5:  # Monday through Friday
-            # Set trading hours for this day
             market_open = datetime.datetime.combine(
                 current_date, datetime.time(start_hour, start_minute)
             )
             market_close = datetime.datetime.combine(
                 current_date, datetime.time(end_hour, end_minute)
             )
+            pairs.append((market_open, True))
+            pairs.append((market_close, False))
 
-            # Set mask to True during trading hours
-            mask[market_open] = True
-            mask[market_close] = False
-
-        # Move to next day
         current_date += datetime.timedelta(days=1)
 
+    mask.set_many(pairs)
     return mask
 
 
@@ -151,14 +151,14 @@ def calculate_returns(price_ts):
     """Calculate percentage returns between consecutive prices"""
     returns_ts = traces.TimeSeries(default=0)
 
+    pairs = []
     prev_price = None
-
     for t, price in price_ts:
         if prev_price is not None:
-            returns_ts[t] = (price - prev_price) / prev_price * 100
-
+            pairs.append((t, (price - prev_price) / prev_price * 100))
         prev_price = price
 
+    returns_ts.set_many(pairs)
     return returns_ts
 
 

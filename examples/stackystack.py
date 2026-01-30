@@ -55,11 +55,13 @@ def generate_ts(n_days):
 def hour_mask(n_days, hours):
     start_time = datetime.datetime(2016, 1, 1)
     domain = traces.TimeSeries(default=False)
+    pairs = []
     for day in range(n_days):
         start = start_time + datetime.timedelta(days=day, hours=hours)
         end = start + datetime.timedelta(hours=1)
-        domain[start] = True
-        domain[end] = False
+        pairs.append((start, True))
+        pairs.append((end, False))
+    domain.set_many(pairs)
     return domain
 
 

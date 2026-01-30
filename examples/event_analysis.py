@@ -162,16 +162,18 @@ print("\n=== Error Correlation ===")
 def hourly_counts(event_series, start_time, end_time):
     """Convert EventSeries to hourly count TimeSeries"""
     result = TimeSeries(default=0)
-    current = start_time
 
+    pairs = []
+    current = start_time
     while current < end_time:
         next_hour = current + timedelta(hours=1)
         count = event_series.events_between(
             current, next_hour - timedelta(seconds=1)
         )
-        result[current] = count
+        pairs.append((current, count))
         current = next_hour
 
+    result.set_many(pairs)
     return result
 
 

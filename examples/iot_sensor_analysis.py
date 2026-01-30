@@ -41,6 +41,7 @@ def generate_sensor_data(
     # Create time series with some randomness in measurement times
     ts = traces.TimeSeries(default=None)
 
+    readings = []
     for i in range(n_readings):
         # Random time within the range
         progress = i / n_readings
@@ -80,8 +81,9 @@ def generate_sensor_data(
                 # Temperature drop
                 temperature -= random.uniform(5, 15)
 
-        ts[measurement_time] = round(temperature, 1)
+        readings.append((measurement_time, round(temperature, 1)))
 
+    ts.set_many(readings)
     return ts
 
 
