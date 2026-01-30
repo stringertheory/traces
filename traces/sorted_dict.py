@@ -28,13 +28,13 @@ class SortedDict:
             self._dict.update(data)
         self._keys = sorted(self._dict)
 
+    def __getitem__(self, key):
+        return self._dict[key]
+
     def __setitem__(self, key, value):
         if key not in self._dict:
             bisect.insort(self._keys, key)
         self._dict[key] = value
-
-    def __getitem__(self, key):
-        return self._dict[key]
 
     def __delitem__(self, key):
         del self._dict[key]
