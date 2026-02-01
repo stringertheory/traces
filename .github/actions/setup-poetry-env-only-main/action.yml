@@ -5,13 +5,13 @@ inputs:
   python-version:
     required: false
     description: "The python version to use"
-    default: "3.12"
+    default: "3.14"
 
 runs:
   using: "composite"
   steps:
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
 

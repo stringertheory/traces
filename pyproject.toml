@@ -11,38 +11,29 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
+python = ">=3.10,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
 sortedcontainers = "^2.4.0"
 pytest-cov = "^4.0.0"
 mypy = "^1.5.1"
-pre-commit = [
-    {version = "^3.4.0", python = ">=3.9"},
-    {version = "^2.20.0", python = ">=3.7,<3.9"}
-]
+pre-commit = "^3.4.0"
 tox = "^4.11.1"
 numpy = [
-    {version = "^1.26.3", python = ">=3.9"},
-    {version = "^1.19.5", python = ">=3.7,<3.9"}
+    {version = "^2.2.0", python = ">=3.10,<3.11"},
+    {version = "^2.4.0", python = ">=3.11"}
 ]
-pandas = [
-    {version = "^2.2.0", python = ">=3.9"},
-    {version = "^1.3.5", python = ">=3.7,<3.9"}
-]
+pandas = "^2.2.0"
 scipy = [
-    {version = "^1.12.0", python = ">=3.9"},
-    {version = "^1.7.2", python = ">=3.7,<3.9"}
+    {version = "^1.15.0", python = ">=3.10,<3.11"},
+    {version = "^1.17.0", python = ">=3.11"}
 ]
-matplotlib = [
-    {version = "^3.8.2", python = ">=3.9"},
-    {version = "^3.5", python = ">=3.7,<3.9"}
-]
+matplotlib = "^3.8.2"
 pytest-mpl = "^0.16.1"
-pyarrow = "^15.0.0"
+pyarrow = "^22.0.0"
 bump-my-version = "^0.17.3"
-notebook = "^7.0.7"
+notebook = "^7.4.0"
 deptry = "^0.12.0"
 python-dateutil = "^2.8.2"
 mkautodoc = "^0.2.0"
@@ -51,10 +42,7 @@ mkautodoc = "^0.2.0"
 mkdocs = "^1.4.2"
 mkdocs-material = "^9.2.7"
 mkdocstrings = "^0.23.0"
-sphinx = [
-    {version = "^7.2.6", python = ">=3.9"},
-    {version = "^6.0", python = ">=3.8,<3.9"},
-]
+sphinx = "^7.2.6"
 sphinx-autobuild = "^2021.3.14"
 recommonmark = "^0.7.1"
 
@@ -102,7 +90,7 @@ show_error_codes = "True"
 testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py310"
 line-length = 80
 fix = true
 select = [
