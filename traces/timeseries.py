@@ -8,8 +8,8 @@ http://en.wikipedia.org/wiki/Unevenly_spaced_time_series
 import contextlib
 import csv
 import datetime
+import heapq
 import itertools
-from queue import PriorityQueue
 
 from . import histogram, infinity, operations, plot, utils
 from .sorted_dict import SortedDict
@@ -989,20 +989,27 @@ class TimeSeries:
             raise TypeError(msg)
 
     @staticmethod
-    def _iter_merge(timeseries_list):
-        """This function uses a priority queue to efficiently yield the (time,
-        value_list) tuples that occur from merging together many time
-        series.
+    def iter_merge_transitions(timeseries_list):
+        """Yield (time, index, previous_value, new_value) for each
+        transition across all timeseries.
 
+        This is more memory-efficient than iter_merge for large numbers
+        of timeseries because it yields individual transitions instead
+        of copying the full state list at each step.
+
+        Args:
+            timeseries_list: An iterable of TimeSeries objects.
+
+        Yields:
+            Tuples of (time, index, previous_value, new_value) where:
+                - time: the time of the transition
+                - index: which timeseries changed
+                - previous_value: the value before the transition
+                - new_value: the value after the transition
         """
-        # cast to list since this is getting iterated over several
-        # times (causes problem if timeseries_list is a generator)
         timeseries_list = list(timeseries_list)
 
-        # Create iterators for each timeseries and then add the first
-        # item from each iterator onto a priority queue. The first
-        # item to be popped will be the one with the lowest time
-        queue = PriorityQueue()
+        heap = []
         for index, timeseries in enumerate(timeseries_list):
             iterator = iter(timeseries)
             try:
@@ -1010,30 +1017,21 @@ class TimeSeries:
             except StopIteration:
                 pass
             else:
-                queue.put((t, index, value, iterator))
+                heapq.heappush(heap, (t, index, value, iterator))
 
-        # `state` keeps track of the value of the merged
-        # TimeSeries. It starts with the default. It starts as a list
-        # of the default value for each individual TimeSeries.
         state = [ts.default for ts in timeseries_list]
-        while not queue.empty():
-            # get the next time with a measurement from queue
-            t, index, next_value, iterator = queue.get()
-
-            # make a copy of previous state, and modify only the value
-            # at the index of the TimeSeries that this item came from
-            state = list(state)
+        while heap:
+            t, index, next_value, iterator = heapq.heappop(heap)
+            previous_value = state[index]
             state[index] = next_value
-            yield t, state
+            yield t, index, previous_value, next_value
 
-            # add the next measurement from the time series to the
-            # queue (if there is one)
             try:
                 t, value = next(iterator)
             except StopIteration:
                 pass
             else:
-                queue.put((t, index, value, iterator))
+                heapq.heappush(heap, (t, index, value, iterator))
 
     @classmethod
     def iter_merge(cls, timeseries_list):
@@ -1042,26 +1040,24 @@ class TimeSeries:
         in the list at time t.
 
         """
-        # using return without an argument is the way to say "the
-        # iterator is empty" when there is nothing to iterate over
-        # (the more you know...)
+        timeseries_list = list(timeseries_list)
         if not timeseries_list:
             return
 
-        # This function mostly wraps _iter_merge, the main point of
-        # this is to deal with the case of tied times, where we only
-        # want to yield the last list of values that occurs for any
-        # group of tied times.
-        index, previous_t, previous_state = -1, object(), object()
-        for index, (t, state) in enumerate(cls._iter_merge(timeseries_list)):
-            if index > 0 and t != previous_t:
-                yield previous_t, previous_state
-            previous_t, previous_state = t, state
+        state = [ts.default for ts in timeseries_list]
+        previous_t = object()
+        first = True
+        for t, index, _prev, value in cls.iter_merge_transitions(
+            timeseries_list
+        ):
+            if not first and t != previous_t:
+                yield previous_t, list(state)
+            state[index] = value
+            previous_t = t
+            first = False
 
-        # only yield final thing if there was at least one element
-        # yielded by _iter_merge
-        if index > -1:
-            yield previous_t, previous_state
+        if not first:
+            yield previous_t, list(state)
 
     @classmethod
     def merge(cls, ts_list, compact=True, operation=None):
@@ -1083,6 +1079,75 @@ class TimeSeries:
         for t, merged in cls.iter_merge(ts_list):
             value = merged if operation is None else operation(merged)
             result.set(t, value, compact=compact)
+        return result
+
+    @staticmethod
+    def _flush_pending(pending, t, counts, result_data):
+        """Record current counts for all values affected by pending
+        transitions at time t."""
+        affected = {v for p, n in pending for v in (p, n)}
+        for val in affected:
+            result_data.setdefault(val, []).append((t, counts.get(val, 0)))
+
+    @classmethod
+    def count_by_value(cls, ts_list):
+        """Return a dict mapping each state value to a TimeSeries that
+        counts how many of the input timeseries are in that state at
+        each point in time.
+
+        Efficient for many timeseries with few discrete states (e.g.
+        boolean on/off, ticket open/closed). Runs in O(N) time where
+        N is the total number of transitions, independent of the number
+        of timeseries K.
+
+        Args:
+            ts_list: An iterable of TimeSeries objects.
+
+        Returns:
+            A dict where keys are the distinct values found across all
+            input timeseries (including defaults), and values are
+            TimeSeries objects whose value at any time t is the count
+            of input timeseries equal to that state at time t.
+        """
+        ts_list = list(ts_list)
+        if not ts_list:
+            return {}
+
+        # Initialize counts from defaults
+        counts = {}
+        for ts in ts_list:
+            counts[ts.default] = counts.get(ts.default, 0) + 1
+
+        result_data = {}  # value -> list of (time, count)
+        previous_t = object()
+        pending = []
+
+        for t, _index, prev_val, new_val in cls.iter_merge_transitions(ts_list):
+            if t != previous_t and pending:
+                cls._flush_pending(pending, previous_t, counts, result_data)
+                pending = []
+
+            counts[prev_val] = counts.get(prev_val, 0) - 1
+            counts[new_val] = counts.get(new_val, 0) + 1
+            pending.append((prev_val, new_val))
+            previous_t = t
+
+        if pending:
+            cls._flush_pending(pending, previous_t, counts, result_data)
+
+        # Build result TimeSeries
+        initial_counts = {}
+        for ts in ts_list:
+            initial_counts[ts.default] = initial_counts.get(ts.default, 0) + 1
+
+        result = {}
+        all_values = set(initial_counts) | set(result_data)
+        for val in all_values:
+            ts = cls(default=initial_counts.get(val, 0))
+            if val in result_data:
+                ts.set_many(result_data[val])
+            result[val] = ts
+
         return result
 
     @classmethod

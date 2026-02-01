@@ -163,3 +163,163 @@ def test_single_merges():
         (23, [40, 2]),
         (24, [40, 3]),
     ]
+
+
+def test_iter_merge_transitions_empty():
+    assert list(TimeSeries.iter_merge_transitions([])) == []
+
+
+def test_iter_merge_transitions_single():
+    ts = TimeSeries(default=0)
+    ts[1] = 10
+    ts[3] = 20
+
+    result = list(TimeSeries.iter_merge_transitions([ts]))
+    assert result == [
+        (1, 0, 0, 10),
+        (3, 0, 10, 20),
+    ]
+
+
+def test_iter_merge_transitions_multiple():
+    ts_a = TimeSeries(default=0)
+    ts_a[1] = 1
+    ts_a[3] = 2
+
+    ts_b = TimeSeries(default=0)
+    ts_b[2] = 5
+    ts_b[4] = 6
+
+    result = list(TimeSeries.iter_merge_transitions([ts_a, ts_b]))
+    # Should yield transitions in time order
+    assert result == [
+        (1, 0, 0, 1),  # ts_a: 0 -> 1
+        (2, 1, 0, 5),  # ts_b: 0 -> 5
+        (3, 0, 1, 2),  # ts_a: 1 -> 2
+        (4, 1, 5, 6),  # ts_b: 5 -> 6
+    ]
+
+
+def test_iter_merge_transitions_tied_times():
+    ts_a = TimeSeries(default=0)
+    ts_a[1] = 10
+
+    ts_b = TimeSeries(default=0)
+    ts_b[1] = 20
+
+    result = list(TimeSeries.iter_merge_transitions([ts_a, ts_b]))
+    # Both transitions at t=1, ordered by index (priority queue)
+    assert len(result) == 2
+    assert result[0] == (1, 0, 0, 10)
+    assert result[1] == (1, 1, 0, 20)
+
+
+def test_iter_merge_transitions_preserves_previous_value():
+    ts = TimeSeries(default="off")
+    ts[1] = "on"
+    ts[2] = "off"
+    ts[3] = "on"
+
+    result = list(TimeSeries.iter_merge_transitions([ts]))
+    assert result == [
+        (1, 0, "off", "on"),
+        (2, 0, "on", "off"),
+        (3, 0, "off", "on"),
+    ]
+
+
+def test_count_by_value_empty():
+    assert TimeSeries.count_by_value([]) == {}
+
+
+def test_count_by_value_boolean():
+    ts_a = TimeSeries(default=False)
+    ts_a[1] = True
+    ts_a[3] = False
+
+    ts_b = TimeSeries(default=False)
+    ts_b[2] = True
+    ts_b[4] = False
+
+    ts_c = TimeSeries(default=False)
+    ts_c[1] = True
+    ts_c[5] = False
+
+    result = TimeSeries.count_by_value([ts_a, ts_b, ts_c])
+
+    assert set(result.keys()) == {True, False}
+
+    true_ts = result[True]
+    false_ts = result[False]
+
+    # Before anything: 0 True, 3 False
+    assert true_ts.default == 0
+    assert false_ts.default == 3
+
+    # t=1: ts_a and ts_c become True -> 2 True, 1 False
+    assert true_ts[1] == 2
+    assert false_ts[1] == 1
+
+    # t=2: ts_b becomes True -> 3 True, 0 False
+    assert true_ts[2] == 3
+    assert false_ts[2] == 0
+
+    # t=3: ts_a becomes False -> 2 True, 1 False
+    assert true_ts[3] == 2
+    assert false_ts[3] == 1
+
+    # t=4: ts_b becomes False -> 1 True, 2 False
+    assert true_ts[4] == 1
+    assert false_ts[4] == 2
+
+    # t=5: ts_c becomes False -> 0 True, 3 False
+    assert true_ts[5] == 0
+    assert false_ts[5] == 3
+
+
+def test_count_by_value_multi_state():
+    ts_a = TimeSeries(default="idle")
+    ts_a[1] = "running"
+    ts_a[3] = "idle"
+
+    ts_b = TimeSeries(default="idle")
+    ts_b[2] = "error"
+    ts_b[4] = "idle"
+
+    result = TimeSeries.count_by_value([ts_a, ts_b])
+
+    assert result["idle"].default == 2
+    assert result["running"].default == 0
+    assert result["error"].default == 0
+
+    # t=1: ts_a goes to running
+    assert result["idle"][1] == 1
+    assert result["running"][1] == 1
+
+    # t=2: ts_b goes to error
+    assert result["idle"][2] == 0
+    assert result["running"][2] == 1
+    assert result["error"][2] == 1
+
+    # t=3: ts_a goes back to idle
+    assert result["idle"][3] == 1
+    assert result["running"][3] == 0
+
+    # t=4: ts_b goes back to idle
+    assert result["idle"][4] == 2
+    assert result["error"][4] == 0
+
+
+def test_count_by_value_single_series():
+    ts = TimeSeries(default=0)
+    ts[1] = 1
+    ts[2] = 0
+
+    result = TimeSeries.count_by_value([ts])
+
+    assert result[0].default == 1
+    assert result[1].default == 0
+    assert result[0][1] == 0
+    assert result[1][1] == 1
+    assert result[0][2] == 1
+    assert result[1][2] == 0
