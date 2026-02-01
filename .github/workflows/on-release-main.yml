@@ -25,7 +25,7 @@ jobs:
           poetry version $RELEASE_VERSION
           make build-and-publish
         env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
 
   deploy-docs:
