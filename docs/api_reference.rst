@@ -45,14 +45,6 @@ get that instead:
 In this case, it might also make sense to add the t=0 point as a
 measurement with :code:`cart[0] = set()`.
 
-Performance note
-++++++++++++++++
-
-Traces is not designed for maximal performance, but it's no slouch
-since it uses the excellent `sortedcontainers.SortedDict
-<http://www.grantjenks.com/docs/sortedcontainers/introduction.html#sorteddict>`__
-under the hood to store sparse time series.
-
 Visualizing Time Series
 ++++++++++++++++++++++
 

@@ -11,8 +11,7 @@ external dependencies.
 Previously, traces used ``sortedcontainers.SortedDict`` for this
 purpose. The `sortedcontainers <https://grantjenks.com/docs/sortedcontainers/>`_
 library is an excellent, well-tested, pure-Python library for sorted
-data structures. Traces continues to use ``sortedcontainers.SortedList``
-for ``EventSeries``.
+data structures.
 
 Design
 ------
