@@ -8,8 +8,8 @@ http://en.wikipedia.org/wiki/Unevenly_spaced_time_series
 import contextlib
 import csv
 import datetime
-import heapq
 import itertools
+import warnings
 
 from . import histogram, infinity, operations, plot, utils
 from .sorted_dict import SortedDict
@@ -47,10 +47,6 @@ class TimeSeries:
     def __init__(self, data=None, default=None):
         self._d = SortedDict(data)
         self.default = default
-        self.getter_functions = {
-            "previous": self._get_previous,
-            "linear": self._get_linear_interpolate,
-        }
 
     def __getstate__(self):
         return {
@@ -144,17 +140,16 @@ class TimeSeries:
             >>> # Linear interpolation
             >>> ts.get(5, interpolate="linear")  # Returns 5
         """
-        try:
-            getter = self.getter_functions[interpolate]
-        except KeyError as error:
-            getter_string = ", ".join(self.getter_functions)
+        if interpolate == "previous":
+            return self._get_previous(time)
+        elif interpolate == "linear":
+            return self._get_linear_interpolate(time)
+        else:
             msg = (
                 f"unknown value '{interpolate}' for interpolate, "
-                f"valid values are in [{getter_string}]"
+                f"valid values are in [previous, linear]"
             )
-            raise ValueError(msg) from error
-        else:
-            return getter(time)
+            raise ValueError(msg)
 
     def get_item_by_index(self, index):
         """Get the (t, value) pair of the time series by index."""
@@ -196,15 +191,35 @@ class TimeSeries:
         ):
             self._d[time] = value
 
-    def set_many(self, data):
+    def set_many(self, data, compact=False):
         """Set many values at once from an iterable of (time, value) pairs
         or a dictionary mapping times to values.
 
         This is more efficient than calling set() in a loop because it
         avoids per-element bisect.insort calls.
 
+        Args:
+            data: An iterable of (time, value) pairs or a dictionary.
+            compact: If True, discard consecutive entries with the
+                same value. The first entry is kept if it differs
+                from the current default. Only meaningful when data
+                is in time-sorted order.
+
         """
-        self._d.update(data)
+        if not compact:
+            self._d.update(data)
+            return
+
+        if isinstance(data, dict):
+            data = data.items()
+
+        previous_value = self.default
+        filtered = []
+        for t, v in data:
+            if v != previous_value:
+                filtered.append((t, v))
+                previous_value = v
+        self._d.update(filtered)
 
     def set_interval(self, start, end, value, compact=False):
         """Sets the value for the time series within a specified time
@@ -305,8 +320,6 @@ class TimeSeries:
             >>> exists_ts[1]  # Returns False
             >>> exists_ts[2]  # Returns True
         """
-        import warnings
-
         warnings.warn(
             "The 'exists' method is deprecated. Use 'is_not_none' instead.",
             DeprecationWarning,
@@ -997,6 +1010,11 @@ class TimeSeries:
         of timeseries because it yields individual transitions instead
         of copying the full state list at each step.
 
+        Uses a flat-sort strategy: all transitions are extracted into a
+        single list and sorted once, rather than using a priority queue.
+        See docs/merge_strategies.rst for a detailed comparison of merge
+        implementation approaches with benchmarks.
+
         Args:
             timeseries_list: An iterable of TimeSeries objects.
 
@@ -1009,35 +1027,32 @@ class TimeSeries:
         """
         timeseries_list = list(timeseries_list)
 
-        heap = []
-        for index, timeseries in enumerate(timeseries_list):
-            iterator = iter(timeseries)
-            try:
-                t, value = next(iterator)
-            except StopIteration:
-                pass
-            else:
-                heapq.heappush(heap, (t, index, value, iterator))
+        # Flat-sort strategy: extract all transitions and sort once.
+        # Faster than a heap for in-memory data due to timsort's
+        # cache-friendliness and lower per-element overhead. See
+        # docs/merge_strategies.rst for alternatives and tradeoffs.
+        triples = []
+        for index, ts in enumerate(timeseries_list):
+            for t, v in ts:
+                triples.append((t, index, v))
+        triples.sort()
 
         state = [ts.default for ts in timeseries_list]
-        while heap:
-            t, index, next_value, iterator = heapq.heappop(heap)
+        for t, index, next_value in triples:
             previous_value = state[index]
             state[index] = next_value
             yield t, index, previous_value, next_value
-
-            try:
-                t, value = next(iterator)
-            except StopIteration:
-                pass
-            else:
-                heapq.heappush(heap, (t, index, value, iterator))
 
     @classmethod
     def iter_merge(cls, timeseries_list):
         """Iterate through several time series in order, yielding (time, list)
         tuples where list is the values of each individual TimeSeries
         in the list at time t.
+
+        Note: yields a full K-element list copy at each unique time.
+        For large K, consider iter_merge_transitions which yields
+        individual O(1) transitions instead. See
+        docs/merge_strategies.rst for details.
 
         """
         timeseries_list = list(timeseries_list)
@@ -1096,9 +1111,11 @@ class TimeSeries:
         each point in time.
 
         Efficient for many timeseries with few discrete states (e.g.
-        boolean on/off, ticket open/closed). Runs in O(N) time where
-        N is the total number of transitions, independent of the number
-        of timeseries K.
+        boolean on/off, ticket open/closed). Uses
+        iter_merge_transitions to process O(1) per transition,
+        independent of the number of timeseries K. See
+        docs/merge_strategies.rst for how this avoids the O(K) list
+        copies that iter_merge/merge require.
 
         Args:
             ts_list: An iterable of TimeSeries objects.

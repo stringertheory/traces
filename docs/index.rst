@@ -167,6 +167,7 @@ More info
    examples
    api_reference
    sorted_dict
+   merge_strategies
 
 Contributing
 -------------
