@@ -15,6 +15,8 @@ class SortedDict:
     keys for ordered iteration and bisect operations.
     """
 
+    __slots__ = ("_dict", "_keys")
+
     def __init__(self, data=None):
         self._dict = {}
         self._keys = []
