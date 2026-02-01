@@ -67,7 +67,9 @@ def test_convert_args_to_list():
         [[1, 2], [4, 5], [6, 7]],
     ]
 
-    for inputs, answers in zip(iterable_inputs, iterable_inputs_answers):
+    for inputs, answers in zip(
+        iterable_inputs, iterable_inputs_answers, strict=False
+    ):
         assert utils.convert_args_to_list(inputs) == answers
 
     pytest.raises(TypeError, utils.convert_args_to_list, [2, 3, 4])

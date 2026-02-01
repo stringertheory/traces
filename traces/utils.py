@@ -13,9 +13,9 @@ def duration_to_number(duration, units="seconds"):
     TODO: allow for multiple types of units.
 
     """
-    if isinstance(duration, (numbers.Integral, numbers.Real)):
+    if isinstance(duration, numbers.Integral | numbers.Real):
         return duration
-    elif isinstance(duration, (datetime.timedelta,)):
+    elif isinstance(duration, datetime.timedelta):
         if units == "seconds":
             return duration.total_seconds()
         else:
@@ -32,7 +32,7 @@ def duration_to_number(duration, units="seconds"):
 def time_midpoint(t0, t1):
     """Return the midpoint between two time values."""
     duration = t1 - t0
-    if isinstance(duration, (datetime.timedelta,)):
+    if isinstance(duration, datetime.timedelta):
         half = duration.total_seconds() / 2.0
         return t0 + datetime.timedelta(seconds=half)
     else:
@@ -45,13 +45,13 @@ def convert_args_to_list(args):
     if len(args) == 0:
         return []
 
-    if any(isinstance(arg, (list, tuple)) for arg in args):
+    if any(isinstance(arg, list | tuple) for arg in args):
         # Domain([[1, 4]])
         # Domain([(1, 4)])
         # Domain([(1, 4), (5, 8)])
         # Domain([[1, 4], [5, 8]])
         if len(args) == 1 and any(
-            isinstance(arg, (list, tuple)) for arg in args[0]
+            isinstance(arg, list | tuple) for arg in args[0]
         ):
             for item in args[0]:
                 list_of_pairs.append(list(item))

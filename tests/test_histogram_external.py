@@ -17,7 +17,7 @@ def test_quantiles():
         data, prob=q_list, alphap=0.5, betap=0.5
     )
 
-    for i, j in zip(q_values, reference):
+    for i, j in zip(q_values, reference, strict=False):
         assert i == j
 
 
@@ -55,7 +55,7 @@ def _test_statistics(normalized):
             alphap=0.5,
             betap=0.5,
         )
-        for i, j in zip(result, reference):
+        for i, j in zip(result, reference, strict=False):
             assert i == pytest.approx(j)
 
         # make sure ot throw an error for bad quantile value
@@ -80,14 +80,14 @@ def test_quantile_interpolation():
     # just do the inverse of the emperical cdf
     result = histogram.quantiles(q_list, alpha=0, smallest_count=1)
     answer = [1.0, 1.0, 1.0, 1.0, 2.5, 5.5, 7.0, 7.0, 7.0]
-    for i, j in zip(result, answer):
+    for i, j in zip(result, answer, strict=False):
         assert i == pytest.approx(j)
 
     # same thing with normalized
     result = normalized.quantiles(
         q_list, alpha=0, smallest_count=1.0 / len(data)
     )
-    for i, j in zip(result, answer):
+    for i, j in zip(result, answer, strict=False):
         assert i == pytest.approx(j)
 
     # now do the linear interpolation method
@@ -98,7 +98,7 @@ def test_quantile_interpolation():
         alphap=0.5,
         betap=0.5,
     )
-    for i, j in zip(result, answer):
+    for i, j in zip(result, answer, strict=False):
         assert i == pytest.approx(j)
 
     # same thing with normalized
@@ -107,5 +107,5 @@ def test_quantile_interpolation():
         alpha=0.5,
         smallest_count=1.0 / len(data),
     )
-    for i, j in zip(result, answer):
+    for i, j in zip(result, answer, strict=False):
         assert i == pytest.approx(j)

@@ -97,7 +97,7 @@ def plot(
 
         items = ts.items()
         if items:
-            x, y = zip(*items)
+            x, y = zip(*items, strict=False)
         else:
             x, y = [], []
 

@@ -22,7 +22,7 @@ def test_moving_average_pandas_compatibility():
 def test_moving_average_pandas_flag():
     ts = traces.TimeSeries([[1, 2], [2, 3], [6, 1], [8, 4]], default=0)
     ma = ts.moving_average(1, 2, -1, 11, pandas=True)
-    assert list(zip(ma.index, ma)) == [
+    assert list(zip(ma.index, ma, strict=False)) == [
         (-1, 0.0),
         (0, 0.0),
         (1, 1.0),

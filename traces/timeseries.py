@@ -469,7 +469,7 @@ class TimeSeries:
         # now, zip the offset streams back together to yield tuples,
         # in the n=3 example it would yield:
         # (a, b, c), (b, c, d), ..., (w, x, y), (x, y, z)
-        yield from zip(*streams)
+        yield from zip(*streams, strict=False)
 
     @staticmethod
     def _value_function(value):
@@ -669,7 +669,9 @@ class TimeSeries:
                 yield t, v
             yield (end, self[end])
 
-        inflexion_times, inflexion_values = zip(*items_in_horizon())
+        inflexion_times, inflexion_values = zip(
+            *items_in_horizon(), strict=False
+        )
         inflexion_times = pd.DatetimeIndex(inflexion_times)
 
         # identify all inflexion intervals
@@ -712,7 +714,7 @@ class TimeSeries:
 
         result = []
         for i1, t1, v1 in zip(
-            inflexion_intervals, inflexion_times, inflexion_values
+            inflexion_intervals, inflexion_times, inflexion_values, strict=False
         ):
             if i0 != i1:
                 # change of interval

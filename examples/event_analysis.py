@@ -98,7 +98,9 @@ session_durations = [
 website_logouts = EventSeries(
     [
         login_time + duration
-        for login_time, duration in zip(website_logins, session_durations)
+        for login_time, duration in zip(
+            website_logins, session_durations, strict=False
+        )
     ]
 )
 
