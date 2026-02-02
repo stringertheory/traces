@@ -41,10 +41,11 @@ mkautodoc = "^0.2.0"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.2"
 mkdocs-material = "^9.2.7"
-mkdocstrings = "^0.23.0"
+mkdocstrings = "^1.0.0"
 sphinx = "^7.2.6"
 sphinx-autobuild = "^2021.3.14"
 recommonmark = "^0.7.1"
+mkdocstrings-python = "^2.0.1"
 
 [tool.bumpversion]
 current_version = "0.7.0"
