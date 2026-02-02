@@ -9,7 +9,6 @@ build:
       - pip install poetry
       - poetry config virtualenvs.create false
       - poetry install --only main --only docs
-
-sphinx:
-  configuration: docs/conf.py
-  # fail_on_warning: true
+    build:
+      html:
+        - python -m sphinx -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html
